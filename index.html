@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#643985">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Weingut">
-  <title>Weingut · Organisation</title>
-  <link rel="icon" href="weingut-logo.png">
-  <link rel="apple-touch-icon" href="weingut-logo.png">
-  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-title" content="Pau &amp; Maya BIO">
+  <title>Weingut Pau &amp; Maya BIO · Organisation</title>
+  <link rel="icon" href="weingut-logo.png?v=2">
+  <link rel="apple-touch-icon" href="weingut-logo.png?v=2">
+  <link rel="manifest" href="manifest.json?v=2">
   <style>
     *{box-sizing:border-box} [hidden]{display:none!important}
     :root{--purple:#643985;--ink:#292333;--muted:#756d7e;--line:#e6dfea;--green:#236840;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#f5f3f7}
@@ -25,12 +25,14 @@
     .item-title{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.item-title h3{overflow-wrap:anywhere}.pill{border-radius:20px;padding:4px 9px;background:#f0eaf5;color:var(--purple);font-size:12px;white-space:nowrap}.pill.overdue{background:#fbeaea;color:#a83232}.pill.done{background:#e7f2ea;color:var(--green)}.body{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0}.meta{font-size:13px;color:var(--muted);margin:8px 0}.item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.item-actions button{font-size:14px;padding:8px 11px}.empty{text-align:center;padding:35px 20px;color:var(--muted)}.toolbar{display:flex;gap:8px;align-items:center}.status{min-height:20px;font-size:13px;color:var(--muted);margin:8px 0 14px}.status.error{color:#a83232}
     dialog{width:min(560px,calc(100vw - 24px));max-height:90dvh;overflow:auto;border:1px solid var(--line);border-radius:18px;padding:22px;color:var(--ink)}dialog::backdrop{background:#29233380}dialog h2{margin:0 0 8px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:-22px;background:white;padding:14px 0;margin-top:4px}.helper{font-size:13px;color:var(--muted);margin:0}.app-link{display:flex;justify-content:space-between;align-items:center;gap:15px}.app-link a{flex-shrink:0}.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:26px}#login{max-width:440px;margin:35px auto}.clear{border:0;background:transparent;padding:8px;color:var(--muted)}
     @media(max-width:480px){.wrap{padding:18px 12px 40px}.grid{gap:9px}.menu{padding:15px;min-height:155px}.menu strong{font-size:18px}.filters{grid-template-columns:1fr}.card{padding:16px}h1{font-size:24px}.two{gap:8px}.app-link{align-items:flex-start;flex-wrap:wrap}.toolbar{gap:5px}.toolbar button{padding:8px 10px;font-size:14px}.item-title{flex-wrap:wrap}}
+  .brand{flex:1;min-width:0}.brand img{flex-shrink:0}.brand>div{min-width:0}h1{font-size:clamp(20px,4.8vw,27px);line-height:1.2;text-wrap:balance}
+  .machine-cover{width:100%;height:190px;object-fit:cover;border-radius:12px;margin-bottom:14px;display:block;background:#f0eaf5;cursor:pointer}.photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.attachment-card{min-width:0;border:1px solid var(--line);padding:10px;border-radius:12px;margin:8px 0}.attachment-photo{display:block;width:100%;height:150px;object-fit:contain;background:#f5f3f7;border-radius:8px}.attachment-name{overflow-wrap:anywhere;font-size:14px;margin:8px 0}.file-gallery>h3{margin:20px 0 6px}.file-upload{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}.file-open{display:flex;align-items:center;gap:8px;margin:10px 0}.file-open button{font-size:14px}.cover-link{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left}.cover-link img{margin-bottom:0}.file-record-info{padding-top:8px}@media(max-width:380px){.photo-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 <main class="wrap">
   <header>
-    <div class="brand"><img src="weingut-logo.png" alt="Weingut-Logo"><div><h1>Weingut</h1><small>Gemeinsam organisieren</small></div></div>
+    <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Gemeinsam organisieren</small></div></div>
     <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
   </header>
   <section id="login" class="card">
@@ -67,6 +69,7 @@
     <datalist id="teamNames"></datalist>
     <label id="machineField">Maschine / Fahrzeug (optional)<select name="maschine_id"><option value="">Keine Zuordnung</option></select></label>
     <div class="two" id="dateFields"><label>Ab wann? (optional)<input name="von" type="date"></label><label>Bis wann? (optional)<input name="bis" type="date"></label></div>
+    <p class="helper">Bilder und Dokumente nach dem Speichern über „Bilder &amp; Dateien“ hinzufügen.</p>
     <p id="entryError" class="error" role="alert"></p>
     <div class="dialog-actions"><button type="button" id="cancelEntry">Abbrechen</button><button class="primary" id="saveEntry">Speichern</button></div>
   </form>
@@ -90,9 +93,20 @@
     <div class="two"><label>TÜV fällig am<input name="tuv_am" type="date"></label><label>Wartung fällig am<input name="wartung_am" type="date"></label></div>
     <p class="helper">Optionale Termine. Wenn nur der TÜV-Monat bekannt ist, den letzten Tag dieses Monats eintragen. Hinweise erscheinen ab 60 Tagen vorher in dieser App; keine Push-Mitteilung bei geschlossener App.</p>
     <label>Notizen / Besonderheiten<textarea name="notizen" maxlength="8000" rows="4"></textarea></label>
+    <p class="helper">Nach dem Speichern bei „Details öffnen“ Fotos und Dokumente hochladen.</p>
     <p id="machineError" class="error" role="alert"></p>
     <div class="dialog-actions"><button type="button" id="cancelMachine">Abbrechen</button><button class="primary" id="saveMachine">Speichern</button></div>
   </form>
+</dialog>
+<dialog id="fileDialog" aria-labelledby="fileDialogTitle">
+  <div class="row between"><h2 id="fileDialogTitle">Bilder & Dateien</h2><button id="closeFiles" type="button">Schließen</button></div>
+  <div id="fileGallery" class="file-gallery"></div>
+  <section class="file-upload form"><h3>Bilder & Dateien hinzufügen</h3>
+    <label>Dateien auswählen<input id="fileInput" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv"></label>
+    <p class="helper">Bis zu 10 Dateien gleichzeitig, jeweils maximal 20 MB. Fotos, PDF, Office, ZIP, TXT und CSV. JPG, PNG und WebP mit Bildvorschau.</p>
+    <button id="uploadFiles" type="button" class="primary">Hochladen</button>
+    <p id="fileMessage" class="muted" role="status"></p>
+  </section>
 </dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -117,7 +131,7 @@ let editing=null, editingApp=null, editingMachine=null, authVersion=0, dataVersi
 const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 function action(label,fn,cls='') {
   const b=node('button',label,cls);b.type='button';
-  b.onclick=async()=>{b.disabled=true;try{await fn();}catch(error){message(error.message,true);}finally{b.disabled=false;}};
+  b.onclick=async()=>{b.disabled=true;try{await fn();}catch(error){if($('fileDialog').open)$('fileMessage').textContent=error.message;else message(error.message,true);}finally{b.disabled=false;}};
   return b;
 }
 function message(text,error=false){$('sync').textContent=text;$('sync').className='status'+(error?' error':'');}
@@ -136,7 +150,8 @@ function loginEmail(name){
 }
 function signedOut(){
   dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
-  for(const id of ['entryDialog','appDialog','machineDialog'])if($(id).open)$(id).close();
+  attachments=[];signedCache.clear();fileContext=null;fileVersion++;
+  for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
   $('entryForm').reset();$('appForm').reset();$('machineForm').reset();$('items').replaceChildren();$('home').replaceChildren();
   $('application').hidden=true;$('account').hidden=true;$('login').hidden=false;
 }
@@ -160,35 +175,43 @@ $('loginForm').onsubmit=async event=>{
   try{const {data,error}=await client.auth.signInWithPassword({email:loginEmail($('username').value),password:$('password').value});if(error)throw error;$('password').value='';await applySession(data.session);}
   catch(error){$('loginMessage').textContent=error.message;}finally{$('loginButton').disabled=false;}
 };
-$('logout').onclick=async()=>{if(saving)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
+$('logout').onclick=async()=>{if(saving||fileBusy)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
 client.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'&&user?.id===session?.user.id)return;setTimeout(()=>applySession(session),0);});
 client.auth.getSession().then(({data,error})=>{if(error)$('loginMessage').textContent=error.message;else applySession(data.session);});
 // ============================================================
 // GEMEINSAME DATEN: automatisch nachladen, Eingaben erhalten
 // ============================================================
+async function readPages(table,column='erstellt_am',ascending=false,maximum=5000){
+  const all=[];
+  for(let offset=0;offset<maximum;offset+=500){
+    const {data,error}=await client.from(table).select('*').order(column,{ascending}).order('id',{ascending:true}).range(offset,offset+499);
+    if(error)throw error;all.push(...data);if(data.length<500)return all;
+  }
+  throw new Error('Sehr viele Datensätze in '+table+'. Bitte den Datenabruf erweitern.');
+}
 async function refreshData(){
   if(!user || refreshing)return;
   refreshing=true;const version=++dataVersion,uid=user.id;
   try{
     const results=await Promise.all([
-      client.from('wg_eintraege').select('*').order('erstellt_am',{ascending:false}).limit(5000),
-      client.from('wg_apps').select('*').order('name').limit(1000),
+      readPages('wg_eintraege'),
+      readPages('wg_apps','name',true),
       client.from('wg_mitglieder').select('user_id,anzeigename,aktiv').eq('aktiv',true),
-      client.from('wg_maschinen').select('*').order('name').limit(1000)
+      readPages('wg_maschinen','name',true),
+      readPages('wg_dateien')
     ]);
     if(version!==dataVersion || uid!==user?.id)return;
-    for(const result of results)if(result.error)throw result.error;
-    if(results[0].data.length>=5000 || results[1].data.length>=1000 || results[3].data.length>=1000)throw new Error('Sehr viele Einträge. Bitte zuerst den Datenabruf erweitern, bevor weitere Einträge angelegt werden.');
-    entries=results[0].data;apps=results[1].data;members=results[2].data;machines=results[3].data;
+    if(results[2].error)throw results[2].error;
+    entries=results[0];apps=results[1];members=results[2].data;machines=results[3];attachments=results[4];
     $('person').textContent=nameFor(uid);
     $('teamNames').replaceChildren(...members.map(m=>{const o=node('option');o.value=m.anzeigename;return o;}));
     message('Aktualisiert um '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · für das ganze Team');
-    render();
+    render();if($('fileDialog').open&&!fileBusy)renderAttachments();
   }catch(error){if(uid===user?.id)message('Aktualisierung fehlgeschlagen: '+error.message+'. Erneut mit ↻ versuchen.',true);}
   finally{refreshing=false;}
 }
 $('refresh').onclick=refreshData;
-setInterval(()=>{if(!document.hidden && !saving && !$('entryDialog').open && !$('appDialog').open && !$('machineDialog').open)refreshData();},20000);
+setInterval(()=>{if(!document.hidden && !saving && !fileBusy && !$('entryDialog').open && !$('appDialog').open && !$('machineDialog').open)refreshData();},20000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshData();});
 // ============================================================
 // STARTSEITE UND MENÜS
@@ -243,6 +266,7 @@ function renderList(){
     else if(e.bis&&e.bis<today())head.append(node('span','Überfällig','pill overdue'));
     else if(e.kategorie)head.append(node('span',e.kategorie,'pill'));
     card.append(head);
+    const entryPhoto=filesFor('eintrag',e.id).find(inlinePhoto);if(entryPhoto){const photoButton=action('',()=>openAttachments('eintrag',e),'cover-link');photoButton.setAttribute('aria-label','Bilder von '+e.titel+' öffnen');photoButton.append(privateImage(entryPhoto,'machine-cover'));card.append(photoButton);}
     if(e.beschreibung)card.append(node('p',e.beschreibung,'body'));
     const details=[];if(e.maschine_id){const machine=machines.find(m=>m.id===e.maschine_id);if(machine)details.push('Maschine: '+machine.name);}
     if(e.zustaendig)details.push('Zuständig: '+e.zustaendig);
@@ -251,6 +275,7 @@ function renderList(){
     card.append(node('p','Zuletzt bearbeitet: '+nameFor(e.aktualisiert_von)+' · '+new Date(e.aktualisiert_am).toLocaleDateString('de-DE'),'meta'));
     const actions=node('div',undefined,'item-actions');actions.append(
       action(e.erledigt?'↩ Wieder öffnen':page==='notiz'?'Archivieren':'✓ Erledigt',()=>toggleDone(e),'success'),
+      action('Bilder & Dateien ('+filesFor('eintrag',e.id).length+')',()=>openAttachments('eintrag',e)),
       action('Bearbeiten',()=>openEntry(e)),
       action('Löschen',()=>removeRecord('wg_eintraege',e),'danger')
     );card.append(actions);container.append(card);
@@ -297,7 +322,7 @@ $('entryForm').onsubmit=async event=>{
 $('cancelEntry').onclick=()=>{if(!saving)$('entryDialog').close();};
 for(const id of ['entryDialog','appDialog','machineDialog'])$(id).addEventListener('cancel',event=>{if(saving)event.preventDefault();});
 async function toggleDone(entry){await mutate('wg_eintraege',entry,{erledigt:!entry.erledigt});await refreshData();}
-async function removeRecord(table,record){if(!confirm('„'+(record.titel||record.name)+'“ endgültig löschen?'))return;await mutate(table,record,null,true);await refreshData();}
+async function removeRecord(table,record){if(table==='wg_eintraege'&&filesFor('eintrag',record.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieses Eintrags entfernen. Alternativ den Eintrag archivieren.');if(!confirm('„'+(record.titel||record.name)+'“ endgültig löschen?'))return;await mutate(table,record,null,true);await refreshData();}
 // ============================================================
 // MASCHINEN & FAHRZEUGE
 // ============================================================
@@ -307,18 +332,20 @@ function machineReminders(){const limit=reminderLimit();return machines.flatMap(
 function renderMachines(container){
   const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q?'Keine passende Maschine gefunden.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
-  for(const m of found){const box=node('article',undefined,'card'),head=node('div',undefined,'item-title');head.append(node('h3',m.name),node('span',machineType(m.typ),'pill'));box.append(head);
+  for(const m of found){const box=node('article',undefined,'card'),head=node('div',undefined,'item-title');head.append(node('h3',m.name),node('span',machineType(m.typ),'pill'));
+    const photos=filesFor('maschine',m.id).filter(inlinePhoto);const cover=photos.find(f=>f.titelbild)||photos[0];if(cover){const coverButton=action('',()=>openAttachments('maschine',m),'cover-link');coverButton.setAttribute('aria-label','Details und Bilder von '+m.name+' öffnen');coverButton.append(privateImage(cover,'machine-cover'));box.append(coverButton);}
+    box.append(head);
     if(m.modell||m.kennzeichen)box.append(node('p',[m.modell,m.kennzeichen].filter(Boolean).join(' · '),'meta'));
     for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key])box.append(node('p',label+': '+dateText(m[key])+(m[key]<today()?' · überfällig':m[key]<=reminderLimit()?' · demnächst fällig':''),m[key]<today()?'error':'meta'));
     if(m.notizen)box.append(node('p',m.notizen,'body'));
     const tasks=entries.filter(e=>e.maschine_id===m.id&&e.art==='aufgabe'&&!e.erledigt);
     if(tasks.length){box.append(node('p',tasks.length+' offene Aufgabe'+(tasks.length===1?'':'n'),'meta'));for(const task of tasks)box.append(action(task.titel,()=>openEntry(task),'clear'));}
-    const actions=node('div',undefined,'item-actions');actions.append(action('Bearbeiten',()=>openMachine(m)),action('＋ Aufgabe',()=>{showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=m.id;}),action('Entfernen',()=>removeMachine(m),'danger'));box.append(actions);container.append(box);
+    const actions=node('div',undefined,'item-actions');actions.append(action('Details öffnen · '+filesFor('maschine',m.id).length+' Dateien',()=>openAttachments('maschine',m)),action('Bearbeiten',()=>openMachine(m)),action('＋ Aufgabe',()=>{showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=m.id;}),action('Entfernen',()=>removeMachine(m),'danger'));box.append(actions);container.append(box);
   }
 }
 function openMachine(machine=null){editingMachine=machine?{...machine}:null;const f=$('machineForm');f.reset();for(const key of ['name','modell','kennzeichen','tuv_am','wartung_am','notizen'])f.elements[key].value=machine?.[key]||'';f.elements.typ.value=machine?.typ||'Traktor';$('machineDialogTitle').textContent=machine?'Maschine bearbeiten':'Maschine hinzufügen';$('machineError').textContent='';$('machineDialog').showModal();}
 $('cancelMachine').onclick=()=>{if(!saving)$('machineDialog').close();};
-async function removeMachine(machine){if(!confirm('„'+machine.name+'“ entfernen? Zugeordnete Aufgaben bleiben erhalten und verlieren nur die Maschinenzuordnung.'))return;await mutate('wg_maschinen',machine,null,true);await refreshData();}
+async function removeMachine(machine){if(filesFor('maschine',machine.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieser Maschine entfernen.');if(!confirm('„'+machine.name+'“ entfernen? Zugeordnete Aufgaben bleiben erhalten und verlieren nur die Maschinenzuordnung.'))return;await mutate('wg_maschinen',machine,null,true);await refreshData();}
 $('machineForm').onsubmit=async event=>{
   event.preventDefault();if(saving)return;formBusy(true);$('machineError').textContent='';const uid=user?.id;
   try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');
@@ -326,6 +353,117 @@ $('machineForm').onsubmit=async event=>{
     if(uid!==user?.id)return;$('machineDialog').close();await refreshData();
   }catch(error){$('machineError').textContent=error.message;}finally{formBusy(false);}
 };
+// ============================================================
+// PRIVATE FOTOS UND DOKUMENTE
+// ============================================================
+const FILE_BUCKET='weingut-dateien';
+const fileTypes={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif',pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',zip:'application/zip',txt:'text/plain',csv:'text/csv'};
+let attachments=[],fileBusy=false,fileContext=null,fileVersion=0;
+const signedCache=new Map();
+function inlinePhoto(file){return ['image/jpeg','image/png','image/webp'].includes(file.mime);}
+function filesFor(kind,id){return attachments.filter(f=>String(kind==='maschine'?f.maschine_id:f.eintrag_id)===String(id));}
+function validateFile(file){
+ const ext=file.name.split('.').pop().toLowerCase();
+ if(!Object.hasOwn(fileTypes,ext))throw new Error('Nicht unterstützte Datei: '+file.name+'. Bitte ein Foto, PDF, Office-Dokument, ZIP, TXT oder CSV wählen.');
+ if(!file.size||file.size>20*1024*1024)throw new Error(file.name+': Bitte eine nicht leere Datei bis 20 MB wählen.');
+ if(file.name.length>255)throw new Error('Der Dateiname ist zu lang (maximal 255 Zeichen).');
+ return {ext,mime:fileTypes[ext]};
+}
+async function signedFile(file){
+ const uid=user?.id;if(!uid)throw new Error('Bitte anmelden.');
+ const old=signedCache.get(file.pfad);if(old&&old.until>Date.now()&&old.uid===uid)return old.url;
+ const {data,error}=await client.storage.from(FILE_BUCKET).createSignedUrl(file.pfad,600);
+ if(error)throw error;if(uid!==user?.id)throw new Error('Konto wurde gewechselt.');
+ signedCache.set(file.pfad,{url:data.signedUrl,until:Date.now()+540000,uid});return data.signedUrl;
+}
+function privateImage(file,cls='attachment-photo'){
+ const image=node('img');image.alt=file.name;image.className=cls;image.loading='lazy';
+ const uid=user?.id;
+ signedFile(file).then(url=>{if(uid===user?.id&&image.isConnected)image.src=url;}).catch(()=>{image.alt='Foto konnte nicht geladen werden';});
+ return image;
+}
+async function openFile(file){
+ const tab=window.open('about:blank','_blank');if(tab)tab.opener=null;
+ try{const url=await signedFile(file);if(tab&&!tab.closed)tab.location.replace(url);else{
+   const a=node('a','Datei öffnen','btn');a.href=url;a.target='_blank';a.rel='noopener noreferrer';$('fileMessage').replaceChildren(a);
+ }}catch(error){if(tab)tab.close();throw error;}
+}
+function openAttachments(kind,record){
+ fileContext={kind,id:record.id,name:record.name||record.titel};fileVersion++;
+ $('fileDialogTitle').textContent=fileContext.name;
+ $('fileInput').value='';$('fileMessage').textContent='';
+ renderAttachments();$('fileDialog').showModal();
+}
+function renderAttachments(){
+ if(!fileContext)return;
+ const {kind,id}=fileContext;const record=(kind==='maschine'?machines:entries).find(r=>r.id===id);
+ const list=$('fileGallery');list.replaceChildren();
+ if(!record){list.append(node('p','Dieser Eintrag wurde inzwischen entfernt.','error'));return;}
+ const details=node('div',undefined,'file-record-info');
+ if(kind==='maschine'){
+  if(record.modell||record.kennzeichen)details.append(node('p',[record.modell,record.kennzeichen].filter(Boolean).join(' · '),'meta'));
+  if(record.notizen)details.append(node('p',record.notizen,'body'));
+  for(const [key,title] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(record[key])details.append(node('p',title+': '+dateText(record[key]),'meta'));
+ }else if(record.beschreibung)details.append(node('p',record.beschreibung,'body'));
+ list.append(details);
+ const files=filesFor(kind,id).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild));
+ const photos=node('div',undefined,'photo-grid');const documents=node('div');
+ for(const file of files){
+  const card=node('section',undefined,'attachment-card');
+  if(inlinePhoto(file))card.append(privateImage(file));
+  card.append(node('p',file.name,'attachment-name'),node('p',(file.groesse/1024/1024).toLocaleString('de-DE',{maximumFractionDigits:1})+' MB'+(file.titelbild?' · Titelbild':''),'meta'));
+  const controls=node('div',undefined,'item-actions');
+  for(const b of [action('Öffnen',()=>openFile(file)),...(kind==='maschine'&&inlinePhoto(file)&&!file.titelbild?[action('Als Titelbild',()=>setCover(file))]:[]),action('Entfernen',()=>deleteFile(file),'danger')]){b.disabled=fileBusy;controls.append(b);}card.append(controls);
+  (inlinePhoto(file)?photos:documents).append(card);
+ }
+ if(photos.children.length){list.append(node('h3','Bilder'),photos);}
+ if(documents.children.length){list.append(node('h3','Dokumente & weitere Dateien'),documents);}
+ if(!files.length)list.append(node('p','Noch keine Bilder oder Dateien vorhanden.','muted'));
+ if(files.some(f=>['image/heic','image/heif'].includes(f.mime)))list.append(node('p','HEIC/HEIF-Fotos lassen sich öffnen oder herunterladen. Für eine Vorschau und das Titelbild bitte JPG, PNG oder WebP verwenden.','helper'));
+}
+function setFileBusy(value){fileBusy=value;$('uploadFiles').disabled=value;$('closeFiles').disabled=value;$('fileInput').disabled=value;$('logout').disabled=value;renderAttachments();}
+async function reloadAttachments(){
+ const uid=user?.id;const data=await readPages('wg_dateien');
+ if(uid!==user?.id)return;
+ attachments=data;render();if($('fileDialog').open)renderAttachments();
+}
+async function uploadFiles(){
+ if(fileBusy||!fileContext)return;const selected=Array.from($('fileInput').files||[]);
+ if(!selected.length)throw new Error('Bitte zuerst Bilder oder Dateien auswählen.');
+ if(selected.length>10)throw new Error('Bitte höchstens 10 Dateien auf einmal auswählen.');
+ const checked=selected.map(file=>({file,...validateFile(file)}));
+ const context={...fileContext},uid=user?.id;let uploaded=0;setFileBusy(true);
+ try{
+  for(const item of checked){
+   if(uid!==user?.id)throw new Error('Bitte erneut anmelden.');
+   $('fileMessage').textContent='Datei '+(uploaded+1)+' von '+checked.length+' wird hochgeladen …';
+   const path=(context.kind==='maschine'?'maschinen':'eintraege')+'/'+context.id+'/'+crypto.randomUUID()+'.'+item.ext;
+   const {error}=await client.storage.from(FILE_BUCKET).upload(path,item.file,{contentType:item.mime,upsert:false});if(error)throw error;
+   const {error:metadataError}=await client.from('wg_dateien').insert({maschine_id:context.kind==='maschine'?context.id:null,eintrag_id:context.kind==='maschine'?null:context.id,name:item.file.name,pfad:path,mime:item.mime,groesse:item.file.size});
+   if(metadataError){const cleanup=await client.storage.from(FILE_BUCKET).remove([path]);throw new Error(metadataError.message+(cleanup.error?' Die unzugeordnete Datei konnte nicht automatisch entfernt werden; bitte den Speicherordner prüfen.':''));}
+   uploaded++;
+  }
+  $('fileInput').value='';$('fileMessage').textContent=uploaded+' Datei(en) hochgeladen.';
+ }catch(error){$('fileMessage').textContent=uploaded+' Datei(en) gespeichert. Upload gestoppt: '+error.message;}
+ finally{try{await reloadAttachments();}catch(error){$('fileMessage').textContent+=' Aktualisierung fehlgeschlagen: '+error.message;}setFileBusy(false);}
+}
+async function setCover(file){
+ if(fileBusy)return;setFileBusy(true);
+ try{const {error}=await client.rpc('wg_titelbild',{p_datei:file.id});if(error)throw error;await reloadAttachments();$('fileMessage').textContent='Titelbild gespeichert.';}
+ finally{setFileBusy(false);}
+}
+async function deleteFile(file){
+ if(fileBusy||!confirm('Datei „'+file.name+'“ endgültig für das ganze Team entfernen?'))return;
+ setFileBusy(true);
+ try{const removed=await client.storage.from(FILE_BUCKET).remove([file.pfad]);if(removed.error)throw removed.error;
+  const {data,error}=await client.from('wg_dateien').delete().eq('id',file.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Dateiverknüpfung konnte nicht entfernt werden. Bitte neu laden und erneut versuchen.');
+  signedCache.delete(file.pfad);await reloadAttachments();$('fileMessage').textContent='Datei entfernt.';
+ }finally{setFileBusy(false);}
+}
+$('uploadFiles').onclick=async()=>{try{await uploadFiles();}catch(error){$('fileMessage').textContent=error.message;}};
+$('closeFiles').onclick=()=>{if(!fileBusy){$('fileDialog').close();fileVersion++;}};
+$('fileDialog').addEventListener('cancel',event=>{if(fileBusy)event.preventDefault();});
+
 // ============================================================
 // APP-VERKNÜPFUNGEN
 // ============================================================
