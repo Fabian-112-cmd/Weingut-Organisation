@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#643985">
+  <meta name="theme-color" content="#f4eee5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Pau &amp; Maya BIO">
   <title>Weingut Pau &amp; Maya BIO · Organisation</title>
@@ -39,12 +39,70 @@
     .compact-app{padding:15px}.compact-app h3{margin:0;overflow-wrap:anywhere}.compact-app .app-link{flex-wrap:nowrap;align-items:center}.apps-edit-row{display:flex;justify-content:flex-end;margin:18px 0}.app-management{margin-top:12px}.compact-app .btn{min-height:42px;padding:9px 14px}
     .form-files{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}.form-files h3{margin:0}.file-pickers{display:flex;gap:8px;flex-wrap:wrap}.file-pickers label{display:inline-flex;align-items:center;cursor:pointer;font-size:14px}.pending-file{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid var(--line);border-radius:10px}.pending-file img{width:54px;height:54px;object-fit:contain;border-radius:6px}.pending-file span{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}.pending-file button{padding:5px 9px;min-height:36px}.pending-file .success{font-size:12px}.pending-list{display:grid;gap:7px}.file-record-info .item-actions{margin:10px 0 16px}.file-record-info dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 15px;font-size:14px;margin:14px 0}.file-record-info dt{color:var(--muted)}.file-record-info dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
     @media(max-width:480px){.menu{min-height:118px}.compact-machine{grid-template-columns:96px minmax(0,1fr);gap:12px;padding:13px}.compact-machine .machine-cover,.machine-placeholder{width:96px;height:94px}.compact-app .app-link{flex-wrap:nowrap}.compact-entry .body{font-size:15px}.dialog-actions{flex-wrap:wrap}}
+
+    /* Aktionen rechts oben statt in einer eigenen Zeile unter dem Text. */
+    .compact-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start}
+    .compact-entry>h3{grid-column:1;grid-row:1;margin:2px 0 0;min-width:0;overflow-wrap:anywhere}
+    .compact-entry>.body{grid-column:1;grid-row:2;margin:0}
+    .compact-entry>.item-actions{grid-column:2;grid-row:1 / span 2;margin:0}
+    .compact-entry>.item-actions button,.machine-summary .machine-edit-row button{min-height:34px;padding:6px 9px;font-size:12px;line-height:1.25;border-radius:9px;white-space:nowrap;background:white}
+    .machine-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 9px;align-self:start;align-items:start}
+    .machine-summary>h3{grid-column:1;grid-row:1;margin:2px 0 0;font-size:17px}
+    .machine-summary>.meta,.machine-summary>.pill,.machine-summary>.error{grid-column:1 / -1;justify-self:start;margin:0}
+    .machine-summary>.machine-edit-row{grid-column:2;grid-row:1;margin:0}
+    .compact-machine .machine-cover,.compact-machine .machine-placeholder{height:88px}
+    @media(max-width:480px){.compact-entry{padding:13px;gap:5px 9px}.compact-machine{grid-template-columns:80px minmax(0,1fr);gap:11px}.compact-machine .machine-cover,.compact-machine .machine-placeholder{width:80px;height:84px}.machine-summary{gap:5px 8px}.machine-summary>h3{font-size:16px}.compact-entry>.item-actions button,.machine-summary .machine-edit-row button{font-size:12px;padding:6px 8px}}
+
+    .personal-overview h2{font-size:21px}.personal-point{width:100%;justify-content:space-between;text-align:left;background:#fff9;border:0;border-radius:9px;margin-top:9px;padding:10px 12px;gap:12px}.personal-point-text{display:grid;gap:4px;min-width:0}.personal-point strong{font-size:15px;overflow-wrap:anywhere}.personal-point small{font-size:12px;color:var(--muted)}.personal-arrow{font-size:23px;color:var(--purple);flex-shrink:0}
+
+    /* Weingut Design: warmes Papier, Pflaume und dezentes Gold. */
+    :root{--purple:#613b79;--ink:#302838;--muted:#756a78;--line:#e5dcd8;--green:#28633f;--paper:#f4eee5;--surface:#fffcf7;--gold:#ae8e4d;--soft-gold:#ece0c6;--soft-purple:#e9deee;background:var(--paper);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{background:radial-gradient(ellipse at 5% 0%,#e9dfed8c,transparent 48%),radial-gradient(ellipse at 95% 2%,#ead9b66b,transparent 43%),var(--paper);min-height:100dvh;-webkit-font-smoothing:antialiased}
+    .wrap{padding-top:22px}
+    header{position:relative;padding-bottom:20px;margin-bottom:20px}
+    header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,#613b7970,#ae8e4d9c 55%,#ae8e4d10)}
+    .brand{gap:13px}.brand img{box-shadow:0 4px 12px #42214c1a;border:1px solid #ffffff60;border-radius:13px}
+    h1{color:#41294d;letter-spacing:-.65px;font-weight:750}h2{color:#41294d;letter-spacing:-.55px;font-weight:730}h3{letter-spacing:-.25px;font-weight:700}
+    button,.btn{background:#fffaf3;border-color:#dfd4cf;box-shadow:0 1px 2px #4c344008;transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}
+    button:not(:disabled):hover,.btn:hover{background:#f0e6ee;border-color:#cdb9d0}
+    .primary{background:linear-gradient(135deg,#71488b,#513065);color:#fffaf2;border-color:#613b79;box-shadow:0 3px 8px #613b7919;font-weight:650}
+    .primary:not(:disabled):hover,.btn.primary:hover{background:linear-gradient(135deg,#7b5194,#603a73);border-color:#613b79}
+    .toolbar{gap:7px}.toolbar button{background:#fffaf3c9;border-color:#dfd4cf}.toolbar #person{color:#68566e;font-size:13px;font-weight:600}
+    .card{background:linear-gradient(145deg,#fffcf8,#f8f1e9);border:1px solid #e2d8d1;box-shadow:0 4px 15px #49372c07;border-radius:16px}
+    .menu{position:relative;overflow:hidden;background:linear-gradient(140deg,#f6edf8,#eee2f0);border-color:#dacbdf;box-shadow:0 4px 14px #51365d09}
+    .menu:nth-child(2),.menu:nth-child(5){background:linear-gradient(140deg,#fbf4e5,#f0e6d1);border-color:#e1d3b7}
+    .menu:nth-child(3){background:linear-gradient(140deg,#f9f0ec,#f0e1da);border-color:#e3d1c9}
+    .menu:nth-child(4){background:linear-gradient(140deg,#eef1e8,#e3e9dc);border-color:#d1dac6}
+    .menu:not(:disabled):hover{background:linear-gradient(140deg,#efe1f3,#e8d8ec);border-color:#bda5c5;box-shadow:0 5px 18px #51365d12}
+    .menu .icon{width:35px;height:35px;display:flex;align-items:center;justify-content:center;background:#fffaf580;border:1px solid #ffffff70;border-radius:10px;font-size:23px;margin-bottom:4px;color:#613b79}
+    .menu strong{color:#392b40;letter-spacing:-.3px;font-weight:720}.menu .count{color:#684479;font-weight:650}
+    .welcome.personal-overview{background:linear-gradient(120deg,#f3e9d7,#f7efe3);border-color:#dfcdaa;border-left:3px solid #b2955a;box-shadow:0 4px 14px #8b713007}
+    .personal-overview h2{color:#59422c;font-size:20px}.personal-overview>.muted{color:#766953;font-size:14px;margin:8px 0 0}
+    .personal-point{background:#fffaf3c9;border:1px solid #e7d9c7;box-shadow:none}.personal-point small{color:#78695e}.personal-point strong{color:#49384f}
+    .compact-entry,.compact-machine,.compact-app{border-color:#e1d5ce}
+    .compact-entry>h3,.machine-summary>h3,.compact-app h3{color:#3c2d43}
+    .compact-entry>.item-actions button,.machine-summary .machine-edit-row button{background:#fffcf7;border-color:#ddcfd8;box-shadow:0 1px 3px #54365f08}
+    .compact-entry .body{color:#625565}.compact-entry>.item-actions .success{color:#28633f}
+    .compact-machine .machine-cover,.compact-machine .machine-placeholder{background:linear-gradient(145deg,#eee8e9,#f9f3eb);border:1px solid #e4d9d5}
+    .pill{background:#e9ddec;color:#654074;border:1px solid #ded0e3}.pill.done{background:#e2ebdc;color:#28633f;border-color:#ccdcc5}.pill.overdue{background:#f9e4de;color:#9d3c31;border-color:#ecc8bf}
+    #filterCard{background:#f0e8e0;border-color:#e0d4cb;box-shadow:none}
+    input,select,textarea{background:#fffdf8;border-color:#ddcfc9;color:#302838;box-shadow:inset 0 1px 2px #4e302704}
+    input::placeholder,textarea::placeholder{color:#9a8c94;opacity:1}input:focus,select:focus,textarea:focus{border-color:#9e7aaf;outline:2px solid #b2955a40;outline-offset:1px}
+    .category button{background:#fff9f0}.category .active,.category .active:hover{background:#613b79;color:#fffaf2;border-color:#613b79}
+    dialog{background:#fffcf7;border-color:#dfd2ce;border-radius:20px;box-shadow:0 25px 90px #35233e35}dialog::backdrop{background:#33213c69;backdrop-filter:blur(3px)}
+    .dialog-actions{background:linear-gradient(#fffcf7ee,#fffcf7 25%);border-top:1px solid #ede2dc;padding-top:13px}
+    .form-files{border-top-color:#e5d8d0}.pending-file,.attachment-card{background:#f7f0e8;border-color:#e2d5ce}.attachment-photo{background:#ece5e8}
+    .file-pickers .btn{background:#f1e7f3;border-color:#dccae2;color:#613b79}.file-record-info dt{color:#7a687d}
+    .clear{background:transparent;border-color:transparent;box-shadow:none}.clear:hover{background:#eee3ed}.footer{color:#93828d;font-size:11px;margin-top:22px;line-height:1.6}
+    #back{background:#fdf7ef;border-color:#e0d2c6}#sync.error{background:#f9e4de;border:1px solid #ebc7be;border-radius:10px;padding:10px 12px;color:#963e31}
+    @media(max-width:480px){header{padding-bottom:17px;margin-bottom:17px}.brand img{width:46px;height:46px}.menu .icon{width:32px;height:32px;font-size:22px}.personal-overview h2{font-size:19px}.card{border-radius:15px}}
+    @media(prefers-reduced-motion:reduce){button,.btn{transition:none}}
   </style>
 </head>
 <body>
 <main class="wrap">
   <header>
-    <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Gemeinsam organisieren</small></div></div>
+    <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1></div></div>
     <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
   </header>
   <section id="login" class="card">
@@ -57,8 +115,8 @@
     </form>
   </section>
   <section id="application" hidden>
-    <div class="row between"><button id="back" type="button" hidden>← Übersicht</button><span id="pageHint" class="muted">Für das ganze Team</span></div>
-    <p id="sync" class="status" role="status"></p>
+    <div class="row between"><button id="back" type="button" hidden>← Übersicht</button><span id="pageHint" hidden></span></div>
+    <p id="sync" class="status" role="status" hidden></p>
     <div id="home"></div>
     <section id="listPage" hidden>
       <div class="bar"><h2 id="pageTitle"></h2><button id="newEntry" class="primary" type="button">＋ Hinzufügen</button></div>
@@ -148,7 +206,7 @@ function action(label,fn,cls='') {
   b.onclick=async()=>{b.disabled=true;try{await fn();}catch(error){if($('fileDialog').open)$('fileMessage').textContent=error.message;else message(error.message,true);}finally{b.disabled=false;}};
   return b;
 }
-function message(text,error=false){$('sync').textContent=text;$('sync').className='status'+(error?' error':'');}
+function message(text,error=false){$('sync').textContent=error?text:'';$('sync').hidden=!error;$('sync').className='status'+(error?' error':'');}
 function today(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function dateText(value){return value ? new Date(value+'T12:00:00').toLocaleDateString('de-DE') : '';}
 function nameFor(id){return members.find(m=>m.user_id===id)?.anzeigename || 'Team';}
@@ -238,7 +296,8 @@ $('newEntry').onclick=()=>page==='apps'?openApp():page==='maschinen'?openMachine
 function render(){
   if(!user)return;
   $('home').hidden=!!page;$('listPage').hidden=!page;$('back').hidden=!page;
-  $('pageHint').textContent=page?sections[page].title:'Für das ganze Team';
+  $('pageHint').textContent='';$('pageHint').hidden=true;
+  $('back').parentElement.hidden=!page;
   if(!page){renderHome();return;}
   $('pageTitle').textContent=sections[page].title;$('newEntry').textContent='＋ '+sections[page].add;
   $('filterCard').hidden=page==='apps';$('statusFilter').hidden=page==='maschinen';
@@ -249,9 +308,19 @@ function render(){
 }
 function renderHome(){
   const home=$('home');home.replaceChildren();
-  const welcome=node('section',undefined,'card welcome');welcome.append(node('h2','Was steht an?'));
-  const overdue=entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.bis&&e.bis<today()).length;
-  welcome.append(node('p',overdue ? overdue+' überfällige Aufgabe'+(overdue===1?'':'n')+' · gemeinsam den Überblick behalten.' : 'Aufgaben, Besorgungen und Informationen an einem Ort.','muted'));home.append(welcome);
+  const welcome=node('section',undefined,'card welcome personal-overview');
+  welcome.append(node('h2','Meine offenen Punkte'));
+  const me=members.find(member=>member.user_id===user.id)?.anzeigename||'';
+  const normalizeName=name=>String(name||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('de');
+  const mine=me?entries.filter(entry=>!entry.erledigt&&['aufgabe','besorgung'].includes(entry.art)&&normalizeName(entry.zustaendig)===normalizeName(me)).sort((a,b)=>(a.bis||'9999').localeCompare(b.bis||'9999')||a.titel.localeCompare(b.titel,'de')):[];
+  if(!mine.length)welcome.append(node('p','Dir sind aktuell keine offenen Erledigungen oder Besorgungen zugewiesen.','muted'));
+  for(const entry of mine){
+    const open=action('',()=>openAttachments('eintrag',entry),'personal-point');
+    const text=node('span',undefined,'personal-point-text');text.append(node('strong',entry.titel));
+    text.append(node('small',(entry.art==='besorgung'?'Besorgung':'Erledigung')+(entry.kategorie?' · '+entry.kategorie:'')+(entry.bis?' · bis '+dateText(entry.bis):'')));
+    open.append(text,node('span','›','personal-arrow'));welcome.append(open);
+  }
+  home.append(welcome);
   const grid=node('div',undefined,'grid');
   for(const [key,info] of Object.entries(sections)){
     const b=action('',()=>showPage(key),'menu');b.append(node('span',info.icon,'icon'),node('strong',info.title));
@@ -344,7 +413,7 @@ function renderMachines(container){
     if(m.modell)summary.append(node('p',m.modell,'meta'));
     summary.append(node('span',machineType(m.typ),'pill'));
     for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key]&&m[key]<=reminderLimit())summary.append(node('p',label+(m[key]<today()?' abgelaufen · ':' bald fällig · ')+dateText(m[key]),m[key]<today()?'error':'meta'));
-    const editRow=node('div');editRow.append(action('Bearbeiten',()=>openMachine(m)));summary.append(editRow);
+    const editRow=node('div',undefined,'machine-edit-row');editRow.append(action('Bearbeiten',()=>openMachine(m)));summary.append(editRow);
     box.append(summary);clickableCard(box,()=>openAttachments('maschine',m),'Details zu '+m.name);container.append(box);
   }
 }
