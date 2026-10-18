@@ -134,6 +134,40 @@
     .shopping-card .shopping-check{min-height:48px;min-width:48px;padding:10px;font-size:22px;line-height:1;color:#28633f;background:#e8eee1;border:1px solid #cedac4}
     .shopping-finished{margin-top:22px;border-top:1px solid #ded2c5;padding-top:14px}.shopping-finished summary{font-weight:600;color:#756a78;cursor:pointer;padding:8px 0}.shopping-finished-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #e5dcd3;font-size:14px}.shopping-finished-row button{font-size:12px;padding:6px 9px;min-height:36px}
     @media(max-width:360px){.quick-actions{gap:5px}.quick-actions button{font-size:12px;padding:10px 4px}}
+
+    .desktop-detail{display:none}
+    @media(min-width:1280px) and (hover:hover) and (pointer:fine){
+      body.desktop-mode .wrap{max-width:1500px;padding:28px 34px 50px}
+      body.desktop-mode header h1{font-size:29px}
+      body.desktop-mode #home>.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+      body.desktop-mode .quick-actions{max-width:660px}
+      body.desktop-mode .personal-overview{max-height:260px;overflow:auto}
+      .desktop-home-group{min-width:0;background:#faf8f4;border:1px solid #ded7d0;border-radius:15px;overflow:hidden;box-shadow:0 2px 8px #382d2504}
+      .desktop-home-group>.menu{width:100%;min-height:0;border:0;border-radius:0;box-shadow:none;padding:17px 20px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
+      .desktop-home-group>.menu .icon,.desktop-home-group>.menu .count{margin:0}.desktop-home-group>.menu strong{font-size:19px}.desktop-home-group>.menu .count{font-size:13px}
+      .desktop-preview{padding:0 15px 11px}.desktop-preview-row{width:100%;border:0;border-top:1px solid #e7ded7;border-radius:0;background:transparent;box-shadow:none;display:flex;align-items:center;justify-content:space-between;text-align:left;gap:13px;padding:12px 5px}
+      .desktop-preview-row>div{min-width:0;flex:1}.desktop-preview-row strong{font-size:15px;font-weight:650;display:block;overflow-wrap:anywhere}.desktop-preview-row small{font-size:12px;color:#827085;display:block;margin-top:5px;line-height:1.5}
+      .desktop-preview-row .preview-note{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.desktop-preview-row .preview-thumb{width:48px;height:46px;object-fit:contain;border-radius:8px;background:#eee9e4;flex-shrink:0}
+      .desktop-preview .helper{padding:8px 5px}.desktop-preview-more{width:100%;justify-content:flex-start;box-shadow:none;background:transparent;border:0;color:#634078;font-size:12px;padding:7px 5px}
+      body.desktop-mode .detail-workspace{display:grid;grid-template-columns:minmax(350px,.85fr) minmax(480px,1.15fr);gap:24px;align-items:start}
+      body.desktop-mode .desktop-detail{display:block;min-width:0;position:sticky;top:20px;max-height:calc(100dvh - 40px);overflow:auto;background:#faf8f4;border:1px solid #ded7d0;border-radius:16px;padding:24px;scrollbar-gutter:stable}
+      body.desktop-mode .desktop-detail>dialog{position:static;width:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;box-shadow:none;background:transparent;overflow:visible}
+      .desktop-empty{min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#8b7a90}.desktop-empty h3{font-size:20px;font-weight:600}.desktop-empty p{font-size:14px}
+      body.desktop-mode .desktop-detail .photo-grid{grid-template-columns:1fr}.desktop-detail .attachment-photo{height:320px;max-height:45dvh;object-fit:contain}
+      .desktop-detail .file-gallery>h3{font-size:17px}.desktop-detail #fileDialogTitle{font-size:25px;overflow-wrap:anywhere}.desktop-detail #closeFiles{font-size:12px;min-height:36px;padding:7px 10px}.desktop-detail .file-upload{padding-top:20px}
+      .desktop-mode .selected-record{border-color:#a88bb4;box-shadow:inset 3px 0 0 #866395;background:#f4edf5}
+      body.desktop-mode:has(#fileDialog:not([open])) .desktop-detail:has(#desktopEmpty[hidden]){display:none}
+      body.desktop-mode #listPage.apps-page .detail-workspace,body.desktop-mode.shopping-mode .detail-workspace{display:block}
+      body.desktop-mode #listPage.apps-page .desktop-detail,body.desktop-mode.shopping-mode .desktop-detail{display:none}
+      body.desktop-mode.shopping-mode .wrap{max-width:650px;padding-top:0}
+    }
+
+    .desktop-hero{display:none}
+    @media(min-width:1280px) and (hover:hover) and (pointer:fine){
+      .desktop-detail .desktop-hero{display:block;width:100%;padding:0;margin:0 0 18px;border:1px solid #e2d8d0;border-radius:12px;background:#eee8e2;box-shadow:none}
+      .desktop-detail .desktop-hero-photo{display:block;width:100%;height:310px;max-height:42dvh;object-fit:contain;object-position:center;border-radius:11px}
+      .desktop-detail .photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.desktop-detail .attachment-photo{height:160px;object-fit:contain}
+    }
   </style>
 </head>
 <body>
@@ -161,7 +195,12 @@
         <div class="filters"><input id="search" type="search" placeholder="Suchen …" aria-label="Einträge suchen"><select id="statusFilter" aria-label="Status filtern"><option value="offen">Offen</option><option value="erledigt">Erledigt / Archiv</option><option value="alle">Alle</option></select></div>
         <div class="category" id="categories" aria-label="Besorgungen nach Geschäft"></div>
       </div>
-      <div id="items"></div>
+      <div id="desktopWorkspace" class="detail-workspace">
+        <div id="items"></div>
+        <aside id="desktopDetail" class="desktop-detail" aria-label="Ausgewählter Eintrag">
+          <div id="desktopEmpty" class="desktop-empty"><h3>Details auf einen Blick</h3><p>Links einen Eintrag auswählen.</p></div>
+        </aside>
+      </div>
     </section>
     <p class="footer">Weingut · Erledigtes bleibt im Archiv und kann wieder geöffnet werden.</p>
   </section>
@@ -260,7 +299,7 @@ function loginEmail(name){
 }
 function signedOut(){
   dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
-  attachments=[];signedCache.clear();fileContext=null;fileVersion++;
+  attachments=[];signedCache.clear();fileContext=null;fileVersion++;closeDetails();
   disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
   $('entryForm').reset();$('appForm').reset();$('machineForm').reset();$('items').replaceChildren();$('home').replaceChildren();
@@ -327,17 +366,19 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!saving&&
 // ============================================================
 // STARTSEITE UND MENÜS
 // ============================================================
-function showPage(next){shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
+function showPage(next){if(fileBusy){message('Bitte den Datei-Upload zuerst abschließen.',true);return;}closeDetails();shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
 $('back').onclick=()=>showPage(null);
 $('search').oninput=renderList;$('statusFilter').onchange=renderList;
 $('newEntry').onclick=()=>page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
 function render(){
   if(!user)return;
+  syncDesktopLayout();
   document.body.classList.toggle('shopping-mode',shoppingMode&&page==='besorgung');
   $('home').hidden=!!page;$('listPage').hidden=!page;$('back').hidden=!page;
   $('pageHint').textContent='';$('pageHint').hidden=true;
   $('back').parentElement.hidden=!page;
   if(!page){renderHome();return;}
+  $('listPage').classList.toggle('apps-page',page==='apps');
   $('pageTitle').textContent=sections[page].title;$('newEntry').textContent='＋ '+sections[page].add;
   $('filterCard').hidden=page==='apps';$('statusFilter').hidden=page==='maschinen';
   $('statusFilter').options[0].textContent=page==='notiz'?'Aktuelle Notizen':'Offen';
@@ -368,7 +409,8 @@ function renderHome(){
   for(const [key,info] of Object.entries(sections)){
     const b=action('',()=>showPage(key),'menu');b.append(menuIcon(key,info.icon),node('strong',info.title));
     const count=key==='apps'?apps.length:key==='maschinen'?machines.length:entries.filter(e=>e.art===key&&!e.erledigt).length;
-    b.append(node('span',count+(key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));grid.append(b);
+    b.append(node('span',count+(key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));
+    if(desktopMedia.matches&&key!=='apps'){const group=node('section',undefined,'desktop-home-group');group.append(b,desktopPreview(key));grid.append(group);}else grid.append(b);
   }home.append(grid);
   const reminders=machineReminders();
   if(reminders.length){const box=node('section',undefined,'card');box.style.marginTop='16px';box.append(node('h3','TÜV & Wartung'),node('p','Anstehend innerhalb von 60 Tagen oder überfällig.','muted'));for(const r of reminders)box.append(action(r.machine.name+' · '+r.label+': '+dateText(r.date)+(r.date<today()?' · überfällig':''),()=>{showPage('maschinen');openMachine(r.machine);},r.date<today()?'clear danger':'clear'));home.append(box);}
@@ -389,7 +431,7 @@ function renderList(){
     .sort((a,b)=>Number(a.erledigt)-Number(b.erledigt)||(a.erledigt?String(b.erledigt_am).localeCompare(String(a.erledigt_am)):(a.bis||'9999').localeCompare(b.bis||'9999')));
   if(!found.length){container.append(node('p',q?'Keine passenden Einträge.':status==='erledigt'?'Das Archiv ist noch leer.':'Hier ist noch nichts eingetragen. Mit „Hinzufügen“ geht es los.','card empty'));return;}
   for(const e of found){
-    const card=node('article',undefined,'card compact-entry');
+    const card=node('article',undefined,'card compact-entry');card.dataset.recordId=e.id;card.dataset.recordKind='eintrag';if(fileContext?.id===e.id)card.classList.add('selected-record');
     card.append(node('h3',e.titel));
     if(e.beschreibung)card.append(node('p',e.beschreibung,'body'));
     const controls=node('div',undefined,'item-actions');
@@ -450,7 +492,7 @@ function renderMachines(container){
   const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q?'Keine passende Maschine gefunden.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
   for(const m of found){
-    const box=node('article',undefined,'card compact-machine');
+    const box=node('article',undefined,'card compact-machine');box.dataset.recordId=m.id;box.dataset.recordKind='maschine';if(fileContext?.id===m.id)box.classList.add('selected-record');
     const photos=filesFor('maschine',m.id).filter(inlinePhoto),cover=photos.find(f=>f.titelbild)||photos[0];
     box.append(cover?privateImage(cover,'machine-cover'):node('div','🚜','machine-placeholder'));
     const summary=node('div',undefined,'machine-summary');summary.append(node('h3',m.name));
@@ -509,16 +551,20 @@ async function openFile(file){
  }}catch(error){if(tab)tab.close();throw error;}
 }
 function openAttachments(kind,record){
+ if(fileBusy){message('Bitte den Datei-Upload zuerst abschließen.',true);return;}
+ if(desktopMedia.matches&&!page){showPage(kind==='maschine'?'maschinen':record.art);}
  fileContext={kind,id:record.id,name:record.name||record.titel};fileVersion++;
  $('fileDialogTitle').textContent=fileContext.name;
  $('fileInput').value='';$('fileMessage').textContent='';
- renderAttachments();$('fileDialog').showModal();
+ renderAttachments();presentDetails();highlightSelection();
 }
 function renderAttachments(){
  if(!fileContext)return;
  const {kind,id}=fileContext;const record=(kind==='maschine'?machines:entries).find(r=>r.id===id);
  const list=$('fileGallery');list.replaceChildren();
  if(!record){list.append(node('p','Dieser Eintrag wurde inzwischen entfernt.','error'));return;}
+ const heroFile=filesFor(kind,id).filter(inlinePhoto).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild))[0];
+ if(canDockDetails()&&heroFile){const hero=action('',()=>openFile(heroFile),'desktop-hero');hero.setAttribute('aria-label','Bild von '+(record.name||record.titel)+' groß öffnen');hero.append(privateImage(heroFile,'desktop-hero-photo'));list.append(hero);}
  const details=node('div',undefined,'file-record-info');
  details.append(node('h3',kind==='maschine'?machineType(record.typ):sections[record.art]?.title||'Eintrag'));
  const data=node('dl');const field=(title,value)=>{if(value){data.append(node('dt',title),node('dd',value));}};
@@ -534,11 +580,11 @@ function renderAttachments(){
  }
  field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);
  const recordActions=node('div',undefined,'item-actions');
- const edit=()=>{if(fileBusy)return;$('fileDialog').close();kind==='maschine'?openMachine(record):openEntry(record);};
+ const edit=()=>{if(fileBusy)return;closeDetails();kind==='maschine'?openMachine(record):openEntry(record);};
  recordActions.append(action('Bearbeiten',edit));
- if(kind==='maschine')recordActions.append(action('＋ Aufgabe',()=>{if(fileBusy)return;$('fileDialog').close();showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=record.id;}));
+ if(kind==='maschine')recordActions.append(action('＋ Aufgabe',()=>{if(fileBusy)return;closeDetails();showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=record.id;}));
  else recordActions.append(action(record.erledigt?'↩ Wieder öffnen':record.art==='notiz'?'Archivieren':'✓ Erledigt',async()=>{await toggleDone(record);renderAttachments();},'success'));
- recordActions.append(action(kind==='maschine'?'Entfernen':'Löschen',async()=>{if(fileBusy)return;if(kind==='maschine')await removeMachine(record);else await removeRecord('wg_eintraege',record);if(!(kind==='maschine'?machines:entries).some(r=>r.id===record.id))$('fileDialog').close();},'danger'));
+ recordActions.append(action(kind==='maschine'?'Entfernen':'Löschen',async()=>{if(fileBusy)return;if(kind==='maschine')await removeMachine(record);else await removeRecord('wg_eintraege',record);if(!(kind==='maschine'?machines:entries).some(r=>r.id===record.id))closeDetails();},'danger'));
  for(const button of recordActions.children)button.disabled=fileBusy;if(!$('entryDialog').open&&!$('machineDialog').open)details.append(recordActions);
  if(kind==='maschine'&&!$('entryDialog').open&&!$('machineDialog').open){const tasks=entries.filter(e=>e.maschine_id===record.id&&e.art==='aufgabe'&&!e.erledigt);if(tasks.length){details.append(node('h3','Offene Aufgaben'));for(const task of tasks){const open=action(task.titel,()=>openAttachments('eintrag',task),'clear');open.disabled=fileBusy;details.append(open);}}}
  list.append(details);
@@ -597,7 +643,7 @@ async function deleteFile(file){
  }finally{setFileBusy(false);}
 }
 $('uploadFiles').onclick=async()=>{try{await uploadFiles();}catch(error){$('fileMessage').textContent=error.message;}};
-$('closeFiles').onclick=()=>{if(!fileBusy){$('fileDialog').close();fileVersion++;}};
+$('closeFiles').onclick=()=>{if(!fileBusy){closeDetails();fileVersion++;}};
 $('fileDialog').addEventListener('cancel',event=>{if(fileBusy)event.preventDefault();});
 
 // ============================================================
@@ -776,6 +822,46 @@ function renderShopping(container){
   for(const entry of finished){const row=node('div',undefined,'shopping-finished-row');row.append(node('span',entry.titel));const undo=action('Rückgängig',()=>checkShopping(entry,false));undo.disabled=shoppingBusy;row.append(undo);detail.append(row);}container.append(detail);
  }
 }
+
+
+// Desktop ist derselbe Datenbestand und dieselbe URL. Erst ab 1280 px mit Maus.
+const desktopMedia=window.matchMedia?window.matchMedia('(min-width:1280px) and (hover:hover) and (pointer:fine)'):{matches:false,addEventListener(){}};
+let detailsDocked=false;
+function canDockDetails(){return desktopMedia.matches&&page&&page!=='apps'&&!shoppingMode&&!$('entryDialog').open&&!$('machineDialog').open&&!$('appDialog').open;}
+function highlightSelection(){for(const card of document.querySelectorAll('[data-record-id]'))card.classList.toggle('selected-record',!!fileContext&&card.dataset.recordId===fileContext.id&&card.dataset.recordKind===fileContext.kind);}
+function syncDesktopLayout(){document.body.classList.toggle('desktop-mode',desktopMedia.matches);if($('fileDialog').open)presentDetails();highlightSelection();}
+function presentDetails(){
+ const dialog=$('fileDialog'),dock=!!canDockDetails(),target=dock?$('desktopDetail'):document.body;
+ if(dialog.open&&detailsDocked===dock&&dialog.parentElement===target){$('desktopEmpty').hidden=dock;return;}
+ if(dialog.open)dialog.close();target.append(dialog);detailsDocked=dock;$('desktopEmpty').hidden=dock;
+ if(dock)dialog.show();else dialog.showModal();
+}
+function closeDetails(){
+ const dialog=$('fileDialog');if(!dialog)return;
+ if(dialog.open)dialog.close();document.body.append(dialog);detailsDocked=false;fileContext=null;fileVersion++;
+ if($('desktopEmpty'))$('desktopEmpty').hidden=false;highlightSelection();
+}
+function desktopPreview(kind){
+ const box=node('div',undefined,'desktop-preview');
+ let records=kind==='maschinen'?machines:entries.filter(entry=>entry.art===kind&&!entry.erledigt);
+ if(kind==='aufgabe'||kind==='besorgung')records=[...records].sort((a,b)=>(a.bis||'9999').localeCompare(b.bis||'9999'));
+ if(!records.length){box.append(node('p',kind==='maschinen'?'Noch keine Maschinen erfasst.':'Keine offenen Einträge.','helper'));return box;}
+ for(const record of records.slice(0,4)){
+  const open=action('',()=>{showPage(kind);openAttachments(kind==='maschinen'?'maschine':'eintrag',record);},'desktop-preview-row');
+  if(kind==='maschinen'){const photos=filesFor('maschine',record.id).filter(inlinePhoto),photo=photos.find(file=>file.titelbild)||photos[0];if(photo)open.append(privateImage(photo,'preview-thumb'));}
+  const text=node('div');text.append(node('strong',record.titel||record.name));
+  const meta=[];
+  if(kind==='maschinen'){if(record.modell)meta.push(record.modell);for(const [field,title] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(record[field]&&record[field]<=reminderLimit())meta.push(title+': '+dateText(record[field])+(record[field]<today()?' · abgelaufen':''));}
+  else{if(record.kategorie)meta.push(record.kategorie);if(record.zustaendig)meta.push(record.zustaendig);if(record.bis)meta.push('bis '+dateText(record.bis));}
+  if(meta.length)text.append(node('small',meta.join(' · ')));
+  if(kind==='notiz'&&record.beschreibung)text.append(node('small',record.beschreibung,'preview-note'));
+  open.append(text,node('span','›','personal-arrow'));box.append(open);
+ }
+ if(records.length>4)box.append(action('Alle '+records.length+' anzeigen',()=>showPage(kind),'desktop-preview-more'));
+ return box;
+}
+desktopMedia.addEventListener?.('change',()=>{syncDesktopLayout();if(user)render();if($('fileDialog').open&&!fileBusy)renderAttachments();});
+syncDesktopLayout();
 
 </script>
 </body>
