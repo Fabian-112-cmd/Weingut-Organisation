@@ -27,6 +27,18 @@
     @media(max-width:480px){.wrap{padding:18px 12px 40px}.grid{gap:9px}.menu{padding:15px;min-height:155px}.menu strong{font-size:18px}.filters{grid-template-columns:1fr}.card{padding:16px}h1{font-size:24px}.two{gap:8px}.app-link{align-items:flex-start;flex-wrap:wrap}.toolbar{gap:5px}.toolbar button{padding:8px 10px;font-size:14px}.item-title{flex-wrap:wrap}}
   .brand{flex:1;min-width:0}.brand img{flex-shrink:0}.brand>div{min-width:0}h1{font-size:clamp(20px,4.8vw,27px);line-height:1.2;text-wrap:balance}
   .machine-cover{width:100%;height:190px;object-fit:cover;border-radius:12px;margin-bottom:14px;display:block;background:#f0eaf5;cursor:pointer}.photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.attachment-card{min-width:0;border:1px solid var(--line);padding:10px;border-radius:12px;margin:8px 0}.attachment-photo{display:block;width:100%;height:150px;object-fit:contain;background:#f5f3f7;border-radius:8px}.attachment-name{overflow-wrap:anywhere;font-size:14px;margin:8px 0}.file-gallery>h3{margin:20px 0 6px}.file-upload{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}.file-open{display:flex;align-items:center;gap:8px;margin:10px 0}.file-open button{font-size:14px}.cover-link{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left}.cover-link img{margin-bottom:0}.file-record-info{padding-top:8px}@media(max-width:380px){.photo-grid{grid-template-columns:1fr}}
+
+    /* Kompakte Übersichten: Details erst nach Antippen. */
+    .menu{min-height:118px;gap:5px}.menu .icon{margin-bottom:5px}.menu .count{margin-top:7px}
+    .compact-entry{position:relative;padding:16px;cursor:pointer}.compact-entry .body{margin:7px 0 12px}.compact-entry h3{margin:0}.compact-entry .item-actions{margin-top:8px}
+    .compact-entry:focus-visible,.compact-machine:focus-visible{outline:3px solid #bda1d1;outline-offset:3px}
+    .compact-machine{display:grid;grid-template-columns:110px minmax(0,1fr);gap:15px;align-items:center;cursor:pointer;padding:15px}
+    .compact-machine .machine-cover{width:110px;height:100px;object-fit:contain;object-position:center;margin:0;background:#f5f3f7;border-radius:10px}
+    .machine-placeholder{width:110px;height:100px;display:grid;place-items:center;background:#f5f3f7;border-radius:10px;font-size:35px}
+    .machine-summary{min-width:0}.machine-summary h3{overflow-wrap:anywhere;margin:0 0 5px}.machine-summary .meta{margin:4px 0 8px}.machine-summary .pill{display:inline-block;margin:0 0 8px}.machine-summary button{font-size:14px;padding:7px 12px;min-height:40px}.machine-summary .error{font-size:13px;margin:5px 0}
+    .compact-app{padding:15px}.compact-app h3{margin:0;overflow-wrap:anywhere}.compact-app .app-link{flex-wrap:nowrap;align-items:center}.apps-edit-row{display:flex;justify-content:flex-end;margin:18px 0}.app-management{margin-top:12px}.compact-app .btn{min-height:42px;padding:9px 14px}
+    .form-files{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}.form-files h3{margin:0}.file-pickers{display:flex;gap:8px;flex-wrap:wrap}.file-pickers label{display:inline-flex;align-items:center;cursor:pointer;font-size:14px}.pending-file{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid var(--line);border-radius:10px}.pending-file img{width:54px;height:54px;object-fit:contain;border-radius:6px}.pending-file span{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}.pending-file button{padding:5px 9px;min-height:36px}.pending-file .success{font-size:12px}.pending-list{display:grid;gap:7px}.file-record-info .item-actions{margin:10px 0 16px}.file-record-info dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 15px;font-size:14px;margin:14px 0}.file-record-info dt{color:var(--muted)}.file-record-info dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+    @media(max-width:480px){.menu{min-height:118px}.compact-machine{grid-template-columns:96px minmax(0,1fr);gap:12px;padding:13px}.compact-machine .machine-cover,.machine-placeholder{width:96px;height:94px}.compact-app .app-link{flex-wrap:nowrap}.compact-entry .body{font-size:15px}.dialog-actions{flex-wrap:wrap}}
   </style>
 </head>
 <body>
@@ -69,7 +81,7 @@
     <datalist id="teamNames"></datalist>
     <label id="machineField">Maschine / Fahrzeug (optional)<select name="maschine_id"><option value="">Keine Zuordnung</option></select></label>
     <div class="two" id="dateFields"><label>Ab wann? (optional)<input name="von" type="date"></label><label>Bis wann? (optional)<input name="bis" type="date"></label></div>
-    <p class="helper">Bilder und Dokumente nach dem Speichern über „Bilder &amp; Dateien“ hinzufügen.</p>
+    <div id="entryFiles" class="form-files"></div>
     <p id="entryError" class="error" role="alert"></p>
     <div class="dialog-actions"><button type="button" id="cancelEntry">Abbrechen</button><button class="primary" id="saveEntry">Speichern</button></div>
   </form>
@@ -94,6 +106,7 @@
     <p class="helper">Optionale Termine. Wenn nur der TÜV-Monat bekannt ist, den letzten Tag dieses Monats eintragen. Hinweise erscheinen ab 60 Tagen vorher in dieser App; keine Push-Mitteilung bei geschlossener App.</p>
     <label>Notizen / Besonderheiten<textarea name="notizen" maxlength="8000" rows="4"></textarea></label>
     <p class="helper">Nach dem Speichern bei „Details öffnen“ Fotos und Dokumente hochladen.</p>
+    <div id="machineFiles" class="form-files"></div>
     <p id="machineError" class="error" role="alert"></p>
     <div class="dialog-actions"><button type="button" id="cancelMachine">Abbrechen</button><button class="primary" id="saveMachine">Speichern</button></div>
   </form>
@@ -128,6 +141,7 @@ const sections = {
 const categories=['Alle','Raiffeisen','Labor','Baumarkt','Diverses'];
 let user=null, entries=[], apps=[], machines=[], members=[], page=null, category='Alle';
 let editing=null, editingApp=null, editingMachine=null, authVersion=0, dataVersion=0, refreshing=false, saving=false;
+let appsEditing=false, entryDraft=null, machineDraft=null;
 const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 function action(label,fn,cls='') {
   const b=node('button',label,cls);b.type='button';
@@ -151,6 +165,7 @@ function loginEmail(name){
 function signedOut(){
   dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;
+  disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
   $('entryForm').reset();$('appForm').reset();$('machineForm').reset();$('items').replaceChildren();$('home').replaceChildren();
   $('application').hidden=true;$('account').hidden=true;$('login').hidden=false;
@@ -212,11 +227,11 @@ async function refreshData(){
 }
 $('refresh').onclick=refreshData;
 setInterval(()=>{if(!document.hidden && !saving && !fileBusy && !$('entryDialog').open && !$('appDialog').open && !$('machineDialog').open)refreshData();},20000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshData();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!saving&&!fileBusy&&!$('entryDialog').open&&!$('machineDialog').open&&!$('appDialog').open)refreshData();});
 // ============================================================
 // STARTSEITE UND MENÜS
 // ============================================================
-function showPage(next){page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
+function showPage(next){appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
 $('back').onclick=()=>showPage(null);
 $('search').oninput=renderList;$('statusFilter').onchange=renderList;
 $('newEntry').onclick=()=>page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
@@ -239,7 +254,7 @@ function renderHome(){
   welcome.append(node('p',overdue ? overdue+' überfällige Aufgabe'+(overdue===1?'':'n')+' · gemeinsam den Überblick behalten.' : 'Aufgaben, Besorgungen und Informationen an einem Ort.','muted'));home.append(welcome);
   const grid=node('div',undefined,'grid');
   for(const [key,info] of Object.entries(sections)){
-    const b=action('',()=>showPage(key),'menu');b.append(node('span',info.icon,'icon'),node('strong',info.title),node('small',info.hint));
+    const b=action('',()=>showPage(key),'menu');b.append(node('span',info.icon,'icon'),node('strong',info.title));
     const count=key==='apps'?apps.length:key==='maschinen'?machines.length:entries.filter(e=>e.art===key&&!e.erledigt).length;
     b.append(node('span',count+(key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));grid.append(b);
   }home.append(grid);
@@ -261,24 +276,12 @@ function renderList(){
     .sort((a,b)=>Number(a.erledigt)-Number(b.erledigt)||(a.erledigt?String(b.erledigt_am).localeCompare(String(a.erledigt_am)):(a.bis||'9999').localeCompare(b.bis||'9999')));
   if(!found.length){container.append(node('p',q?'Keine passenden Einträge.':status==='erledigt'?'Das Archiv ist noch leer.':'Hier ist noch nichts eingetragen. Mit „Hinzufügen“ geht es los.','card empty'));return;}
   for(const e of found){
-    const card=node('article',undefined,'card');const head=node('div',undefined,'item-title');head.append(node('h3',e.titel));
-    if(e.erledigt)head.append(node('span',page==='notiz'?'Archiviert':'Erledigt','pill done'));
-    else if(e.bis&&e.bis<today())head.append(node('span','Überfällig','pill overdue'));
-    else if(e.kategorie)head.append(node('span',e.kategorie,'pill'));
-    card.append(head);
-    const entryPhoto=filesFor('eintrag',e.id).find(inlinePhoto);if(entryPhoto){const photoButton=action('',()=>openAttachments('eintrag',e),'cover-link');photoButton.setAttribute('aria-label','Bilder von '+e.titel+' öffnen');photoButton.append(privateImage(entryPhoto,'machine-cover'));card.append(photoButton);}
+    const card=node('article',undefined,'card compact-entry');
+    card.append(node('h3',e.titel));
     if(e.beschreibung)card.append(node('p',e.beschreibung,'body'));
-    const details=[];if(e.maschine_id){const machine=machines.find(m=>m.id===e.maschine_id);if(machine)details.push('Maschine: '+machine.name);}
-    if(e.zustaendig)details.push('Zuständig: '+e.zustaendig);
-    if(e.von)details.push('Ab '+dateText(e.von));if(e.bis)details.push('Bis '+dateText(e.bis));
-    if(details.length)card.append(node('p',details.join(' · '),'meta'));
-    card.append(node('p','Zuletzt bearbeitet: '+nameFor(e.aktualisiert_von)+' · '+new Date(e.aktualisiert_am).toLocaleDateString('de-DE'),'meta'));
-    const actions=node('div',undefined,'item-actions');actions.append(
-      action(e.erledigt?'↩ Wieder öffnen':page==='notiz'?'Archivieren':'✓ Erledigt',()=>toggleDone(e),'success'),
-      action('Bilder & Dateien ('+filesFor('eintrag',e.id).length+')',()=>openAttachments('eintrag',e)),
-      action('Bearbeiten',()=>openEntry(e)),
-      action('Löschen',()=>removeRecord('wg_eintraege',e),'danger')
-    );card.append(actions);container.append(card);
+    const controls=node('div',undefined,'item-actions');
+    controls.append(action(e.erledigt?'↩ Wieder öffnen':page==='notiz'?'Archivieren':'✓ Erledigt',()=>toggleDone(e),'success'));
+    card.append(controls);clickableCard(card,()=>openAttachments('eintrag',e),'Details zu '+e.titel);container.append(card);
   }
 }
 // ============================================================
@@ -286,7 +289,7 @@ function renderList(){
 // Gleichzeitige Änderungen werden nicht still überschrieben.
 // ============================================================
 function openEntry(entry=null){
-  editing=entry?{...entry}:null;const f=$('entryForm');f.reset();
+  disposeDraft(entryDraft);entryDraft=newDraft(entry?.id);editing=entry?{...entry}:null;const f=$('entryForm');f.reset();
   const art=entry?.art||page;
   $('dialogTitle').textContent=entry?'Eintrag bearbeiten':sections[art].add;
   for(const key of ['titel','beschreibung','zustaendig','von','bis'])f.elements[key].value=entry?.[key]||'';
@@ -294,7 +297,7 @@ function openEntry(entry=null){
   $('categoryField').hidden=art!=='besorgung';$('assigneeField').hidden=art==='notiz';$('dateFields').hidden=art==='notiz';
   const machineSelect=f.elements.maschine_id;machineSelect.replaceChildren();const empty=node('option','Keine Zuordnung');empty.value='';machineSelect.append(empty);for(const m of machines){const option=node('option',m.name);option.value=m.id;machineSelect.append(option);}machineSelect.value=entry?.maschine_id||'';
   $('machineField').hidden=art==='notiz';
-  $('entryError').textContent='';$('entryDialog').showModal();
+  $('entryError').textContent='';renderFormFiles('eintrag');$('entryDialog').showModal();
 }
 function validateEntry(value){
   if(!value.titel.trim())throw new Error('Bitte einen Titel eingeben.');
@@ -307,20 +310,21 @@ async function mutate(table,record,change,remove=false){
   if(error)throw error;
   if(data?.length!==1)throw new Error('Dieser Eintrag wurde inzwischen geändert oder gelöscht. Bitte die Eingaben sichern, das Fenster schließen und mit ↻ neu laden.');
 }
-function formBusy(value){saving=value;$('saveEntry').disabled=value;$('cancelEntry').disabled=value;$('saveApp').disabled=value;$('cancelApp').disabled=value;$('logout').disabled=value;$('saveMachine').disabled=value;$('cancelMachine').disabled=value;}
+function formBusy(value){saving=value;for(const id of ['entryForm','machineForm'])for(const input of $(id).querySelectorAll('input,select,textarea'))input.disabled=value;$('saveEntry').disabled=value;$('cancelEntry').disabled=value;$('saveApp').disabled=value;$('cancelApp').disabled=value;$('logout').disabled=value;$('saveMachine').disabled=value;$('cancelMachine').disabled=value;renderFormFiles('eintrag');renderFormFiles('maschine');}
 $('entryForm').onsubmit=async event=>{
   event.preventDefault();if(saving)return;const f=event.target,art=editing?.art||page;const uid=user?.id;
   $('entryError').textContent='';formBusy(true);
   try{
     const value={art,maschine_id:art==='notiz'?null:f.elements.maschine_id.value||null,titel:f.elements.titel.value.trim(),beschreibung:f.elements.beschreibung.value.trim(),kategorie:art==='besorgung'?f.elements.kategorie.value:null,zustaendig:art==='notiz'?'':f.elements.zustaendig.value.trim(),von:art==='notiz'?null:f.elements.von.value||null,bis:art==='notiz'?null:f.elements.bis.value||null};
     validateEntry(value);
-    if(editing)await mutate('wg_eintraege',editing,value);
-    else{const {error}=await client.from('wg_eintraege').insert(value);if(error)throw error;}
-    if(uid!==user?.id)return;$('entryDialog').close();await refreshData();
+    validateDraft(entryDraft);
+    editing=await saveParent('wg_eintraege',editing,entryDraft,value);
+    await saveDraftFiles('eintrag',entryDraft,uid,'entryError');
+    if(uid!==user?.id)return;$('entryDialog').close();disposeDraft(entryDraft);entryDraft=null;await refreshData();
   }catch(error){$('entryError').textContent=error.message;}finally{formBusy(false);}
 };
-$('cancelEntry').onclick=()=>{if(!saving)$('entryDialog').close();};
-for(const id of ['entryDialog','appDialog','machineDialog'])$(id).addEventListener('cancel',event=>{if(saving)event.preventDefault();});
+$('cancelEntry').onclick=()=>closeForm('eintrag');
+for(const id of ['entryDialog','appDialog','machineDialog'])$(id).addEventListener('cancel',event=>{if(saving){event.preventDefault();return;}if(id!=='appDialog'){event.preventDefault();closeForm(id==='entryDialog'?'eintrag':'maschine');}});
 async function toggleDone(entry){await mutate('wg_eintraege',entry,{erledigt:!entry.erledigt});await refreshData();}
 async function removeRecord(table,record){if(table==='wg_eintraege'&&filesFor('eintrag',record.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieses Eintrags entfernen. Alternativ den Eintrag archivieren.');if(!confirm('„'+(record.titel||record.name)+'“ endgültig löschen?'))return;await mutate(table,record,null,true);await refreshData();}
 // ============================================================
@@ -332,25 +336,28 @@ function machineReminders(){const limit=reminderLimit();return machines.flatMap(
 function renderMachines(container){
   const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q?'Keine passende Maschine gefunden.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
-  for(const m of found){const box=node('article',undefined,'card'),head=node('div',undefined,'item-title');head.append(node('h3',m.name),node('span',machineType(m.typ),'pill'));
-    const photos=filesFor('maschine',m.id).filter(inlinePhoto);const cover=photos.find(f=>f.titelbild)||photos[0];if(cover){const coverButton=action('',()=>openAttachments('maschine',m),'cover-link');coverButton.setAttribute('aria-label','Details und Bilder von '+m.name+' öffnen');coverButton.append(privateImage(cover,'machine-cover'));box.append(coverButton);}
-    box.append(head);
-    if(m.modell||m.kennzeichen)box.append(node('p',[m.modell,m.kennzeichen].filter(Boolean).join(' · '),'meta'));
-    for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key])box.append(node('p',label+': '+dateText(m[key])+(m[key]<today()?' · überfällig':m[key]<=reminderLimit()?' · demnächst fällig':''),m[key]<today()?'error':'meta'));
-    if(m.notizen)box.append(node('p',m.notizen,'body'));
-    const tasks=entries.filter(e=>e.maschine_id===m.id&&e.art==='aufgabe'&&!e.erledigt);
-    if(tasks.length){box.append(node('p',tasks.length+' offene Aufgabe'+(tasks.length===1?'':'n'),'meta'));for(const task of tasks)box.append(action(task.titel,()=>openEntry(task),'clear'));}
-    const actions=node('div',undefined,'item-actions');actions.append(action('Details öffnen · '+filesFor('maschine',m.id).length+' Dateien',()=>openAttachments('maschine',m)),action('Bearbeiten',()=>openMachine(m)),action('＋ Aufgabe',()=>{showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=m.id;}),action('Entfernen',()=>removeMachine(m),'danger'));box.append(actions);container.append(box);
+  for(const m of found){
+    const box=node('article',undefined,'card compact-machine');
+    const photos=filesFor('maschine',m.id).filter(inlinePhoto),cover=photos.find(f=>f.titelbild)||photos[0];
+    box.append(cover?privateImage(cover,'machine-cover'):node('div','🚜','machine-placeholder'));
+    const summary=node('div',undefined,'machine-summary');summary.append(node('h3',m.name));
+    if(m.modell)summary.append(node('p',m.modell,'meta'));
+    summary.append(node('span',machineType(m.typ),'pill'));
+    for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key]&&m[key]<=reminderLimit())summary.append(node('p',label+(m[key]<today()?' abgelaufen · ':' bald fällig · ')+dateText(m[key]),m[key]<today()?'error':'meta'));
+    const editRow=node('div');editRow.append(action('Bearbeiten',()=>openMachine(m)));summary.append(editRow);
+    box.append(summary);clickableCard(box,()=>openAttachments('maschine',m),'Details zu '+m.name);container.append(box);
   }
 }
-function openMachine(machine=null){editingMachine=machine?{...machine}:null;const f=$('machineForm');f.reset();for(const key of ['name','modell','kennzeichen','tuv_am','wartung_am','notizen'])f.elements[key].value=machine?.[key]||'';f.elements.typ.value=machine?.typ||'Traktor';$('machineDialogTitle').textContent=machine?'Maschine bearbeiten':'Maschine hinzufügen';$('machineError').textContent='';$('machineDialog').showModal();}
-$('cancelMachine').onclick=()=>{if(!saving)$('machineDialog').close();};
+function openMachine(machine=null){disposeDraft(machineDraft);machineDraft=newDraft(machine?.id);editingMachine=machine?{...machine}:null;const f=$('machineForm');f.reset();for(const key of ['name','modell','kennzeichen','tuv_am','wartung_am','notizen'])f.elements[key].value=machine?.[key]||'';f.elements.typ.value=machine?.typ||'Traktor';$('machineDialogTitle').textContent=machine?'Maschine bearbeiten':'Maschine hinzufügen';$('machineError').textContent='';renderFormFiles('maschine');$('machineDialog').showModal();}
+$('cancelMachine').onclick=()=>closeForm('maschine');
 async function removeMachine(machine){if(filesFor('maschine',machine.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieser Maschine entfernen.');if(!confirm('„'+machine.name+'“ entfernen? Zugeordnete Aufgaben bleiben erhalten und verlieren nur die Maschinenzuordnung.'))return;await mutate('wg_maschinen',machine,null,true);await refreshData();}
 $('machineForm').onsubmit=async event=>{
   event.preventDefault();if(saving)return;formBusy(true);$('machineError').textContent='';const uid=user?.id;
   try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');
-    if(editingMachine)await mutate('wg_maschinen',editingMachine,value);else{const {error}=await client.from('wg_maschinen').insert(value);if(error)throw error;}
-    if(uid!==user?.id)return;$('machineDialog').close();await refreshData();
+    validateDraft(machineDraft);
+    editingMachine=await saveParent('wg_maschinen',editingMachine,machineDraft,value);
+    await saveDraftFiles('maschine',machineDraft,uid,'machineError');
+    if(uid!==user?.id)return;$('machineDialog').close();disposeDraft(machineDraft);machineDraft=null;await refreshData();
   }catch(error){$('machineError').textContent=error.message;}finally{formBusy(false);}
 };
 // ============================================================
@@ -400,11 +407,27 @@ function renderAttachments(){
  const list=$('fileGallery');list.replaceChildren();
  if(!record){list.append(node('p','Dieser Eintrag wurde inzwischen entfernt.','error'));return;}
  const details=node('div',undefined,'file-record-info');
+ details.append(node('h3',kind==='maschine'?machineType(record.typ):sections[record.art]?.title||'Eintrag'));
+ const data=node('dl');const field=(title,value)=>{if(value){data.append(node('dt',title),node('dd',value));}};
  if(kind==='maschine'){
   if(record.modell||record.kennzeichen)details.append(node('p',[record.modell,record.kennzeichen].filter(Boolean).join(' · '),'meta'));
   if(record.notizen)details.append(node('p',record.notizen,'body'));
   for(const [key,title] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(record[key])details.append(node('p',title+': '+dateText(record[key]),'meta'));
- }else if(record.beschreibung)details.append(node('p',record.beschreibung,'body'));
+ }else {
+  if(record.beschreibung)details.append(node('p',record.beschreibung,'body'));
+  field('Zuständig',record.zustaendig);field('Ab',dateText(record.von));field('Bis',dateText(record.bis));field('Besorgen bei',record.kategorie);
+  field('Maschine',machines.find(m=>m.id===record.maschine_id)?.name);
+  field('Status',record.erledigt?'Erledigt / Archiv':'Offen');
+ }
+ field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);
+ const recordActions=node('div',undefined,'item-actions');
+ const edit=()=>{if(fileBusy)return;$('fileDialog').close();kind==='maschine'?openMachine(record):openEntry(record);};
+ recordActions.append(action('Bearbeiten',edit));
+ if(kind==='maschine')recordActions.append(action('＋ Aufgabe',()=>{if(fileBusy)return;$('fileDialog').close();showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=record.id;}));
+ else recordActions.append(action(record.erledigt?'↩ Wieder öffnen':record.art==='notiz'?'Archivieren':'✓ Erledigt',async()=>{await toggleDone(record);renderAttachments();},'success'));
+ recordActions.append(action(kind==='maschine'?'Entfernen':'Löschen',async()=>{if(fileBusy)return;if(kind==='maschine')await removeMachine(record);else await removeRecord('wg_eintraege',record);if(!(kind==='maschine'?machines:entries).some(r=>r.id===record.id))$('fileDialog').close();},'danger'));
+ for(const button of recordActions.children)button.disabled=fileBusy;if(!$('entryDialog').open&&!$('machineDialog').open)details.append(recordActions);
+ if(kind==='maschine'&&!$('entryDialog').open&&!$('machineDialog').open){const tasks=entries.filter(e=>e.maschine_id===record.id&&e.art==='aufgabe'&&!e.erledigt);if(tasks.length){details.append(node('h3','Offene Aufgaben'));for(const task of tasks){const open=action(task.titel,()=>openAttachments('eintrag',task),'clear');open.disabled=fileBusy;details.append(open);}}}
  list.append(details);
  const files=filesFor(kind,id).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild));
  const photos=node('div',undefined,'photo-grid');const documents=node('div');
@@ -469,10 +492,12 @@ $('fileDialog').addEventListener('cancel',event=>{if(fileBusy)event.preventDefau
 // ============================================================
 function renderApps(container){
   if(!apps.length)container.append(node('p','Hier kannst du eure Apps verknüpfen.','card empty'));
-  for(const app of apps){const card=node('article',undefined,'card');const row=node('div',undefined,'app-link'),text=node('div');text.append(node('h3',app.name));if(app.beschreibung)text.append(node('p',app.beschreibung,'muted'));row.append(text);
+  for(const app of apps){
+    const card=node('article',undefined,'card compact-app'),row=node('div',undefined,'app-link');row.append(node('h3',app.name));
     const url=safeUrl(app.url);if(url){const link=node('a','Öffnen ↗','btn primary');link.href=url;link.target='_blank';link.rel='noopener noreferrer';row.append(link);}card.append(row);
-    const actions=node('div',undefined,'item-actions');actions.append(action('Bearbeiten',()=>openApp(app)),action('Entfernen',()=>removeRecord('wg_apps',app),'danger'));card.append(actions);container.append(card);
+    if(appsEditing){const controls=node('div',undefined,'item-actions app-management');controls.append(action('Bearbeiten',()=>openApp(app)),action('Entfernen',()=>removeRecord('wg_apps',app),'danger'));card.append(controls);}container.append(card);
   }
+  const footer=node('div',undefined,'apps-edit-row');footer.append(action(appsEditing?'Bearbeiten beenden':'Apps bearbeiten',()=>{appsEditing=!appsEditing;renderList();}));container.append(footer);
 }
 function openApp(app=null){editingApp=app?{...app}:null;$('appForm').reset();for(const key of ['name','beschreibung','url'])$('appForm').elements[key].value=app?.[key]||'';$('appDialogTitle').textContent=app?'App bearbeiten':'App verknüpfen';$('appError').textContent='';$('appDialog').showModal();}
 $('cancelApp').onclick=()=>{if(!saving)$('appDialog').close();};
@@ -483,6 +508,101 @@ $('appForm').onsubmit=async event=>{
     if(uid!==user?.id)return;$('appDialog').close();await refreshData();
   }catch(error){$('appError').textContent=error.message;}finally{formBusy(false);}
 };
+// ============================================================
+// KOMPAKTE KARTEN UND DATEIEN DIREKT IM FORMULAR
+// ============================================================
+function clickableCard(card,open,label){
+ card.tabIndex=0;card.setAttribute('aria-label',label);
+ card.addEventListener('click',event=>{if(!event.target.closest('button,a,input,select,textarea'))open();});
+ card.addEventListener('keydown',event=>{if(event.target===card&&(event.key==='Enter'||event.key===' ')){event.preventDefault();open();}});
+}
+function newDraft(id){return {id:id||crypto.randomUUID(),files:[],parentSaved:!!id};}
+function disposeDraft(draft){if(draft)for(const item of draft.files)if(item.preview)URL.revokeObjectURL(item.preview);}
+function draftFor(kind){return kind==='maschine'?machineDraft:entryDraft;}
+function validateDraft(draft){
+ if(!draft)throw new Error('Bitte das Formular erneut öffnen.');
+ if(draft.files.length>10)throw new Error('Bitte höchstens 10 Dateien je Speichervorgang auswählen.');
+ for(const item of draft.files)validateFile(item.file);
+}
+function addDraftFiles(kind,selected){
+ if(saving)return;const draft=draftFor(kind);if(!draft)return;
+ const error=$(kind==='maschine'?'machineError':'entryError');error.textContent='';
+ try{
+  if(draft.files.length+selected.length>10)throw new Error('Bitte höchstens 10 Dateien je Speichervorgang auswählen.');
+  const checked=selected.map(file=>({file,...validateFile(file)}));
+  for(const item of checked){const id=crypto.randomUUID();draft.files.push({...item,id,path:(kind==='maschine'?'maschinen':'eintraege')+'/'+draft.id+'/'+id+'.'+item.ext,uploaded:false,done:false,preview:['image/jpeg','image/png','image/webp'].includes(item.mime)?URL.createObjectURL(item.file):null});}
+  renderFormFiles(kind);
+ }catch(problem){error.textContent=problem.message;}
+}
+function renderFormFiles(kind){
+ const host=$(kind==='maschine'?'machineFiles':'entryFiles');if(!host)return;
+ const draft=draftFor(kind);host.replaceChildren();if(!draft)return;
+ host.append(node('h3','Bilder & Dateien'));
+ const pickers=node('div',undefined,'file-pickers');
+ for(const camera of [true,false]){
+  const label=node('label',camera?'📷 Foto aufnehmen':'Bilder / Dateien auswählen','btn');
+  const input=node('input');input.type='file';input.hidden=true;input.disabled=saving;
+  input.accept=camera?'image/*':'.jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv';
+  if(camera)input.setAttribute('capture','environment');else input.multiple=true;
+  input.addEventListener('change',()=>{addDraftFiles(kind,Array.from(input.files||[]));input.value='';});label.append(input);pickers.append(label);
+ }
+ host.append(pickers,node('p','Optional · bis zu 10 Dateien, jeweils maximal 20 MB. Wird zusammen mit dem Eintrag gespeichert.','helper'));
+ const list=node('div',undefined,'pending-list');
+ for(const item of draft.files){
+  const row=node('div',undefined,'pending-file');
+  if(item.preview){const img=node('img');img.src=item.preview;img.alt='Ausgewähltes Foto';row.append(img);}
+  row.append(node('span',item.file.name+(item.done?' · gespeichert':''),item.done?'success':''));
+  if(!item.done){const remove=action('✕',()=>{if(saving)return;if(item.preview)URL.revokeObjectURL(item.preview);draft.files=draft.files.filter(f=>f.id!==item.id);renderFormFiles(kind);});remove.setAttribute('aria-label',item.file.name+' aus der Auswahl entfernen');remove.disabled=saving;row.append(remove);}list.append(row);
+ }
+ host.append(list);
+ const oldFiles=filesFor(kind,draft.id).filter(file=>!draft.files.some(item=>item.id===file.id));
+ if(oldFiles.length){host.append(node('p',oldFiles.length+' vorhandene Datei(en): '+oldFiles.map(file=>file.name).join(', '),'helper'));const record=(kind==='maschine'?machines:entries).find(r=>r.id===draft.id);if(record){const open=action('Vorhandene Bilder & Dateien öffnen',()=>openAttachments(kind,record));open.disabled=saving;host.append(open);}}
+}
+function closeForm(kind){
+ if(saving)return;const draft=draftFor(kind);
+ if(draft?.files.some(file=>!file.done)&&!confirm(draft.parentSaved?'Der Eintrag ist bereits gespeichert. Noch nicht gespeicherte Dateiauswahl verwerfen?':'Ausgewählte Dateien und ungespeicherte Eingaben verwerfen?'))return;
+ $(kind==='maschine'?'machineDialog':'entryDialog').close();disposeDraft(draft);if(kind==='maschine')machineDraft=null;else entryDraft=null;
+}
+async function saveParent(table,record,draft,value){
+ const uid=user?.id;if(!uid)throw new Error('Bitte erneut anmelden.');
+ if(record){
+  const {data,error}=await client.from(table).update(value).eq('id',record.id).eq('aktualisiert_am',record.aktualisiert_am).select('*');
+  if(error)throw error;if(uid!==user?.id)throw new Error('Konto wurde gewechselt.');
+  if(data?.length!==1)throw new Error('Dieser Eintrag wurde inzwischen geändert. Eingaben sichern und neu laden.');draft.parentSaved=true;return data[0];
+ }
+ const {data,error}=await client.from(table).insert({id:draft.id,...value}).select('*');
+ if(uid!==user?.id)throw new Error('Konto wurde gewechselt.');
+ if(error){
+  // Bei verlorener Insert-Antwort dieselbe UUID prüfen, niemals einen zweiten Eintrag anlegen.
+  const check=await client.from(table).select('*').eq('id',draft.id);
+  if(check.error||check.data?.length!==1)throw error;
+  const existing=check.data[0];
+  if(!Object.entries(value).every(([key,expected])=>(existing[key]??null)===(expected??null)))throw new Error('Der Eintrag wurde bereits gespeichert und anschließend geändert. Bitte neu laden.');
+  draft.parentSaved=true;return existing;
+ }
+ if(data?.length!==1)throw new Error('Speicherung nicht bestätigt. Bitte erneut versuchen.');draft.parentSaved=true;return data[0];
+}
+async function saveDraftFiles(kind,draft,uid,errorId){
+ let done=draft.files.filter(item=>item.done).length;
+ for(const item of draft.files){
+  if(item.done)continue;
+  try{
+   if(uid!==user?.id)throw new Error('Bitte erneut anmelden.');
+   $(errorId).textContent='Eintrag gespeichert · Datei '+(done+1)+' von '+draft.files.length+' wird gespeichert …';
+   // Stabile Metadaten-ID macht Wiederholen nach Verbindungsabbruch sicher.
+   const prior=await client.from('wg_dateien').select('*').eq('id',item.id);
+   if(prior.error)throw prior.error;
+   if(prior.data?.length){if(prior.data[0].pfad!==item.path)throw new Error('Dateiverknüpfung stimmt nicht überein.');item.done=true;done++;continue;}
+   if(!item.uploaded){const upload=await client.storage.from(FILE_BUCKET).upload(item.path,item.file,{contentType:item.mime,upsert:false});if(upload.error&&!['409','Duplicate'].includes(String(upload.error.statusCode||upload.error.code))&&!/already exists|duplicate/i.test(upload.error.message||''))throw upload.error;item.uploaded=true;}
+   if(uid!==user?.id)throw new Error('Bitte erneut anmelden.');
+   const metadata={id:item.id,maschine_id:kind==='maschine'?draft.id:null,eintrag_id:kind==='maschine'?null:draft.id,name:item.file.name,pfad:item.path,mime:item.mime,groesse:item.file.size};
+   const saved=await client.from('wg_dateien').insert(metadata);
+   if(saved.error){const check=await client.from('wg_dateien').select('*').eq('id',item.id);if(check.error||check.data?.[0]?.pfad!==item.path)throw saved.error;}
+   item.done=true;done++;renderFormFiles(kind);
+  }catch(error){throw new Error('Eintrag gespeichert; '+done+' von '+draft.files.length+' Dateien gespeichert. '+error.message+' Bitte erneut „Speichern“ drücken – bereits gespeicherte Dateien werden nicht doppelt hochgeladen.');}
+ }
+}
+
 </script>
 </body>
 </html>
