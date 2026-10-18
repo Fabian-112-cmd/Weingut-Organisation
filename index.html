@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#643985">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Weingut">
+  <title>Weingut · Organisation</title>
+  <link rel="icon" href="weingut-logo.png">
+  <link rel="apple-touch-icon" href="weingut-logo.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    *{box-sizing:border-box} [hidden]{display:none!important}
+    :root{--purple:#643985;--ink:#292333;--muted:#756d7e;--line:#e6dfea;--green:#236840;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#f5f3f7}
+    body{margin:0}button,input,select,textarea{font:inherit}button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+    button,.btn{min-height:44px;border:1px solid var(--line);border-radius:11px;padding:10px 14px;background:white;color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    button:disabled{opacity:.5;cursor:wait}.primary{background:var(--purple);color:white;border-color:var(--purple);font-weight:650}.danger{color:#a83232}.success{color:var(--green)}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #bda1d1;outline-offset:3px}
+    .wrap{max-width:800px;margin:auto;padding:24px 16px 60px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:48px;height:48px;border-radius:12px}h1{font-size:27px;margin:0}.brand small{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+    h2{font-size:23px;margin:0}h3{font-size:18px;margin:0 0 6px}p{line-height:1.5}.card{background:white;border:1px solid var(--line);border-radius:17px;padding:18px;margin-bottom:14px}.muted{font-size:14px;color:var(--muted)}.error{color:#a83232}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.form{display:grid;gap:14px}.form label{display:grid;gap:6px;font-size:14px;font-weight:550}
+    input,select,textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:11px;background:white;color:var(--ink);font-size:16px}textarea{resize:vertical;min-height:110px}input[type=checkbox]{width:20px;min-height:20px;height:20px;accent-color:var(--purple)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.menu{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:20px;min-height:150px;border-radius:17px}.menu .icon{font-size:27px;margin-bottom:12px}.menu strong{font-size:21px}.menu small{color:var(--muted);line-height:1.5;margin-top:7px}.menu .count{font-size:13px;margin-top:12px;color:var(--purple);font-weight:600}
+    .welcome{background:#ece4f2;border-color:#ded0e8}.welcome p{margin:6px 0 0}.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0}.filters{display:grid;grid-template-columns:1fr 170px;gap:10px}.category{display:flex;gap:7px;overflow:auto;padding-bottom:5px;margin-top:12px}.category button{white-space:nowrap;flex-shrink:0}.category .active{background:var(--purple);color:white;border-color:var(--purple)}
+    .item-title{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.item-title h3{overflow-wrap:anywhere}.pill{border-radius:20px;padding:4px 9px;background:#f0eaf5;color:var(--purple);font-size:12px;white-space:nowrap}.pill.overdue{background:#fbeaea;color:#a83232}.pill.done{background:#e7f2ea;color:var(--green)}.body{white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0}.meta{font-size:13px;color:var(--muted);margin:8px 0}.item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.item-actions button{font-size:14px;padding:8px 11px}.empty{text-align:center;padding:35px 20px;color:var(--muted)}.toolbar{display:flex;gap:8px;align-items:center}.status{min-height:20px;font-size:13px;color:var(--muted);margin:8px 0 14px}.status.error{color:#a83232}
+    dialog{width:min(560px,calc(100vw - 24px));max-height:90dvh;overflow:auto;border:1px solid var(--line);border-radius:18px;padding:22px;color:var(--ink)}dialog::backdrop{background:#29233380}dialog h2{margin:0 0 8px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:-22px;background:white;padding:14px 0;margin-top:4px}.helper{font-size:13px;color:var(--muted);margin:0}.app-link{display:flex;justify-content:space-between;align-items:center;gap:15px}.app-link a{flex-shrink:0}.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:26px}#login{max-width:440px;margin:35px auto}.clear{border:0;background:transparent;padding:8px;color:var(--muted)}
+    @media(max-width:480px){.wrap{padding:18px 12px 40px}.grid{gap:9px}.menu{padding:15px;min-height:155px}.menu strong{font-size:18px}.filters{grid-template-columns:1fr}.card{padding:16px}h1{font-size:24px}.two{gap:8px}.app-link{align-items:flex-start;flex-wrap:wrap}.toolbar{gap:5px}.toolbar button{padding:8px 10px;font-size:14px}.item-title{flex-wrap:wrap}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="brand"><img src="weingut-logo.png" alt="Weingut-Logo"><div><h1>Weingut</h1><small>Gemeinsam organisieren</small></div></div>
+    <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
+  </header>
+  <section id="login" class="card">
+    <h2>Anmelden</h2><p class="muted">Mit deinem freigeschalteten Weingut-Konto.</p>
+    <form id="loginForm" class="form">
+      <label>Benutzername<input id="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+      <label>Passwort<input id="password" type="password" autocomplete="current-password" required></label>
+      <button class="primary" id="loginButton">Anmelden</button>
+      <p id="loginMessage" class="error" role="status"></p>
+    </form>
+  </section>
+  <section id="application" hidden>
+    <div class="row between"><button id="back" type="button" hidden>← Übersicht</button><span id="pageHint" class="muted">Für das ganze Team</span></div>
+    <p id="sync" class="status" role="status"></p>
+    <div id="home"></div>
+    <section id="listPage" hidden>
+      <div class="bar"><h2 id="pageTitle"></h2><button id="newEntry" class="primary" type="button">＋ Hinzufügen</button></div>
+      <div class="card" id="filterCard">
+        <div class="filters"><input id="search" type="search" placeholder="Suchen …" aria-label="Einträge suchen"><select id="statusFilter" aria-label="Status filtern"><option value="offen">Offen</option><option value="erledigt">Erledigt / Archiv</option><option value="alle">Alle</option></select></div>
+        <div class="category" id="categories" aria-label="Besorgungen nach Geschäft"></div>
+      </div>
+      <div id="items"></div>
+    </section>
+    <p class="footer">Weingut · Erledigtes bleibt im Archiv und kann wieder geöffnet werden.</p>
+  </section>
+</main>
+<dialog id="entryDialog" aria-labelledby="dialogTitle">
+  <form id="entryForm" class="form">
+    <h2 id="dialogTitle">Eintrag</h2>
+    <label>Titel<input name="titel" maxlength="180" required></label>
+    <label>Beschreibung / Notiz<textarea name="beschreibung" maxlength="8000" rows="4"></textarea></label>
+    <label id="categoryField">Besorgen bei<select name="kategorie"><option>Raiffeisen</option><option>Labor</option><option>Baumarkt</option><option>Diverses</option></select></label>
+    <label id="assigneeField">Wer kümmert sich? <input name="zustaendig" maxlength="100" list="teamNames" placeholder="Optional"></label>
+    <datalist id="teamNames"></datalist>
+    <label id="machineField">Maschine / Fahrzeug (optional)<select name="maschine_id"><option value="">Keine Zuordnung</option></select></label>
+    <div class="two" id="dateFields"><label>Ab wann? (optional)<input name="von" type="date"></label><label>Bis wann? (optional)<input name="bis" type="date"></label></div>
+    <p id="entryError" class="error" role="alert"></p>
+    <div class="dialog-actions"><button type="button" id="cancelEntry">Abbrechen</button><button class="primary" id="saveEntry">Speichern</button></div>
+  </form>
+</dialog>
+<dialog id="appDialog" aria-labelledby="appDialogTitle">
+  <form id="appForm" class="form"><h2 id="appDialogTitle">App verknüpfen</h2>
+    <label>Name<input name="name" maxlength="100" required></label>
+    <label>Kurzbeschreibung<input name="beschreibung" maxlength="300"></label>
+    <label>Internetadresse<input name="url" type="url" placeholder="https://…" maxlength="2000" required></label>
+    <p class="helper">Die App öffnet sich in einem neuen Tab. Ihre Anmeldung bleibt eigenständig.</p>
+    <p id="appError" class="error" role="alert"></p>
+    <div class="dialog-actions"><button type="button" id="cancelApp">Abbrechen</button><button class="primary" id="saveApp">Speichern</button></div>
+  </form>
+</dialog>
+<dialog id="machineDialog" aria-labelledby="machineDialogTitle">
+  <form id="machineForm" class="form"><h2 id="machineDialogTitle">Maschine hinzufügen</h2>
+    <label>Name<input name="name" maxlength="180" placeholder="Zum Beispiel Traktor Fendt" required></label>
+    <label>Art<select name="typ"><option value="Traktor">Traktor</option><option value="Fraese">Fräse</option><option>Mulcher</option><option>Laubschneider</option><option value="Haenger">Hänger</option><option>Auto</option><option>Bus</option><option>LKW</option><option>Presse</option><option>Sonstiges</option></select></label>
+    <label>Hersteller / Modell<input name="modell" maxlength="180"></label>
+    <label>Kennzeichen / Gerätenummer<input name="kennzeichen" maxlength="100"></label>
+    <div class="two"><label>TÜV fällig am<input name="tuv_am" type="date"></label><label>Wartung fällig am<input name="wartung_am" type="date"></label></div>
+    <p class="helper">Optionale Termine. Wenn nur der TÜV-Monat bekannt ist, den letzten Tag dieses Monats eintragen. Hinweise erscheinen ab 60 Tagen vorher in dieser App; keine Push-Mitteilung bei geschlossener App.</p>
+    <label>Notizen / Besonderheiten<textarea name="notizen" maxlength="8000" rows="4"></textarea></label>
+    <p id="machineError" class="error" role="alert"></p>
+    <div class="dialog-actions"><button type="button" id="cancelMachine">Abbrechen</button><button class="primary" id="saveMachine">Speichern</button></div>
+  </form>
+</dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ============================================================
+// VERBINDUNG UND ZUSTAND
+// ============================================================
+const client = supabase.createClient(
+  'https://grrkvuqxjglfuynmxegv.supabase.co',
+  'sb_publishable_5P58BQr8tEksRLUqb8vmOg_uEM_MA24'
+);
+const $ = id => document.getElementById(id);
+const sections = {
+  aufgabe:{title:'Erledigungen',icon:'✓',hint:'Reparieren, bauen und alles, was ansteht.',add:'Aufgabe hinzufügen'},
+  besorgung:{title:'Besorgungen',icon:'🛒',hint:'Raiffeisen, Labor, Baumarkt und Diverses.',add:'Besorgung hinzufügen'},
+  notiz:{title:'Notizen',icon:'✎',hint:'Gedanken, Infos und Absprachen festhalten.',add:'Notiz hinzufügen'},
+  maschinen:{title:'Maschinen & Fahrzeuge',icon:'🚜',hint:'TÜV, Wartung, Reparaturen und Gerätedaten.',add:'Maschine hinzufügen'},
+  apps:{title:'Unsere Apps',icon:'▦',hint:'Weintour, Mostrechner und weitere Werkzeuge.',add:'App verknüpfen'}
+};
+const categories=['Alle','Raiffeisen','Labor','Baumarkt','Diverses'];
+let user=null, entries=[], apps=[], machines=[], members=[], page=null, category='Alle';
+let editing=null, editingApp=null, editingMachine=null, authVersion=0, dataVersion=0, refreshing=false, saving=false;
+const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
+function action(label,fn,cls='') {
+  const b=node('button',label,cls);b.type='button';
+  b.onclick=async()=>{b.disabled=true;try{await fn();}catch(error){message(error.message,true);}finally{b.disabled=false;}};
+  return b;
+}
+function message(text,error=false){$('sync').textContent=text;$('sync').className='status'+(error?' error':'');}
+function today(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
+function dateText(value){return value ? new Date(value+'T12:00:00').toLocaleDateString('de-DE') : '';}
+function nameFor(id){return members.find(m=>m.user_id===id)?.anzeigename || 'Team';}
+function safeUrl(value){try{const u=new URL(value);if(u.protocol!=='https:')return null;return u.href;}catch{return null;}}
+// ============================================================
+// ANMELDUNG: dieselben bestehenden Konten, eigene App-Freigabe
+// ============================================================
+function loginEmail(name){
+  name=name.trim().toLowerCase();
+  if(name==='weintour' || name==='weingut')return 'fabian-112@t-online.de';
+  if(!/^[a-z0-9][a-z0-9._-]{1,39}$/.test(name))throw new Error('Bitte deinen Benutzernamen eingeben.');
+  return name+'@weintour.example.com';
+}
+function signedOut(){
+  dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
+  for(const id of ['entryDialog','appDialog','machineDialog'])if($(id).open)$(id).close();
+  $('entryForm').reset();$('appForm').reset();$('machineForm').reset();$('items').replaceChildren();$('home').replaceChildren();
+  $('application').hidden=true;$('account').hidden=true;$('login').hidden=false;
+}
+async function applySession(session){
+  const version=++authVersion;
+  if(!session){signedOut();return;}
+  const uid=session.user.id;
+  if(user && user.id!==uid)signedOut();
+  try{
+    const {data,error}=await client.rpc('wg_zugang');
+    if(version!==authVersion)return;
+    if(error)throw new Error('Organisation noch nicht eingerichtet: '+error.message);
+    if(!data)throw new Error('Dieses Konto ist noch nicht für die Weingut-Organisation freigeschaltet.');
+    user=session.user;$('application').hidden=false;$('account').hidden=false;$('login').hidden=true;
+    $('loginMessage').textContent='';
+    await refreshData();
+  }catch(error){if(version!==authVersion)return;signedOut();$('loginMessage').textContent=error.message;}
+}
+$('loginForm').onsubmit=async event=>{
+  event.preventDefault();$('loginButton').disabled=true;$('loginMessage').textContent='Anmeldung läuft …';
+  try{const {data,error}=await client.auth.signInWithPassword({email:loginEmail($('username').value),password:$('password').value});if(error)throw error;$('password').value='';await applySession(data.session);}
+  catch(error){$('loginMessage').textContent=error.message;}finally{$('loginButton').disabled=false;}
+};
+$('logout').onclick=async()=>{if(saving)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
+client.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'&&user?.id===session?.user.id)return;setTimeout(()=>applySession(session),0);});
+client.auth.getSession().then(({data,error})=>{if(error)$('loginMessage').textContent=error.message;else applySession(data.session);});
+// ============================================================
+// GEMEINSAME DATEN: automatisch nachladen, Eingaben erhalten
+// ============================================================
+async function refreshData(){
+  if(!user || refreshing)return;
+  refreshing=true;const version=++dataVersion,uid=user.id;
+  try{
+    const results=await Promise.all([
+      client.from('wg_eintraege').select('*').order('erstellt_am',{ascending:false}).limit(5000),
+      client.from('wg_apps').select('*').order('name').limit(1000),
+      client.from('wg_mitglieder').select('user_id,anzeigename,aktiv').eq('aktiv',true),
+      client.from('wg_maschinen').select('*').order('name').limit(1000)
+    ]);
+    if(version!==dataVersion || uid!==user?.id)return;
+    for(const result of results)if(result.error)throw result.error;
+    if(results[0].data.length>=5000 || results[1].data.length>=1000 || results[3].data.length>=1000)throw new Error('Sehr viele Einträge. Bitte zuerst den Datenabruf erweitern, bevor weitere Einträge angelegt werden.');
+    entries=results[0].data;apps=results[1].data;members=results[2].data;machines=results[3].data;
+    $('person').textContent=nameFor(uid);
+    $('teamNames').replaceChildren(...members.map(m=>{const o=node('option');o.value=m.anzeigename;return o;}));
+    message('Aktualisiert um '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · für das ganze Team');
+    render();
+  }catch(error){if(uid===user?.id)message('Aktualisierung fehlgeschlagen: '+error.message+'. Erneut mit ↻ versuchen.',true);}
+  finally{refreshing=false;}
+}
+$('refresh').onclick=refreshData;
+setInterval(()=>{if(!document.hidden && !saving && !$('entryDialog').open && !$('appDialog').open && !$('machineDialog').open)refreshData();},20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshData();});
+// ============================================================
+// STARTSEITE UND MENÜS
+// ============================================================
+function showPage(next){page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
+$('back').onclick=()=>showPage(null);
+$('search').oninput=renderList;$('statusFilter').onchange=renderList;
+$('newEntry').onclick=()=>page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
+function render(){
+  if(!user)return;
+  $('home').hidden=!!page;$('listPage').hidden=!page;$('back').hidden=!page;
+  $('pageHint').textContent=page?sections[page].title:'Für das ganze Team';
+  if(!page){renderHome();return;}
+  $('pageTitle').textContent=sections[page].title;$('newEntry').textContent='＋ '+sections[page].add;
+  $('filterCard').hidden=page==='apps';$('statusFilter').hidden=page==='maschinen';
+  $('statusFilter').options[0].textContent=page==='notiz'?'Aktuelle Notizen':'Offen';
+  $('categories').hidden=page!=='besorgung';$('categories').replaceChildren();
+  if(page==='besorgung')for(const value of categories)$('categories').append(action(value,()=>{category=value;render();},category===value?'active':''));
+  renderList();
+}
+function renderHome(){
+  const home=$('home');home.replaceChildren();
+  const welcome=node('section',undefined,'card welcome');welcome.append(node('h2','Was steht an?'));
+  const overdue=entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.bis&&e.bis<today()).length;
+  welcome.append(node('p',overdue ? overdue+' überfällige Aufgabe'+(overdue===1?'':'n')+' · gemeinsam den Überblick behalten.' : 'Aufgaben, Besorgungen und Informationen an einem Ort.','muted'));home.append(welcome);
+  const grid=node('div',undefined,'grid');
+  for(const [key,info] of Object.entries(sections)){
+    const b=action('',()=>showPage(key),'menu');b.append(node('span',info.icon,'icon'),node('strong',info.title),node('small',info.hint));
+    const count=key==='apps'?apps.length:key==='maschinen'?machines.length:entries.filter(e=>e.art===key&&!e.erledigt).length;
+    b.append(node('span',count+(key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));grid.append(b);
+  }home.append(grid);
+  const reminders=machineReminders();
+  if(reminders.length){const box=node('section',undefined,'card');box.style.marginTop='16px';box.append(node('h3','TÜV & Wartung'),node('p','Anstehend innerhalb von 60 Tagen oder überfällig.','muted'));for(const r of reminders)box.append(action(r.machine.name+' · '+r.label+': '+dateText(r.date)+(r.date<today()?' · überfällig':''),()=>{showPage('maschinen');openMachine(r.machine);},r.date<today()?'clear danger':'clear'));home.append(box);}
+  const next=entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.bis).sort((a,b)=>a.bis.localeCompare(b.bis)).slice(0,3);
+  if(next.length){const box=node('section',undefined,'card');box.style.marginTop='16px';box.append(node('h3','Nächste Termine'));for(const e of next)box.append(action(dateText(e.bis)+' · '+e.titel,()=>{showPage('aufgabe');openEntry(e);},'clear'));home.append(box);}
+}
+function renderList(){
+  if(!page || !user)return;
+  const container=$('items');container.replaceChildren();
+  if(page==='apps'){renderApps(container);return;}
+  if(page==='maschinen'){renderMachines(container);return;}
+  const q=$('search').value.trim().toLocaleLowerCase('de');const status=$('statusFilter').value;
+  const found=entries.filter(e=>e.art===page)
+    .filter(e=>status==='alle'||(status==='erledigt'?e.erledigt:!e.erledigt))
+    .filter(e=>page!=='besorgung'||category==='Alle'||e.kategorie===category)
+    .filter(e=>[e.titel,e.beschreibung,e.zustaendig,e.kategorie].filter(Boolean).join(' ').toLocaleLowerCase('de').includes(q))
+    .sort((a,b)=>Number(a.erledigt)-Number(b.erledigt)||(a.erledigt?String(b.erledigt_am).localeCompare(String(a.erledigt_am)):(a.bis||'9999').localeCompare(b.bis||'9999')));
+  if(!found.length){container.append(node('p',q?'Keine passenden Einträge.':status==='erledigt'?'Das Archiv ist noch leer.':'Hier ist noch nichts eingetragen. Mit „Hinzufügen“ geht es los.','card empty'));return;}
+  for(const e of found){
+    const card=node('article',undefined,'card');const head=node('div',undefined,'item-title');head.append(node('h3',e.titel));
+    if(e.erledigt)head.append(node('span',page==='notiz'?'Archiviert':'Erledigt','pill done'));
+    else if(e.bis&&e.bis<today())head.append(node('span','Überfällig','pill overdue'));
+    else if(e.kategorie)head.append(node('span',e.kategorie,'pill'));
+    card.append(head);
+    if(e.beschreibung)card.append(node('p',e.beschreibung,'body'));
+    const details=[];if(e.maschine_id){const machine=machines.find(m=>m.id===e.maschine_id);if(machine)details.push('Maschine: '+machine.name);}
+    if(e.zustaendig)details.push('Zuständig: '+e.zustaendig);
+    if(e.von)details.push('Ab '+dateText(e.von));if(e.bis)details.push('Bis '+dateText(e.bis));
+    if(details.length)card.append(node('p',details.join(' · '),'meta'));
+    card.append(node('p','Zuletzt bearbeitet: '+nameFor(e.aktualisiert_von)+' · '+new Date(e.aktualisiert_am).toLocaleDateString('de-DE'),'meta'));
+    const actions=node('div',undefined,'item-actions');actions.append(
+      action(e.erledigt?'↩ Wieder öffnen':page==='notiz'?'Archivieren':'✓ Erledigt',()=>toggleDone(e),'success'),
+      action('Bearbeiten',()=>openEntry(e)),
+      action('Löschen',()=>removeRecord('wg_eintraege',e),'danger')
+    );card.append(actions);container.append(card);
+  }
+}
+// ============================================================
+// EINTRÄGE: anlegen, bearbeiten, erledigen, wieder öffnen
+// Gleichzeitige Änderungen werden nicht still überschrieben.
+// ============================================================
+function openEntry(entry=null){
+  editing=entry?{...entry}:null;const f=$('entryForm');f.reset();
+  const art=entry?.art||page;
+  $('dialogTitle').textContent=entry?'Eintrag bearbeiten':sections[art].add;
+  for(const key of ['titel','beschreibung','zustaendig','von','bis'])f.elements[key].value=entry?.[key]||'';
+  f.elements.kategorie.value=entry?.kategorie||(category==='Alle'?'Raiffeisen':category);
+  $('categoryField').hidden=art!=='besorgung';$('assigneeField').hidden=art==='notiz';$('dateFields').hidden=art==='notiz';
+  const machineSelect=f.elements.maschine_id;machineSelect.replaceChildren();const empty=node('option','Keine Zuordnung');empty.value='';machineSelect.append(empty);for(const m of machines){const option=node('option',m.name);option.value=m.id;machineSelect.append(option);}machineSelect.value=entry?.maschine_id||'';
+  $('machineField').hidden=art==='notiz';
+  $('entryError').textContent='';$('entryDialog').showModal();
+}
+function validateEntry(value){
+  if(!value.titel.trim())throw new Error('Bitte einen Titel eingeben.');
+  if(value.von&&value.bis&&value.von>value.bis)throw new Error('„Ab wann“ darf nicht nach „Bis wann“ liegen.');
+}
+async function mutate(table,record,change,remove=false){
+  if(!user)throw new Error('Bitte erneut anmelden.');
+  let query=remove?client.from(table).delete():client.from(table).update(change);
+  const {data,error}=await query.eq('id',record.id).eq('aktualisiert_am',record.aktualisiert_am).select('id');
+  if(error)throw error;
+  if(data?.length!==1)throw new Error('Dieser Eintrag wurde inzwischen geändert oder gelöscht. Bitte die Eingaben sichern, das Fenster schließen und mit ↻ neu laden.');
+}
+function formBusy(value){saving=value;$('saveEntry').disabled=value;$('cancelEntry').disabled=value;$('saveApp').disabled=value;$('cancelApp').disabled=value;$('logout').disabled=value;$('saveMachine').disabled=value;$('cancelMachine').disabled=value;}
+$('entryForm').onsubmit=async event=>{
+  event.preventDefault();if(saving)return;const f=event.target,art=editing?.art||page;const uid=user?.id;
+  $('entryError').textContent='';formBusy(true);
+  try{
+    const value={art,maschine_id:art==='notiz'?null:f.elements.maschine_id.value||null,titel:f.elements.titel.value.trim(),beschreibung:f.elements.beschreibung.value.trim(),kategorie:art==='besorgung'?f.elements.kategorie.value:null,zustaendig:art==='notiz'?'':f.elements.zustaendig.value.trim(),von:art==='notiz'?null:f.elements.von.value||null,bis:art==='notiz'?null:f.elements.bis.value||null};
+    validateEntry(value);
+    if(editing)await mutate('wg_eintraege',editing,value);
+    else{const {error}=await client.from('wg_eintraege').insert(value);if(error)throw error;}
+    if(uid!==user?.id)return;$('entryDialog').close();await refreshData();
+  }catch(error){$('entryError').textContent=error.message;}finally{formBusy(false);}
+};
+$('cancelEntry').onclick=()=>{if(!saving)$('entryDialog').close();};
+for(const id of ['entryDialog','appDialog','machineDialog'])$(id).addEventListener('cancel',event=>{if(saving)event.preventDefault();});
+async function toggleDone(entry){await mutate('wg_eintraege',entry,{erledigt:!entry.erledigt});await refreshData();}
+async function removeRecord(table,record){if(!confirm('„'+(record.titel||record.name)+'“ endgültig löschen?'))return;await mutate(table,record,null,true);await refreshData();}
+// ============================================================
+// MASCHINEN & FAHRZEUGE
+// ============================================================
+function machineType(value){return ({Fraese:'Fräse',Haenger:'Hänger'})[value]||value;}
+function reminderLimit(){const d=new Date(today()+'T12:00:00');d.setDate(d.getDate()+60);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
+function machineReminders(){const limit=reminderLimit();return machines.flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
+function renderMachines(container){
+  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen].join(' ').toLocaleLowerCase('de').includes(q));
+  if(!found.length)container.append(node('p',q?'Keine passende Maschine gefunden.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
+  for(const m of found){const box=node('article',undefined,'card'),head=node('div',undefined,'item-title');head.append(node('h3',m.name),node('span',machineType(m.typ),'pill'));box.append(head);
+    if(m.modell||m.kennzeichen)box.append(node('p',[m.modell,m.kennzeichen].filter(Boolean).join(' · '),'meta'));
+    for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key])box.append(node('p',label+': '+dateText(m[key])+(m[key]<today()?' · überfällig':m[key]<=reminderLimit()?' · demnächst fällig':''),m[key]<today()?'error':'meta'));
+    if(m.notizen)box.append(node('p',m.notizen,'body'));
+    const tasks=entries.filter(e=>e.maschine_id===m.id&&e.art==='aufgabe'&&!e.erledigt);
+    if(tasks.length){box.append(node('p',tasks.length+' offene Aufgabe'+(tasks.length===1?'':'n'),'meta'));for(const task of tasks)box.append(action(task.titel,()=>openEntry(task),'clear'));}
+    const actions=node('div',undefined,'item-actions');actions.append(action('Bearbeiten',()=>openMachine(m)),action('＋ Aufgabe',()=>{showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=m.id;}),action('Entfernen',()=>removeMachine(m),'danger'));box.append(actions);container.append(box);
+  }
+}
+function openMachine(machine=null){editingMachine=machine?{...machine}:null;const f=$('machineForm');f.reset();for(const key of ['name','modell','kennzeichen','tuv_am','wartung_am','notizen'])f.elements[key].value=machine?.[key]||'';f.elements.typ.value=machine?.typ||'Traktor';$('machineDialogTitle').textContent=machine?'Maschine bearbeiten':'Maschine hinzufügen';$('machineError').textContent='';$('machineDialog').showModal();}
+$('cancelMachine').onclick=()=>{if(!saving)$('machineDialog').close();};
+async function removeMachine(machine){if(!confirm('„'+machine.name+'“ entfernen? Zugeordnete Aufgaben bleiben erhalten und verlieren nur die Maschinenzuordnung.'))return;await mutate('wg_maschinen',machine,null,true);await refreshData();}
+$('machineForm').onsubmit=async event=>{
+  event.preventDefault();if(saving)return;formBusy(true);$('machineError').textContent='';const uid=user?.id;
+  try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');
+    if(editingMachine)await mutate('wg_maschinen',editingMachine,value);else{const {error}=await client.from('wg_maschinen').insert(value);if(error)throw error;}
+    if(uid!==user?.id)return;$('machineDialog').close();await refreshData();
+  }catch(error){$('machineError').textContent=error.message;}finally{formBusy(false);}
+};
+// ============================================================
+// APP-VERKNÜPFUNGEN
+// ============================================================
+function renderApps(container){
+  if(!apps.length)container.append(node('p','Hier kannst du eure Apps verknüpfen.','card empty'));
+  for(const app of apps){const card=node('article',undefined,'card');const row=node('div',undefined,'app-link'),text=node('div');text.append(node('h3',app.name));if(app.beschreibung)text.append(node('p',app.beschreibung,'muted'));row.append(text);
+    const url=safeUrl(app.url);if(url){const link=node('a','Öffnen ↗','btn primary');link.href=url;link.target='_blank';link.rel='noopener noreferrer';row.append(link);}card.append(row);
+    const actions=node('div',undefined,'item-actions');actions.append(action('Bearbeiten',()=>openApp(app)),action('Entfernen',()=>removeRecord('wg_apps',app),'danger'));card.append(actions);container.append(card);
+  }
+}
+function openApp(app=null){editingApp=app?{...app}:null;$('appForm').reset();for(const key of ['name','beschreibung','url'])$('appForm').elements[key].value=app?.[key]||'';$('appDialogTitle').textContent=app?'App bearbeiten':'App verknüpfen';$('appError').textContent='';$('appDialog').showModal();}
+$('cancelApp').onclick=()=>{if(!saving)$('appDialog').close();};
+$('appForm').onsubmit=async event=>{
+  event.preventDefault();if(saving)return;formBusy(true);$('appError').textContent='';const uid=user?.id;
+  try{const f=event.target,url=safeUrl(f.elements.url.value.trim());if(!url)throw new Error('Bitte eine vollständige Adresse mit https:// eingeben.');const value={name:f.elements.name.value.trim(),beschreibung:f.elements.beschreibung.value.trim(),url};if(!value.name)throw new Error('Bitte einen App-Namen eingeben.');
+    if(editingApp)await mutate('wg_apps',editingApp,value);else{const {error}=await client.from('wg_apps').insert(value);if(error)throw error;}
+    if(uid!==user?.id)return;$('appDialog').close();await refreshData();
+  }catch(error){$('appError').textContent=error.message;}finally{formBusy(false);}
+};
+</script>
+</body>
+</html>
