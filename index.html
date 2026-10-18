@@ -255,6 +255,7 @@
     <p id="fileMessage" class="muted" role="status"></p>
   </section>
 </dialog>
+<script src="qr-generator.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ============================================================
@@ -270,6 +271,7 @@ const sections = {
   besorgung:{title:'Besorgungen',icon:'🛒',hint:'Raiffeisen, Labor, Baumarkt und Diverses.',add:'Besorgung hinzufügen'},
   notiz:{title:'Notizen',icon:'✎',hint:'Gedanken, Infos und Absprachen festhalten.',add:'Notiz hinzufügen'},
   maschinen:{title:'Maschinen & Fahrzeuge',icon:'🚜',hint:'TÜV, Wartung, Reparaturen und Gerätedaten.',add:'Maschine hinzufügen'},
+  weinbestand:{title:'Weinbestand',icon:'▤',hint:'',add:'Wein hinzufügen'},
   apps:{title:'Unsere Apps',icon:'▦',hint:'Weintour, Mostrechner und weitere Werkzeuge.',add:'App verknüpfen'}
 };
 const categories=['Alle','Raiffeisen','Labor','Baumarkt','Diverses'];
@@ -298,7 +300,7 @@ function loginEmail(name){
   return name+'@weintour.example.com';
 }
 function signedOut(){
-  dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
+  resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;closeDetails();
   disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
@@ -325,7 +327,7 @@ $('loginForm').onsubmit=async event=>{
   try{const {data,error}=await client.auth.signInWithPassword({email:loginEmail($('username').value),password:$('password').value});if(error)throw error;$('password').value='';await applySession(data.session);}
   catch(error){$('loginMessage').textContent=error.message;}finally{$('loginButton').disabled=false;}
 };
-$('logout').onclick=async()=>{if(saving||fileBusy)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
+$('logout').onclick=async()=>{if(saving||fileBusy||lagerBusy)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
 client.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'&&user?.id===session?.user.id)return;setTimeout(()=>applySession(session),0);});
 client.auth.getSession().then(({data,error})=>{if(error)$('loginMessage').textContent=error.message;else applySession(data.session);});
 // ============================================================
@@ -340,7 +342,7 @@ async function readPages(table,column='erstellt_am',ascending=false,maximum=5000
   throw new Error('Sehr viele Datensätze in '+table+'. Bitte den Datenabruf erweitern.');
 }
 async function refreshData(){
-  if(!user || refreshing)return;
+  if(!user || refreshing||lagerBusy||$('lagerDialog')?.open)return;
   refreshing=true;const version=++dataVersion,uid=user.id;
   try{
     const results=await Promise.all([
@@ -353,10 +355,11 @@ async function refreshData(){
     if(version!==dataVersion || uid!==user?.id)return;
     if(results[2].error)throw results[2].error;
     entries=results[0];apps=results[1];members=results[2].data;machines=results[3];attachments=results[4];
+    await loadLager(uid);if(version!==dataVersion||uid!==user?.id)return;
     $('person').textContent=nameFor(uid);
     $('teamNames').replaceChildren(...members.map(m=>{const o=node('option');o.value=m.anzeigename;return o;}));
     message('Aktualisiert um '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · für das ganze Team');
-    render();if($('fileDialog').open&&!fileBusy)renderAttachments();
+    render();await followQr();if($('fileDialog').open&&!fileBusy)renderAttachments();
   }catch(error){if(uid===user?.id)message('Aktualisierung fehlgeschlagen: '+error.message+'. Erneut mit ↻ versuchen.',true);}
   finally{refreshing=false;}
 }
@@ -369,7 +372,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!saving&&
 function showPage(next){if(fileBusy){message('Bitte den Datei-Upload zuerst abschließen.',true);return;}closeDetails();shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
 $('back').onclick=()=>showPage(null);
 $('search').oninput=renderList;$('statusFilter').onchange=renderList;
-$('newEntry').onclick=()=>page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
+$('newEntry').onclick=()=>page==='weinbestand'?editStamm('wein'):page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
 function render(){
   if(!user)return;
   syncDesktopLayout();
@@ -380,7 +383,7 @@ function render(){
   if(!page){renderHome();return;}
   $('listPage').classList.toggle('apps-page',page==='apps');
   $('pageTitle').textContent=sections[page].title;$('newEntry').textContent='＋ '+sections[page].add;
-  $('filterCard').hidden=page==='apps';$('statusFilter').hidden=page==='maschinen';
+  $('filterCard').hidden=page==='apps'||page==='weinbestand';$('statusFilter').hidden=page==='maschinen';
   $('statusFilter').options[0].textContent=page==='notiz'?'Aktuelle Notizen':'Offen';
   $('categories').hidden=page!=='besorgung';$('categories').replaceChildren();
   if(page==='besorgung')for(const value of categories)$('categories').append(action(value,()=>{category=value;render();},category===value?'active':''));
@@ -408,9 +411,9 @@ function renderHome(){
   const grid=node('div',undefined,'grid');
   for(const [key,info] of Object.entries(sections)){
     const b=action('',()=>showPage(key),'menu');b.append(menuIcon(key,info.icon),node('strong',info.title));
-    const count=key==='apps'?apps.length:key==='maschinen'?machines.length:entries.filter(e=>e.art===key&&!e.erledigt).length;
-    b.append(node('span',count+(key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));
-    if(desktopMedia.matches&&key!=='apps'){const group=node('section',undefined,'desktop-home-group');group.append(b,desktopPreview(key));grid.append(group);}else grid.append(b);
+    const count=key==='weinbestand'?lager.weine.length:key==='apps'?apps.length:key==='maschinen'?machines.length:entries.filter(e=>e.art===key&&!e.erledigt).length;
+    b.append(node('span',count+(key==='weinbestand'?' Weine':key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));
+    if(desktopMedia.matches&&key!=='apps'&&key!=='weinbestand'){const group=node('section',undefined,'desktop-home-group');group.append(b,desktopPreview(key));grid.append(group);}else grid.append(b);
   }home.append(grid);
   const reminders=machineReminders();
   if(reminders.length){const box=node('section',undefined,'card');box.style.marginTop='16px';box.append(node('h3','TÜV & Wartung'),node('p','Anstehend innerhalb von 60 Tagen oder überfällig.','muted'));for(const r of reminders)box.append(action(r.machine.name+' · '+r.label+': '+dateText(r.date)+(r.date<today()?' · überfällig':''),()=>{showPage('maschinen');openMachine(r.machine);},r.date<today()?'clear danger':'clear'));home.append(box);}
@@ -422,6 +425,7 @@ function renderList(){
   const container=$('items');container.replaceChildren();
   if(page==='besorgung'&&shoppingMode){renderShopping(container);return;}
   if(page==='apps'){renderApps(container);return;}
+  if(page==='weinbestand'){renderLager(container);return;}
   if(page==='maschinen'){renderMachines(container);return;}
   const q=$('search').value.trim().toLocaleLowerCase('de');const status=$('statusFilter').value;
   const found=entries.filter(e=>e.art===page)
@@ -489,7 +493,8 @@ function machineType(value){return ({Fraese:'Fräse',Haenger:'Hänger'})[value]|
 function reminderLimit(){const d=new Date(today()+'T12:00:00');d.setDate(d.getDate()+60);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function machineReminders(){const limit=reminderLimit();return machines.flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
 function renderMachines(container){
-  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen].join(' ').toLocaleLowerCase('de').includes(q));
+  renderMachineTabs(container);
+  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||(m.details?.gruppe||'Großmaschinen')===machineGroup).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q?'Keine passende Maschine gefunden.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
   for(const m of found){
     const box=node('article',undefined,'card compact-machine');box.dataset.recordId=m.id;box.dataset.recordKind='maschine';if(fileContext?.id===m.id)box.classList.add('selected-record');
@@ -497,18 +502,18 @@ function renderMachines(container){
     box.append(cover?privateImage(cover,'machine-cover'):node('div','🚜','machine-placeholder'));
     const summary=node('div',undefined,'machine-summary');summary.append(node('h3',m.name));
     if(m.modell)summary.append(node('p',m.modell,'meta'));
-    summary.append(node('span',machineType(m.typ),'pill'));
+    summary.append(node('span',m.details?.geraeteart||machineType(m.typ),'pill'));if(m.details?.status)summary.append(node('p',m.details.status+(m.details.ausgeliehen_an?' · '+m.details.ausgeliehen_an:''),'meta'));
     for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key]&&m[key]<=reminderLimit())summary.append(node('p',label+(m[key]<today()?' abgelaufen · ':' bald fällig · ')+dateText(m[key]),m[key]<today()?'error':'meta'));
     const editRow=node('div',undefined,'machine-edit-row');editRow.append(action('Bearbeiten',()=>openMachine(m)));summary.append(editRow);
     box.append(summary);clickableCard(box,()=>openAttachments('maschine',m),'Details zu '+m.name);container.append(box);
   }
 }
-function openMachine(machine=null){disposeDraft(machineDraft);machineDraft=newDraft(machine?.id);editingMachine=machine?{...machine}:null;const f=$('machineForm');f.reset();for(const key of ['name','modell','kennzeichen','tuv_am','wartung_am','notizen'])f.elements[key].value=machine?.[key]||'';f.elements.typ.value=machine?.typ||'Traktor';$('machineDialogTitle').textContent=machine?'Maschine bearbeiten':'Maschine hinzufügen';$('machineError').textContent='';renderFormFiles('maschine');$('machineDialog').showModal();}
+function openMachine(machine=null){disposeDraft(machineDraft);machineDraft=newDraft(machine?.id);editingMachine=machine?{...machine}:null;const f=$('machineForm');f.reset();for(const key of ['name','modell','kennzeichen','tuv_am','wartung_am','notizen'])f.elements[key].value=machine?.[key]||'';f.elements.typ.value=machine?.typ||'Traktor';fillMachineExtras(f,machine);$('machineDialogTitle').textContent=machine?'Maschine bearbeiten':'Maschine hinzufügen';$('machineError').textContent='';renderFormFiles('maschine');$('machineDialog').showModal();}
 $('cancelMachine').onclick=()=>closeForm('maschine');
 async function removeMachine(machine){if(filesFor('maschine',machine.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieser Maschine entfernen.');if(!confirm('„'+machine.name+'“ entfernen? Zugeordnete Aufgaben bleiben erhalten und verlieren nur die Maschinenzuordnung.'))return;await mutate('wg_maschinen',machine,null,true);await refreshData();}
 $('machineForm').onsubmit=async event=>{
   event.preventDefault();if(saving)return;formBusy(true);$('machineError').textContent='';const uid=user?.id;
-  try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');
+  try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();value.details=machineExtras(f);for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');
     validateDraft(machineDraft);
     editingMachine=await saveParent('wg_maschinen',editingMachine,machineDraft,value);
     await saveDraftFiles('maschine',machineDraft,uid,'machineError');
@@ -569,6 +574,7 @@ function renderAttachments(){
  details.append(node('h3',kind==='maschine'?machineType(record.typ):sections[record.art]?.title||'Eintrag'));
  const data=node('dl');const field=(title,value)=>{if(value){data.append(node('dt',title),node('dd',value));}};
  if(kind==='maschine'){
+  machineDetailExtras(details,record);
   if(record.modell||record.kennzeichen)details.append(node('p',[record.modell,record.kennzeichen].filter(Boolean).join(' · '),'meta'));
   if(record.notizen)details.append(node('p',record.notizen,'body'));
   for(const [key,title] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(record[key])details.append(node('p',title+': '+dateText(record[key]),'meta'));
@@ -736,7 +742,7 @@ async function saveParent(table,record,draft,value){
   const check=await client.from(table).select('*').eq('id',draft.id);
   if(check.error||check.data?.length!==1)throw error;
   const existing=check.data[0];
-  if(!Object.entries(value).every(([key,expected])=>(existing[key]??null)===(expected??null)))throw new Error('Der Eintrag wurde bereits gespeichert und anschließend geändert. Bitte neu laden.');
+  if(!Object.entries(value).every(([key,expected])=>stableJson(existing[key]??null)===stableJson(expected??null)))throw new Error('Der Eintrag wurde bereits gespeichert und anschließend geändert. Bitte neu laden.');
   draft.parentSaved=true;return existing;
  }
  if(data?.length!==1)throw new Error('Speicherung nicht bestätigt. Bitte erneut versuchen.');draft.parentSaved=true;return data[0];
@@ -827,7 +833,7 @@ function renderShopping(container){
 // Desktop ist derselbe Datenbestand und dieselbe URL. Erst ab 1280 px mit Maus.
 const desktopMedia=window.matchMedia?window.matchMedia('(min-width:1280px) and (hover:hover) and (pointer:fine)'):{matches:false,addEventListener(){}};
 let detailsDocked=false;
-function canDockDetails(){return desktopMedia.matches&&page&&page!=='apps'&&!shoppingMode&&!$('entryDialog').open&&!$('machineDialog').open&&!$('appDialog').open;}
+function canDockDetails(){return desktopMedia.matches&&page&&page!=='apps'&&page!=='weinbestand'&&!shoppingMode&&!$('entryDialog').open&&!$('machineDialog').open&&!$('appDialog').open;}
 function highlightSelection(){for(const card of document.querySelectorAll('[data-record-id]'))card.classList.toggle('selected-record',!!fileContext&&card.dataset.recordId===fileContext.id&&card.dataset.recordKind===fileContext.kind);}
 function syncDesktopLayout(){document.body.classList.toggle('desktop-mode',desktopMedia.matches);if($('fileDialog').open)presentDetails();highlightSelection();}
 function presentDetails(){
@@ -861,6 +867,79 @@ function desktopPreview(kind){
  return box;
 }
 desktopMedia.addEventListener?.('change',()=>{syncDesktopLayout();if(user)render();if($('fileDialog').open&&!fileBusy)renderAttachments();});
+// Update 8 – gemeinsame Geräte- und Lagerverwaltung
+let lager={weine:[],plaetze:[],bestaende:[],bewegungen:[]},lagerError='',lagerBusy=false,lagerBereich='Bio',lagerAnsicht='Übersicht',machineGroup='Alle',qrHandled='';
+const nf=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:3});
+const lagerDialog=node('dialog');lagerDialog.id='lagerDialog';lagerDialog.setAttribute('aria-label','Weinbestand bearbeiten');document.body.append(lagerDialog);
+const exStyle=node('style');exStyle.textContent=`
+.lager-tabs,.lager-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.lager-tabs .active{background:#634078;color:white}.lager-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}.lager-summary .card{padding:18px}.lager-summary strong{display:block;font-size:1.5rem}.lager-row{margin-bottom:12px;padding:18px}.lager-row h3{margin:0 0 6px}.lager-row .item-actions{position:static;display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lager-row button{font-size:.9rem;padding:8px 12px}.lager-form{display:grid;gap:14px;min-width:0}.lager-form input,.lager-form select,.lager-form textarea{width:100%;box-sizing:border-box}.lager-form label{display:grid;gap:5px}.lager-form .dialog-actions{display:flex;gap:10px;flex-wrap:wrap}.lager-log{border-top:1px solid #ddd;padding:12px 0}.qr-label{text-align:center;color:#111;background:white;padding:18px}.qr-label svg{display:block;width:230px;max-width:100%;height:auto;margin:12px auto}.qr-label small{overflow-wrap:anywhere}.machine-extras{display:grid;gap:12px}.machine-extras summary{cursor:pointer;font-weight:600}body.desktop-mode #desktopWorkspace.lager-wide{display:block}body.desktop-mode #desktopWorkspace.lager-wide #desktopDetail{display:none}
+@media print{body.print-qr>*{display:none!important}body.print-qr #lagerDialog{display:block!important;position:static!important;border:0;max-width:none;width:auto;margin:0;padding:0}body.print-qr #lagerDialog>*:not(.qr-label){display:none!important}.qr-label{width:65mm;break-inside:avoid}.qr-label svg{width:38mm}}
+`;document.head.append(exStyle);
+function resetLager(){lager={weine:[],plaetze:[],bestaende:[],bewegungen:[]};lagerError='';qrHandled='';lagerDialog.close();}
+async function loadLager(uid){const r=await client.rpc('wg_lager_snapshot');if(uid!==user?.id)return;if(r.error){lagerError='Weinbestand noch nicht verfügbar. Bitte zuerst Datenbank-Update-8.sql ausführen. '+r.error.message;return;}lager=r.data;lagerError='';}
+const baseRender8=render;render=function(){baseRender8();$('desktopWorkspace').classList.toggle('lager-wide',page==='weinbestand');};
+function tabs(values,current,change){const row=node('div',undefined,'lager-tabs');for(const v of values)row.append(action(v,()=>change(v),v===current?'active':''));return row;}
+function renderMachineTabs(c){c.append(tabs(['Alle','Großmaschinen','Werkzeuge & Kleingeräte'],machineGroup,v=>{machineGroup=v;renderList();}));}
+const mf=$('machineForm');
+const mex=node('section',undefined,'machine-extras');
+const mfields=[['gruppe','Bereich','select',['Großmaschinen','Werkzeuge & Kleingeräte']],['geraeteart','Geräteart (z. B. Akkuschrauber)','text'],['status','Status','select',['Verfügbar','Defekt','In Reparatur','Ausgeliehen','Außer Betrieb']],['standort','Standort','text'],['seriennummer','Seriennummer','text'],['inventarnummer','Inventarnummer','text'],['ausgeliehen_an','Ausgeliehen an','text'],['rueckgabe_am','Rückgabe geplant','date'],['kaufdatum','Kaufdatum','date'],['herstellerlink','Hersteller / Ersatzteile (https://…)','url']];
+for(const [key,title,type,opts] of mfields){const l=node('label',title);let input=node(type==='select'?'select':'input');input.name='extra_'+key;if(type==='select')for(const v of opts){const o=node('option',v);o.value=v;input.append(o);}else{input.type=type;input.maxLength=type==='url'?2000:180;}l.append(input);mex.append(l);}mf.insertBefore(mex,$('machineFiles'));
+function fillMachineExtras(f,m){for(const [k,,type,opts]of mfields)f.elements['extra_'+k].value=m?.details?.[k]||(type==='select'?opts[0]:'');if(!m&&machineGroup!=='Alle'){f.elements.extra_gruppe.value=machineGroup;if(machineGroup==='Werkzeuge & Kleingeräte')f.elements.typ.value='Sonstiges';}}
+function machineExtras(f){const d={};for(const[k]of mfields)d[k]=f.elements['extra_'+k].value.trim();if(d.herstellerlink&&!safeUrl(d.herstellerlink))throw new Error('Herstellerlink muss mit https:// beginnen.');return d;}
+function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(!d[k]||k==='herstellerlink')continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k==='kaufdatum'?dateText(d[k]):d[k]),'meta'));}if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}c.append(action('QR-Code anzeigen / drucken',()=>showQr('maschine',m.id,m.name)));}
+function wineLabel(w,detail=false){return w?`${w.name}${w.jahrgang?' · '+w.jahrgang:''}${detail?' · '+nf(w.flaschengroesse)+' l':''}`:'Unbekannter Wein';}
+function placeLabel(p){return p?`${p.name}${p.position?' · '+p.position:''}`:'Unbekannter Platz';}
+function stocksAt(id){return lager.bestaende.filter(b=>b.platz_id===id&&Number(b.menge)>0);}
+function renderLager(c){
+ $('newEntry').textContent=lagerBereich==='Schnäpse & Liköre'?'＋ Spirituose hinzufügen':'＋ Wein hinzufügen';
+ c.append(tabs(['Bio','Konventionell','Schnäpse & Liköre'],lagerBereich,v=>{lagerBereich=v;renderList();}),tabs((lagerBereich==='Schnäpse & Liköre'?['Übersicht','Regalplätze','LKW','Weine','Bewegungen']:['Übersicht','Regalplätze','Gitterboxen','Tanks','LKW','Weine','Bewegungen']),lagerAnsicht,v=>{lagerAnsicht=v;renderList();}));
+ if(lagerError){c.append(node('p',lagerError,'error'));return;}
+ const tools=node('div',undefined,'lager-toolbar');tools.append(action('＋ Lagerplatz / Box / Tank',()=>editStamm('platz')),action('＋ Bestand buchen',()=>openBooking()));c.append(tools);
+ const wines=lager.weine.filter(w=>w.bereich===lagerBereich),places=lager.plaetze.filter(p=>p.bereich===lagerBereich),ids=new Set(wines.map(w=>w.id)),bs=lager.bestaende.filter(b=>ids.has(b.wein_id));
+ if(lagerAnsicht==='Übersicht'){
+  const sums=node('div',undefined,'lager-summary');for(const[z,title,unit]of [['etikettiert','Etikettiert','Flaschen'],['unetikettiert','Unetikettiert','Flaschen'],['Tankwein','Im Tank','Liter']]){const card=node('div',undefined,'card');card.append(node('small',title),node('strong',nf(bs.filter(b=>b.zustand===z&&places.find(p=>p.id===b.platz_id)?.art!=='LKW').reduce((n,b)=>n+Number(b.menge),0))),node('small',unit));sums.append(card);}const truck=node('div',undefined,'card');truck.append(node('small','Auf dem LKW'),node('strong',nf(bs.filter(b=>places.find(p=>p.id===b.platz_id)?.art==='LKW').reduce((n,b)=>n+Number(b.menge),0))),node('small','Flaschen'));sums.append(truck);c.append(sums);
+  for(const w of wines){const card=node('article',undefined,'card lager-row');const title=action(wineLabel(w),()=>showWine(w),'clear');card.append(title);const own=bs.filter(b=>b.wein_id===w.id&&Number(b.menge)>0);if(!own.length)card.append(node('p','Noch kein Bestand','muted'));for(const b of own)card.append(action(`${placeLabel(places.find(p=>p.id===b.platz_id))} · ${nf(b.menge)} ${b.zustand==='Tankwein'?'Liter': 'Flaschen · '+b.zustand}`,()=>showPlace(b.platz_id),'clear'));card.append(action('Buchen',()=>openBooking(null,w)));c.append(card);}if(!wines.length)c.append(node('p','Zuerst einen Wein und einen Lagerplatz anlegen. Danach den Anfangsbestand mit „Einlagern“ erfassen.','card'));
+ }else if(lagerAnsicht==='Weine'){
+  for(const w of wines){const card=node('article',undefined,'card lager-row');card.append(node('h3',wineLabel(w)),node('p',w.notiz||''),action('Details',()=>showWine(w)),action('Bestand buchen',()=>openBooking(null,w)));c.append(card);}if(!wines.length)c.append(node('p','Noch keine Weine angelegt.','card'));
+ }else if(lagerAnsicht==='Bewegungen'){
+  c.append(node('p','Die letzten 100 Buchungen im gemeinsamen Lager; hier nach Bereich gefiltert. Ältere Buchungen bleiben in der Datenbank erhalten.','helper'));for(const b of lager.bewegungen.filter(b=>b.vorher_nachher.bereich===lagerBereich))c.append(logCard(b));
+ }else{const art={Regalplätze:'Regal',Gitterboxen:'Gitterbox',Tanks:'Tank',LKW:'LKW'}[lagerAnsicht];for(const p of places.filter(p=>p.art===art)){const card=node('article',undefined,'card lager-row');card.append(node('h3',placeLabel(p)));const own=stocksAt(p.id);if(!own.length)card.append(node('p','Leer','muted'));for(const b of own)card.append(node('p',wineLabel(lager.weine.find(w=>w.id===b.wein_id))+' · '+nf(b.menge)+(b.zustand==='Tankwein'?' Liter':' Flaschen · '+b.zustand)));card.append(action('Öffnen / Buchen',()=>showPlace(p.id)));c.append(card);}if(!places.some(p=>p.art===art))c.append(node('p','Noch keine Plätze in diesem Bereich. Frei benennen, z. B. „Hochregal 1“, Position „oben links“, „Gitterbox 03“ oder „Tank 25“.','card'));}
+}
+function logCard(b){const c=node('section',undefined,'lager-log');c.append(node('strong',(b.payload.zweck||b.aktion)+' · '+b.vorher_nachher.wein),node('p',new Date(b.erstellt_am).toLocaleString('de-DE')+' · '+b.benutzername,'meta'));for(const v of b.vorher_nachher.positionen)c.append(node('p',`${v.platz} · ${v.zustand}: ${nf(v.vorher)} → ${nf(v.nachher)} ${v.einheit}`));if(Number(b.payload.kartons)>0)c.append(node('p',nf(b.payload.kartons)+' Kartons + '+nf(b.payload.einzelflaschen)+' einzelne Flaschen','meta'));if(b.payload.notiz)c.append(node('p',b.payload.notiz));return c;}
+function modal(title){lagerDialog.replaceChildren();lagerDialog.append(node('h2',title));if(!lagerDialog.open)lagerDialog.showModal();const form=node('form',undefined,'lager-form');lagerDialog.append(form);return form;}
+function field(form,key,label,value='',type='text',options=null){const l=node('label',label),input=node(options?'select':type==='textarea'?'textarea':'input');input.name=key;if(options)for(const item of options){const pair=Array.isArray(item)?item:[item,item],o=node('option',pair[1]);o.value=pair[0];input.append(o);}else{input.type=type;input.maxLength=type==='textarea'?1000:180;}input.value=value;if(type==='number'){input.step='0.001';input.min='0';input.max='999999999';}l.append(input);form.append(l);return input;}
+function controls(form,submit){const err=node('p','', 'error');err.setAttribute('role','alert');form.append(err);const row=node('div',undefined,'dialog-actions'),save=node('button',submit,'primary');save.type='submit';row.append(action('Schließen',()=>{if(!lagerBusy)lagerDialog.close();}),save);form.append(row);return {err,save};}
+async function submitLager(form,err,run){if(lagerBusy)return;lagerBusy=true;const uid=user?.id;for(const e of form.elements)e.disabled=true;try{await run();if(uid!==user?.id)return;await loadLager(uid);lagerDialog.close();render();}catch(e){err.textContent=e.message||'Speicherung nicht bestätigt. Bitte erneut versuchen.';}finally{lagerBusy=false;for(const e of form.elements)e.disabled=false;}}
+function editStamm(kind,record=null){const id=record?.id||crypto.randomUUID(),f=modal((record?'Bearbeiten: ':'Neu: ')+(kind==='wein'?'Wein':'Lagerplatz / Box / Tank'));field(f,'name','Name',record?.name||'').required=true;field(f,'bereich','Bereich',record?.bereich||lagerBereich,'text',['Bio','Konventionell','Schnäpse & Liköre']);if(kind==='wein'){field(f,'jahrgang','Jahrgang',record?.jahrgang||'');const v=field(f,'flaschengroesse','Flaschengröße in Liter',record?.flaschengroesse||.75,'text',[['0.75','0,75 Liter'],['1','1 Liter'],['0.5','0,5 Liter'],['0.7','0,7 Liter'],['0.35','0,35 Liter'],['0.2','0,2 Liter'],['0.1','0,1 Liter'],['0.04','0,04 Liter'],['0.02','0,02 Liter']]);if(record&&!Array.from(v.options).some(o=>Number(o.value)===Number(record.flaschengroesse))){const o=node('option',nf(record.flaschengroesse)+' Liter');o.value=record.flaschengroesse;v.append(o);}v.value=String(record?.flaschengroesse||.75);v.required=true;}else{field(f,'art','Art',record?.art||({Gitterboxen:'Gitterbox',Tanks:'Tank',LKW:'LKW'}[lagerAnsicht]||'Regal'),'text',(lagerBereich==='Schnäpse & Liköre'?['Regal','LKW']:['Regal','Gitterbox','Tank','LKW']));field(f,'position','Position / Fach / Ebene',record?.position||'');}field(f,'notiz','Notiz',record?.notiz||'','textarea');const{err}=controls(f,'Speichern');let pending=null;f.onsubmit=e=>{e.preventDefault();const payload=Object.fromEntries(new FormData(f));if(kind==='wein')payload.flaschengroesse=Number(payload.flaschengroesse);pending=payload;submitLager(f,err,async()=>{const r=await client.rpc('wg_lager_stamm',{p_art:kind,p_id:id,p_revision:record?.revision??null,p_daten:pending});if(r.error){{const check=await client.from(kind==='wein'?'wg_weine':'wg_lagerplaetze').select('*').eq('id',id);if(check.data?.length===1&&Object.entries(pending).every(([k,v])=>String(check.data[0][k])===String(v)))return;}throw r.error;}});};}
+function showWine(w){const f=modal(wineLabel(w));f.append(node('p',w.bereich),node('p','Flaschengröße: '+nf(w.flaschengroesse)+' Liter'),node('p',w.notiz||''),action('Bearbeiten',()=>editStamm('wein',w)),action('Bestand buchen',()=>openBooking(null,w)));for(const b of lager.bestaende.filter(b=>b.wein_id===w.id&&Number(b.menge)>0))f.append(action(placeLabel(lager.plaetze.find(p=>p.id===b.platz_id))+' · '+nf(b.menge)+(b.zustand==='Tankwein'?' Liter':' Flaschen · '+b.zustand),()=>showPlace(b.platz_id),'clear'));const{save}=controls(f,'');save.remove();}
+function showPlace(id){const p=lager.plaetze.find(p=>p.id===id);if(!p)return;const f=modal(placeLabel(p));f.append(node('p',p.bereich+' · '+p.art),node('p',p.notiz||''));for(const b of stocksAt(id)){f.append(node('h3',wineLabel(lager.weine.find(w=>w.id===b.wein_id))),node('p',nf(b.menge)+(b.zustand==='Tankwein'?' Liter':' Flaschen · '+b.zustand)),action('Entnehmen / Umlagern',()=>openBooking(p,lager.weine.find(w=>w.id===b.wein_id),b)));}f.append(action('＋ Einlagern',()=>openBooking(p)),action('Platz bearbeiten',()=>editStamm('platz',p)),action('QR-Code anzeigen / drucken',()=>showQr('platz',p.id,placeLabel(p))));controls(f,'');f.querySelector('[type=submit]').remove();}
+function openBooking(place=null,wine=null,stock=null){
+ const f=modal('Bestand buchen');const area=place?.bereich||wine?.bereich||lagerBereich;
+ const wines=lager.weine.filter(w=>w.bereich===area),places=lager.plaetze.filter(p=>p.bereich===area);
+ if(!wines.length||!places.length){f.append(node('p','Bitte zuerst Wein und Lagerplatz in '+area+' anlegen.'));const{save}=controls(f,'');save.remove();return;}
+ f.append(node('p',area+' · Mengen werden zentral für das ganze Team gespeichert.','helper'));
+ const a=field(f,'aktion','Aktion',stock?'Verkauf':'Einlagern','text',(area==='Schnäpse & Liköre'?['Einlagern','Verkauf','Weinfest (LKW)','Umlagern','Korrektur']:['Einlagern','Verkauf','Weinfest (LKW)','Umlagern','Etikettieren','Abfüllen','Korrektur']));
+ const w=field(f,'wein_id','Wein',wine?.id||wines[0].id,'text',wines.map(x=>[x.id,wineLabel(x,true)]));
+ const src=field(f,'quelle','Von Lagerplatz',place?.id||places[0].id,'text',places.map(p=>[p.id,placeLabel(p)]));
+ const zs=field(f,'zustand','Bisheriger Zustand',stock?.zustand||'etikettiert','text',(area==='Schnäpse & Liköre'?['etikettiert']:['etikettiert','unetikettiert','Tankwein']));
+ const dst=field(f,'ziel','Nach Lagerplatz',place?.id||places[0].id,'text',places.map(p=>[p.id,placeLabel(p)]));
+ const zd=field(f,'zielzustand','Zielzustand',stock?.zustand||'etikettiert','text',(area==='Schnäpse & Liköre'?['etikettiert']:['etikettiert','unetikettiert','Tankwein']));
+ const cartons=field(f,'kartons','Kartons (je 6 Flaschen)',0,'number');cartons.step='1';const loose=field(f,'einzelflaschen','Einzelne Flaschen',0,'number');loose.step='1';
+ const qty=field(f,'menge','Menge','','number');qty.required=true;const hint=node('p','', 'helper');f.append(hint);field(f,'notiz','Bemerkung / bei Korrektur: Grund','','textarea');const{err}=controls(f,'Verbindlich buchen');let token=crypto.randomUUID(),pending=null,uncertain=false;
+ function update(){const k=a.value;src.parentElement.hidden=k==='Einlagern';zs.parentElement.hidden=k==='Einlagern';dst.parentElement.hidden=['Verkauf','Korrektur'].includes(k);zd.parentElement.hidden=['Verkauf','Korrektur'].includes(k);if(k==='Etikettieren'){zs.value='unetikettiert';zd.value='etikettiert';}if(k==='Abfüllen'){zs.value='Tankwein';if(zd.value==='Tankwein')zd.value='unetikettiert';}if(k==='Umlagern'||k==='Weinfest (LKW)')zd.value=zs.value;if(k==='Weinfest (LKW)'){const trucks=places.filter(p=>p.art==='LKW');for(const o of dst.options)o.disabled=!trucks.some(p=>p.id===o.value);if(!trucks.some(p=>p.id===dst.value))dst.value=trucks[0]?.id||'';}else for(const o of dst.options)o.disabled=false;
+ const state=k==='Einlagern'?zd.value:zs.value,liters=k!=='Abfüllen'&&state==='Tankwein';const packs=!liters&&k!=='Korrektur'&&area!=='Schnäpse & Liköre';cartons.parentElement.hidden=!packs;loose.parentElement.hidden=!packs;qty.readOnly=packs;if(packs)qty.value=String(Number(cartons.value||0)*6+Number(loose.value||0));qty.step=liters?'0.001':'1';qty.min=k==='Korrektur'?'0':liters?'.001':'1';qty.parentElement.firstChild.textContent=k==='Korrektur'?'Gezählter neuer Bestand ('+(liters?'Liter':'Flaschen')+')':k==='Abfüllen'?'Anzahl abgefüllter Flaschen':'Menge ('+(liters?'Liter':'Flaschen')+')';const existing=lager.bestaende.find(b=>b.wein_id===w.value&&b.platz_id===src.value&&b.zustand===zs.value);hint.textContent=(k==='Weinfest (LKW)'&&!places.some(p=>p.art==='LKW')?'Bitte zuerst einen Lagerplatz mit Art LKW in diesem Bereich anlegen. ':'')+(k==='Einlagern'?'Auch für Anfangsbestand. ':`Vorhanden an der Quelle: ${nf(existing?.menge)} ${zs.value==='Tankwein'?'Liter':'Flaschen'}. `)+(k==='Abfüllen'?'Der Tank wird um Flaschenanzahl × Flaschengröße vermindert. Verluste bei Bedarf separat mit begründeter Korrektur buchen.':k==='Etikettieren'?'Die Flaschenzahl bleibt insgesamt gleich.':k==='Korrektur'?'Ersetzt den Bestand an diesem Platz für diesen Wein/Zustand; Grund erforderlich.':'');}
+ cartons.oninput=update;loose.oninput=update;for(const input of [a,w,src,zs,dst,zd])input.onchange=update;
+ src.onchange=()=>{if(a.value!=='Etikettieren'&&a.value!=='Abfüllen')zs.value=places.find(p=>p.id===src.value)?.art==='Tank'?'Tankwein':'etikettiert';update();};dst.onchange=()=>{if(a.value==='Einlagern')zd.value=places.find(p=>p.id===dst.value)?.art==='Tank'?'Tankwein':'etikettiert';update();};if(place?.art==='Tank'){zs.value='Tankwein';zd.value='Tankwein';}update();
+ f.onsubmit=e=>{e.preventDefault();if(!pending)pending=Object.fromEntries(new FormData(f));pending.menge=Number(pending.menge);if(pending.aktion==='Verkauf'){pending.aktion='Entnehmen';pending.zweck='Verkauf';}else if(pending.aktion==='Weinfest (LKW)'){pending.aktion='Umlagern';pending.zweck='Weinfest (LKW)';}submitLager(f,err,async()=>{const r=await client.rpc('wg_lager_buchen',{p_id:token,p_daten:pending});if(r.error){if(r.error.code&&/^(P0001|22|23)/.test(r.error.code)){pending=null;uncertain=false;token=crypto.randomUUID();}else uncertain=true;throw r.error;}}).then(()=>{if(uncertain&&lagerDialog.open){for(const e of f.elements)if(e.tagName!=='BUTTON')e.disabled=true;err.textContent+=' Antwort unklar. Erneut buchen sendet dieselbe Buchungsnummer und erzeugt keine Doppelbuchung.';}});};
+}
+function qrUrl(kind,id){const u=new URL(location.href);u.search='';u.hash='wg-'+kind+'='+id;return u.href;}
+function showQr(kind,id,title){const f=modal('QR-Code');const url=qrUrl(kind,id),box=node('section',undefined,'qr-label');box.append(node('strong',title));const qr=qrcode(0,'M');qr.addData(url);qr.make();const holder=node('div');holder.innerHTML=qr.createSvgTag({cellSize:4,margin:16,scalable:true});box.append(holder,node('small',kind==='platz'?'Weingut · Lagerplatz':'Weingut · Gerät'));lagerDialog.insertBefore(box,f);const link=node('a','Link öffnen');link.href=url;f.append(link,node('p','Optional drucken, als PDF sichern oder den Link verwenden. Scannen öffnet diesen Eintrag; eine Anmeldung ist weiterhin erforderlich.','helper'),action('Drucken / als PDF',()=>{document.body.classList.add('print-qr');window.print();document.body.classList.remove('print-qr');}),action('QR als SVG herunterladen',()=>{const blob=new Blob([holder.innerHTML],{type:'image/svg+xml'}),href=URL.createObjectURL(blob),a=node('a');a.href=href;a.download='Weingut-QR-'+id+'.svg';a.click();setTimeout(()=>URL.revokeObjectURL(href),1000);}));const{save}=controls(f,'');save.remove();}
+async function followQr(){if(!user||!location.hash||qrHandled===location.hash)return;const m=location.hash.match(/^#wg-(platz|maschine)=([0-9a-f-]{36})$/i);if(!m)return;if(m[1]==='platz'&&lagerError)return;qrHandled=location.hash;if(m[1]==='platz'){const p=lager.plaetze.find(p=>p.id===m[2]);if(p){lagerBereich=p.bereich;showPage('weinbestand');showPlace(p.id);}else message('Dieser Lagerplatz wurde nicht gefunden.',true);}else{const r=machines.find(x=>x.id===m[2]);if(r){showPage('maschinen');openAttachments('maschine',r);}else message('Dieses Gerät wurde nicht gefunden.',true);}}
+window.addEventListener('hashchange',()=>{qrHandled='';followQr();});
+lagerDialog.addEventListener('cancel',e=>{if(lagerBusy)e.preventDefault();});
+
+function stableJson(v){return JSON.stringify(v&&typeof v==='object'?(Array.isArray(v)?v.map(x=>JSON.parse(stableJson(x))):Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(stableJson(v[k]))]))):v);}
+
 syncDesktopLayout();
 
 </script>
