@@ -120,6 +120,20 @@
     .app-mini-logo,.app-logo-fallback{width:36px;height:36px;flex-shrink:0;border-radius:9px;object-fit:contain;display:block}
     .app-logo-fallback{display:grid;place-items:center;background:#e8e0eb;color:#634078;font-size:17px;font-weight:650;border:1px solid #dbcedf}
     @media(max-width:480px){.menu .icon{width:26px;height:26px}.menu .icon svg{width:24px;height:24px}.app-mini-logo,.app-logo-fallback{width:34px;height:34px;border-radius:8px}.app-name-group{gap:9px}.app-name-group h3{font-size:16px}.compact-app .app-link{gap:9px}}
+
+    .quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 15px}
+    .quick-actions button{padding:10px 7px;font-size:13px;font-weight:600;background:#eee6f0;border-color:#dcd0e1;color:#634078;white-space:nowrap}
+    .category .shopping-start{margin-left:auto;background:#634078;color:#fffaf2;border-color:#634078}
+    body.shopping-mode .wrap>header,body.shopping-mode #application>.row,body.shopping-mode #listPage>.bar,body.shopping-mode #filterCard,body.shopping-mode #application>.footer{display:none}
+    body.shopping-mode .wrap{max-width:650px;padding-top:0}
+    .shopping-toolbar{position:sticky;top:0;z-index:10;background:#f3efe9f5;padding:16px 0 13px;border-bottom:1px solid #d9cbb9;margin-bottom:16px;backdrop-filter:blur(8px)}
+    .shopping-toolbar h2{font-size:23px;margin:0}.shopping-toolbar .row{gap:8px}.shopping-toolbar button{font-size:13px;min-height:40px;padding:8px 11px}
+    .shopping-toolbar label{display:grid;gap:6px;font-size:13px;color:#756a78;margin:13px 0 9px}.shopping-toolbar select{font-size:17px;font-weight:600;min-height:46px}
+    .shopping-count{margin:0;font-size:13px;color:#756a78}.shopping-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:16px;margin-bottom:10px}
+    .shopping-card h3{font-size:18px;overflow-wrap:anywhere;margin:0}.shopping-card .body{font-size:14px;margin:6px 0 0}.shopping-card .meta{margin:5px 0 0;font-size:12px}
+    .shopping-card .shopping-check{min-height:48px;min-width:48px;padding:10px;font-size:22px;line-height:1;color:#28633f;background:#e8eee1;border:1px solid #cedac4}
+    .shopping-finished{margin-top:22px;border-top:1px solid #ded2c5;padding-top:14px}.shopping-finished summary{font-weight:600;color:#756a78;cursor:pointer;padding:8px 0}.shopping-finished-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #e5dcd3;font-size:14px}.shopping-finished-row button{font-size:12px;padding:6px 9px;min-height:36px}
+    @media(max-width:360px){.quick-actions{gap:5px}.quick-actions button{font-size:12px;padding:10px 4px}}
   </style>
 </head>
 <body>
@@ -223,6 +237,7 @@ const categories=['Alle','Raiffeisen','Labor','Baumarkt','Diverses'];
 let user=null, entries=[], apps=[], machines=[], members=[], page=null, category='Alle';
 let editing=null, editingApp=null, editingMachine=null, authVersion=0, dataVersion=0, refreshing=false, saving=false;
 let appsEditing=false, entryDraft=null, machineDraft=null;
+let shoppingMode=false, shoppingBusy=false;const shoppingDone=new Set();
 const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 function action(label,fn,cls='') {
   const b=node('button',label,cls);b.type='button';
@@ -246,7 +261,7 @@ function loginEmail(name){
 function signedOut(){
   dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;
-  disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;
+  disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
   $('entryForm').reset();$('appForm').reset();$('machineForm').reset();$('items').replaceChildren();$('home').replaceChildren();
   $('application').hidden=true;$('account').hidden=true;$('login').hidden=false;
@@ -312,12 +327,13 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!saving&&
 // ============================================================
 // STARTSEITE UND MENÜS
 // ============================================================
-function showPage(next){appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
+function showPage(next){shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
 $('back').onclick=()=>showPage(null);
 $('search').oninput=renderList;$('statusFilter').onchange=renderList;
 $('newEntry').onclick=()=>page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
 function render(){
   if(!user)return;
+  document.body.classList.toggle('shopping-mode',shoppingMode&&page==='besorgung');
   $('home').hidden=!!page;$('listPage').hidden=!page;$('back').hidden=!page;
   $('pageHint').textContent='';$('pageHint').hidden=true;
   $('back').parentElement.hidden=!page;
@@ -327,10 +343,14 @@ function render(){
   $('statusFilter').options[0].textContent=page==='notiz'?'Aktuelle Notizen':'Offen';
   $('categories').hidden=page!=='besorgung';$('categories').replaceChildren();
   if(page==='besorgung')for(const value of categories)$('categories').append(action(value,()=>{category=value;render();},category===value?'active':''));
+  if(page==='besorgung')$('categories').append(action('Einkaufsmodus',startShopping,'shopping-start'));
   renderList();
 }
 function renderHome(){
   const home=$('home');home.replaceChildren();
+  const quick=node('div',undefined,'quick-actions');quick.setAttribute('aria-label','Schnellerfassung');
+  for(const [kind,label] of [['aufgabe','＋ Aufgabe'],['besorgung','＋ Besorgung'],['notiz','＋ Notiz']])quick.append(action(label,()=>{showPage(kind);openEntry();}));
+  home.append(quick);
   const welcome=node('section',undefined,'card welcome personal-overview');
   welcome.append(node('h2','Meine offenen Punkte'));
   const me=members.find(member=>member.user_id===user.id)?.anzeigename||'';
@@ -358,6 +378,7 @@ function renderHome(){
 function renderList(){
   if(!page || !user)return;
   const container=$('items');container.replaceChildren();
+  if(page==='besorgung'&&shoppingMode){renderShopping(container);return;}
   if(page==='apps'){renderApps(container);return;}
   if(page==='maschinen'){renderMachines(container);return;}
   const q=$('search').value.trim().toLocaleLowerCase('de');const status=$('statusFilter').value;
@@ -719,6 +740,41 @@ function appLogo(app){
  const fallback=()=>{const icon=node('span',String(app.name||'A').slice(0,1).toUpperCase(),'app-logo-fallback');icon.setAttribute('aria-hidden','true');return icon;};
  if(!src)return fallback();
  const image=node('img');image.src=src;image.alt='';image.className='app-mini-logo';image.loading='lazy';image.onerror=()=>image.replaceWith(fallback());return image;
+}
+
+
+// Schnellerfassung und fokussierte Einkaufsliste, gemeinsame Daten bleiben gleich.
+function startShopping(){shoppingMode=true;shoppingDone.clear();$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
+async function checkShopping(entry,done){
+ if(shoppingBusy)return;shoppingBusy=true;renderList();
+ try{
+  await mutate('wg_eintraege',entry,{erledigt:done});
+  if(done)shoppingDone.add(entry.id);else shoppingDone.delete(entry.id);
+  await refreshData();
+ }finally{shoppingBusy=false;renderList();}
+}
+function renderShopping(container){
+ const toolbar=node('section',undefined,'shopping-toolbar');
+ const row=node('div',undefined,'row between');row.append(node('h2','Einkaufsmodus'));
+ const exit=action('Beenden',()=>{if(shoppingBusy)return;shoppingMode=false;render();});exit.disabled=shoppingBusy;row.append(exit);toolbar.append(row);
+ const label=node('label','Besorgen bei'),select=node('select');select.setAttribute('aria-label','Geschäft auswählen');
+ for(const name of categories){const option=node('option',name==='Alle'?'Alle Geschäfte':name);option.value=name;option.selected=name===category;select.append(option);}select.disabled=shoppingBusy;select.onchange=()=>{category=select.value;renderList();};label.append(select);toolbar.append(label);
+ const all=entries.filter(entry=>entry.art==='besorgung'&&(category==='Alle'||entry.kategorie===category));
+ const open=all.filter(entry=>!entry.erledigt&&!shoppingDone.has(entry.id));
+ const finished=all.filter(entry=>shoppingDone.has(entry.id));
+ toolbar.append(node('p',open.length+' offen'+(finished.length?' · '+finished.length+' gerade besorgt':''),'shopping-count'));container.append(toolbar);
+ if(!open.length)container.append(node('p',finished.length?'Alles auf dieser Liste besorgt. ✓':'Keine offenen Besorgungen für diese Auswahl.','card empty'));
+ for(const entry of open){
+  const card=node('article',undefined,'card shopping-card'),text=node('div');text.append(node('h3',entry.titel));
+  if(entry.beschreibung)text.append(node('p',entry.beschreibung,'body'));
+  if(category==='Alle'&&entry.kategorie)text.append(node('p',entry.kategorie,'meta'));
+  clickableCard(card,()=>openAttachments('eintrag',entry),'Details zu '+entry.titel);
+  const done=action('✓',()=>checkShopping(entry,true),'shopping-check');done.setAttribute('aria-label',entry.titel+' als besorgt markieren');done.disabled=shoppingBusy;card.append(text,done);container.append(card);
+ }
+ const add=action('＋ Besorgung hinzufügen',()=>openEntry());add.disabled=shoppingBusy;container.append(add);
+ if(finished.length){const detail=node('details',undefined,'shopping-finished');detail.append(node('summary','Gerade besorgt ('+finished.length+')'));
+  for(const entry of finished){const row=node('div',undefined,'shopping-finished-row');row.append(node('span',entry.titel));const undo=action('Rückgängig',()=>checkShopping(entry,false));undo.disabled=shoppingBusy;row.append(undo);detail.append(row);}container.append(detail);
+ }
 }
 
 </script>
