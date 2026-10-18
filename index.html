@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f4eee5">
+  <meta name="theme-color" content="#f3efe9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Pau &amp; Maya BIO">
   <title>Weingut Pau &amp; Maya BIO · Organisation</title>
@@ -97,6 +97,29 @@
     #back{background:#fdf7ef;border-color:#e0d2c6}#sync.error{background:#f9e4de;border:1px solid #ebc7be;border-radius:10px;padding:10px 12px;color:#963e31}
     @media(max-width:480px){header{padding-bottom:17px;margin-bottom:17px}.brand img{width:46px;height:46px}.menu .icon{width:32px;height:32px;font-size:22px}.personal-overview h2{font-size:19px}.card{border-radius:15px}}
     @media(prefers-reduced-motion:reduce){button,.btn{transition:none}}
+
+    /* Variante 2: ruhig, einheitlich und mit feinen Linien-Icons. */
+    :root{--paper:#f3efe9;--surface:#faf8f4;--line:#ded7d0}
+    body{background:var(--paper)}
+    .card{background:#faf8f4;border-color:#ded7d0;box-shadow:0 2px 8px #382d2504}
+    .menu,.menu:nth-child(2),.menu:nth-child(3),.menu:nth-child(4),.menu:nth-child(5){background:#faf8f4;border-color:#ded7d0;box-shadow:0 2px 8px #382d2504;border-radius:13px}
+    .menu:not(:disabled):hover{background:#f1eaf2;border-color:#c9b9cf;box-shadow:0 3px 12px #51365d09}
+    .menu .icon{background:transparent;border:0;border-radius:0;width:28px;height:28px;margin-bottom:7px;color:#72577f}
+    .menu .icon svg{width:26px;height:26px;display:block}.menu strong{color:#392f3f;font-weight:680;letter-spacing:-.35px}
+    .menu .count{color:#85738c;font-size:12px;font-weight:550}
+    .welcome.personal-overview{background:#eee7de;border-color:#ded1bd;border-left:2px solid #b2955a;box-shadow:none}
+    .personal-overview h2{color:#594b3e}.personal-point{background:#faf7f1;border-color:#dfd5c8}
+    .primary{background:#634078;border-color:#634078;box-shadow:none}.primary:not(:disabled):hover,.btn.primary:hover{background:#735087;border-color:#735087}
+    .compact-entry,.compact-machine,.compact-app{border-color:#ded7d0}
+    .compact-machine .machine-cover,.compact-machine .machine-placeholder{background:#f0ece8;border-color:#e4dcd5}
+    #filterCard{background:#ece7e1;border-color:#ded5ca}
+    .pill{background:#ece5ef;border:0;border-radius:6px}.pill.done{background:#e4eadd}.pill.overdue{background:#f3e1dc}
+    .compact-app .app-link{display:flex;flex-wrap:nowrap;align-items:center;gap:12px}
+    .app-name-group{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
+    .app-name-group h3{min-width:0;margin:0;font-size:17px}
+    .app-mini-logo,.app-logo-fallback{width:36px;height:36px;flex-shrink:0;border-radius:9px;object-fit:contain;display:block}
+    .app-logo-fallback{display:grid;place-items:center;background:#e8e0eb;color:#634078;font-size:17px;font-weight:650;border:1px solid #dbcedf}
+    @media(max-width:480px){.menu .icon{width:26px;height:26px}.menu .icon svg{width:24px;height:24px}.app-mini-logo,.app-logo-fallback{width:34px;height:34px;border-radius:8px}.app-name-group{gap:9px}.app-name-group h3{font-size:16px}.compact-app .app-link{gap:9px}}
   </style>
 </head>
 <body>
@@ -323,7 +346,7 @@ function renderHome(){
   home.append(welcome);
   const grid=node('div',undefined,'grid');
   for(const [key,info] of Object.entries(sections)){
-    const b=action('',()=>showPage(key),'menu');b.append(node('span',info.icon,'icon'),node('strong',info.title));
+    const b=action('',()=>showPage(key),'menu');b.append(menuIcon(key,info.icon),node('strong',info.title));
     const count=key==='apps'?apps.length:key==='maschinen'?machines.length:entries.filter(e=>e.art===key&&!e.erledigt).length;
     b.append(node('span',count+(key==='apps'?' verknüpft':key==='maschinen'?' erfasst':key==='notiz'?' aktuell':' offen'),'count'));grid.append(b);
   }home.append(grid);
@@ -562,7 +585,7 @@ $('fileDialog').addEventListener('cancel',event=>{if(fileBusy)event.preventDefau
 function renderApps(container){
   if(!apps.length)container.append(node('p','Hier kannst du eure Apps verknüpfen.','card empty'));
   for(const app of apps){
-    const card=node('article',undefined,'card compact-app'),row=node('div',undefined,'app-link');row.append(node('h3',app.name));
+    const card=node('article',undefined,'card compact-app'),row=node('div',undefined,'app-link');const identity=node('div',undefined,'app-name-group');identity.append(appLogo(app),node('h3',app.name));row.append(identity);
     const url=safeUrl(app.url);if(url){const link=node('a','Öffnen ↗','btn primary');link.href=url;link.target='_blank';link.rel='noopener noreferrer';row.append(link);}card.append(row);
     if(appsEditing){const controls=node('div',undefined,'item-actions app-management');controls.append(action('Bearbeiten',()=>openApp(app)),action('Entfernen',()=>removeRecord('wg_apps',app),'danger'));card.append(controls);}container.append(card);
   }
@@ -670,6 +693,32 @@ async function saveDraftFiles(kind,draft,uid,errorId){
    item.done=true;done++;renderFormFiles(kind);
   }catch(error){throw new Error('Eintrag gespeichert; '+done+' von '+draft.files.length+' Dateien gespeichert. '+error.message+' Bitte erneut „Speichern“ drücken – bereits gespeicherte Dateien werden nicht doppelt hochgeladen.');}
  }
+}
+
+
+// Einheitliche, ruhige Menü-Icons; ausschließlich feste SVG-Pfade.
+function menuIcon(key,fallback){
+ const icons={
+  aufgabe:'<path d="m5 12 4 4L19 6"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/>',
+  besorgung:'<path d="M3 4h2l2 12h12l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
+  notiz:'<path d="M13 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8"/><path d="m11 14 1-4 8-8 3 3-8 8-4 1ZM18 4l3 3"/>',
+  maschinen:'<circle cx="7" cy="17" r="4"/><circle cx="19" cy="18" r="3"/><path d="M3 13V6h8l2 8h6a2 2 0 0 1 2 2M11 17h5M11 6v8M5 6V3h6M17 14V9"/>',
+  apps:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
+ };
+ const icon=node('span',undefined,'icon');icon.setAttribute('aria-hidden','true');
+ if(icons[key])icon.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+icons[key]+'</svg>';else icon.textContent=fallback;
+ return icon;
+}
+function appLogo(app){
+ const name=String(app.name||'').trim().toLocaleLowerCase('de');
+ let path='';try{const url=new URL(app.url);if(url.hostname==='fabian-112-cmd.github.io')path=url.pathname.toLowerCase();}catch{}
+ let src=null;
+ if(path.startsWith('/pau-kasse/')||name==='kasse')src='app-logo-kasse.png';
+ else if(path.startsWith('/mostrechner/')||name==='mostrechner')src='app-logo-mostrechner.png';
+ else if(path.startsWith('/weintour/')||name==='weintour')src='app-logo-weintour.png';
+ const fallback=()=>{const icon=node('span',String(app.name||'A').slice(0,1).toUpperCase(),'app-logo-fallback');icon.setAttribute('aria-hidden','true');return icon;};
+ if(!src)return fallback();
+ const image=node('img');image.src=src;image.alt='';image.className='app-mini-logo';image.loading='lazy';image.onerror=()=>image.replaceWith(fallback());return image;
 }
 
 </script>
