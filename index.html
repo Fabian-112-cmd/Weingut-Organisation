@@ -239,7 +239,6 @@
     <div class="two"><label>TÜV fällig am<input name="tuv_am" type="date"></label><label>Wartung fällig am<input name="wartung_am" type="date"></label></div>
     <p class="helper">Optionale Termine. Wenn nur der TÜV-Monat bekannt ist, den letzten Tag dieses Monats eintragen. Hinweise erscheinen ab 60 Tagen vorher in dieser App; keine Push-Mitteilung bei geschlossener App.</p>
     <label>Notizen / Besonderheiten<textarea name="notizen" maxlength="8000" rows="4"></textarea></label>
-    <p class="helper">Nach dem Speichern bei „Details öffnen“ Fotos und Dokumente hochladen.</p>
     <div id="machineFiles" class="form-files"></div>
     <p id="machineError" class="error" role="alert"></p>
     <div class="dialog-actions"><button type="button" id="cancelMachine">Abbrechen</button><button class="primary" id="saveMachine">Speichern</button></div>
@@ -492,13 +491,13 @@ function reminderLimit(){const d=new Date(today()+'T12:00:00');d.setDate(d.getDa
 function machineReminders(){const limit=reminderLimit();return machines.flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
 function renderMachines(container){
   renderMachineTabs(container);
-  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||(m.details?.gruppe||'Großmaschinen')===machineGroup).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
+  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||(m.details?.gruppe||'Großmaschinen')===machineGroup).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.fruehere_inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q?'Keine passende Maschine gefunden.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
   for(const m of found){
     const box=node('article',undefined,'card compact-machine');box.dataset.recordId=m.id;box.dataset.recordKind='maschine';if(fileContext?.id===m.id)box.classList.add('selected-record');
     const photos=filesFor('maschine',m.id).filter(inlinePhoto),cover=photos.find(f=>f.titelbild)||photos[0];
     box.append(cover?privateImage(cover,'machine-cover'):devicePlaceholder(m));
-    const summary=node('div',undefined,'machine-summary');summary.append(node('h3',m.name));if(m.details?.geraeteart)summary.append(node('p',m.details.geraeteart,'meta'));if(m.typ==='Akkuwerkzeug'&&m.details?.spannung&&m.details.spannung!=='Nicht angegeben')summary.append(node('small',m.details.spannung,'meta'));
+    const summary=node('div',undefined,'machine-summary');summary.append(node('h3',m.name));if(m.details?.geraeteart)summary.append(node('p',m.details.geraeteart,'meta'));
     for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key]&&m[key]<=reminderLimit())summary.append(node('p',label+(m[key]<today()?' abgelaufen · ':' bald fällig · ')+dateText(m[key]),m[key]<today()?'error':'meta'));
     const editRow=node('div',undefined,'machine-edit-row');editRow.append(action('Bearbeiten',()=>openMachine(m)));summary.append(editRow);
     box.append(summary);clickableCard(box,()=>openAttachments('maschine',m),'Details zu '+m.name);container.append(box);
@@ -561,7 +560,7 @@ function openAttachments(kind,record){
 }
 function renderAttachments(){
  if(!fileContext)return;
- const {kind,id}=fileContext;const record=(kind==='maschine'?machines:entries).find(r=>r.id===id);
+ const {kind,id}=fileContext;const managingMachine=kind==='maschine'&&$('machineDialog').open;document.querySelector('#fileDialog .file-upload').hidden=kind==='maschine'&&!managingMachine;const record=(kind==='maschine'?machines:entries).find(r=>r.id===id);
  const list=$('fileGallery');list.replaceChildren();
  if(!record){list.append(node('p','Dieser Eintrag wurde inzwischen entfernt.','error'));return;}
  const heroFile=filesFor(kind,id).filter(inlinePhoto).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild))[0];
@@ -580,15 +579,14 @@ function renderAttachments(){
   field('Maschine',machines.find(m=>m.id===record.maschine_id)?.name);
   field('Status',record.erledigt?'Erledigt / Archiv':'Offen');
  }
- field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);
+ if(kind!=='maschine')field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);
  const recordActions=node('div',undefined,'item-actions');
  const edit=()=>{if(fileBusy)return;closeDetails();kind==='maschine'?openMachine(record):openEntry(record);};
  recordActions.append(action('Bearbeiten',edit));
- if(kind==='maschine')recordActions.append(action('＋ Aufgabe',()=>{if(fileBusy)return;closeDetails();showPage('aufgabe');openEntry();$('entryForm').elements.maschine_id.value=record.id;}));
- else recordActions.append(action(record.erledigt?'↩ Wieder öffnen':record.art==='notiz'?'Archivieren':'✓ Erledigt',async()=>{await toggleDone(record);renderAttachments();},'success'));
- recordActions.append(action(kind==='maschine'?'Entfernen':'Löschen',async()=>{if(fileBusy)return;if(kind==='maschine')await removeMachine(record);else await removeRecord('wg_eintraege',record);if(!(kind==='maschine'?machines:entries).some(r=>r.id===record.id))closeDetails();},'danger'));
+ if(kind!=='maschine') recordActions.append(action(record.erledigt?'↩ Wieder öffnen':record.art==='notiz'?'Archivieren':'✓ Erledigt',async()=>{await toggleDone(record);renderAttachments();},'success'));
+ if(kind!=='maschine')recordActions.append(action(kind==='maschine'?'Entfernen':'Löschen',async()=>{if(fileBusy)return;if(kind==='maschine')await removeMachine(record);else await removeRecord('wg_eintraege',record);if(!(kind==='maschine'?machines:entries).some(r=>r.id===record.id))closeDetails();},'danger'));
  for(const button of recordActions.children)button.disabled=fileBusy;if(!$('entryDialog').open&&!$('machineDialog').open)details.append(recordActions);
- if(kind==='maschine'&&!$('entryDialog').open&&!$('machineDialog').open){const tasks=entries.filter(e=>e.maschine_id===record.id&&e.art==='aufgabe'&&!e.erledigt);if(tasks.length){details.append(node('h3','Offene Aufgaben'));for(const task of tasks){const open=action(task.titel,()=>openAttachments('eintrag',task),'clear');open.disabled=fileBusy;details.append(open);}}}
+
  list.append(details);
  const files=filesFor(kind,id).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild));
  const photos=node('div',undefined,'photo-grid');const documents=node('div');
@@ -597,12 +595,12 @@ function renderAttachments(){
   if(inlinePhoto(file))card.append(privateImage(file));
   card.append(node('p',file.name,'attachment-name'),node('p',(file.groesse/1024/1024).toLocaleString('de-DE',{maximumFractionDigits:1})+' MB'+(file.titelbild?' · Titelbild':''),'meta'));
   const controls=node('div',undefined,'item-actions');
-  for(const b of [action('Öffnen',()=>openFile(file)),...(kind==='maschine'&&inlinePhoto(file)&&!file.titelbild?[action('Als Titelbild',()=>setCover(file))]:[]),action('Entfernen',()=>deleteFile(file),'danger')]){b.disabled=fileBusy;controls.append(b);}card.append(controls);
+  for(const b of [action('Öffnen',()=>openFile(file)),...(kind==='maschine'&&!managingMachine?[]:[...(kind==='maschine'&&inlinePhoto(file)&&!file.titelbild?[action('Als Titelbild',()=>setCover(file))]:[]),action('Entfernen',()=>deleteFile(file),'danger')])]){b.disabled=fileBusy;controls.append(b);}card.append(controls);
   (inlinePhoto(file)?photos:documents).append(card);
  }
  if(photos.children.length){list.append(node('h3','Bilder'),photos);}
  if(documents.children.length){list.append(node('h3','Dokumente & weitere Dateien'),documents);}
- if(!files.length)list.append(node('p','Noch keine Bilder oder Dateien vorhanden.','muted'));
+ if(!files.length&&kind!=='maschine')list.append(node('p','Noch keine Bilder oder Dateien vorhanden.','muted'));
  if(files.some(f=>['image/heic','image/heif'].includes(f.mime)))list.append(node('p','HEIC/HEIF-Fotos lassen sich öffnen oder herunterladen. Für eine Vorschau und das Titelbild bitte JPG, PNG oder WebP verwenden.','helper'));
 }
 function setFileBusy(value){fileBusy=value;$('uploadFiles').disabled=value;$('closeFiles').disabled=value;$('fileInput').disabled=value;$('logout').disabled=value;renderAttachments();}
@@ -697,7 +695,7 @@ function addDraftFiles(kind,selected){
 }
 function renderFormFiles(kind){
  const host=$(kind==='maschine'?'machineFiles':'entryFiles');if(!host)return;
- const draft=draftFor(kind);host.replaceChildren();if(!draft)return;
+ const draft=draftFor(kind);host.replaceChildren();if(!draft)return;if(kind==='maschine')machineEditControls(host,draft);
  host.append(node('h3','Bilder & Dateien'));
  const pickers=node('div',undefined,'file-pickers');
  for(const camera of [true,false]){
@@ -877,11 +875,11 @@ function tabs(values,current,change){const row=node('div',undefined,'lager-tabs'
 function renderMachineTabs(c){c.append(tabs(['Alle','Großmaschinen','Werkzeuge & Kleingeräte'],machineGroup,v=>{machineGroup=v;renderList();}));}
 const mf=$('machineForm');
 const mex=node('section',undefined,'machine-extras');
-const mfields=[['gruppe','Bereich','select',['Großmaschinen','Werkzeuge & Kleingeräte']],['geraeteart','Geräteart (z. B. Fettpresse)','text'],['spannung','Akkuspannung','select',['Nicht angegeben','12 V','18 V','24 V','36 V','40 V','54 V','Weitere']],['status','Status','select',['Verfügbar','Defekt','In Reparatur','Ausgeliehen','Außer Betrieb']],['standort','Standort','text'],['seriennummer','Seriennummer','text'],['inventarnummer','Inventarnummer (leer = automatisch)','text'],['ausgeliehen_an','Ausgeliehen an','text'],['rueckgabe_am','Rückgabe geplant','date'],['kaufdatum','Kaufdatum','date'],['herstellerlink','Hersteller / Ersatzteile (https://…)','url']];
+const mfields=[['gruppe','Bereich','select',['Großmaschinen','Werkzeuge & Kleingeräte']],['geraeteart','Geräteart (z. B. Fettpresse)','text'],['spannung','Akkuspannung','select',['Nicht angegeben','12 V','18 V','24 V']],['status','Status','select',['Verfügbar','Defekt','In Reparatur','Ausgeliehen','Außer Betrieb']],['standort','Standort','text'],['seriennummer','Seriennummer','text'],['inventarnummer','Inventarnummer (leer = automatisch)','text'],['ausgeliehen_an','Ausgeliehen an','text'],['rueckgabe_am','Rückgabe geplant','date'],['herstellungsdatum','Herstellungsdatum','date'],['kaufdatum','Kaufdatum','date'],['herstellerlink','Hersteller / Ersatzteile (https://…)','url']];
 for(const [key,title,type,opts] of mfields){const l=node('label',title);let input=node(type==='select'?'select':'input');input.name='extra_'+key;if(type==='select')for(const v of opts){const o=node('option',v);o.value=v;input.append(o);}else{input.type=type;input.maxLength=type==='url'?2000:180;}l.append(input);mex.append(l);}mf.insertBefore(mex,$('machineFiles'));
 function fillMachineExtras(f,m){for(const [k,,type,opts]of mfields)f.elements['extra_'+k].value=m?.details?.[k]||(type==='select'?opts[0]:'');updateVoltage();if(!m&&machineGroup!=='Alle'){f.elements.extra_gruppe.value=machineGroup;if(machineGroup==='Werkzeuge & Kleingeräte')f.elements.typ.value='Sonstiges';}}
-function machineExtras(f){const d={};for(const[k]of mfields)d[k]=f.elements['extra_'+k].value.trim();if(d.herstellerlink&&!safeUrl(d.herstellerlink))throw new Error('Herstellerlink muss mit https:// beginnen.');if(f.elements.typ.value!=='Akkuwerkzeug')d.spannung='';return d;}
-function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(!d[k]||k==='herstellerlink')continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k==='kaufdatum'?dateText(d[k]):d[k]),'meta'));}if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}c.append(action('QR-Code anzeigen / drucken',()=>showQr('maschine',m.id,m.name)));}
+function machineExtras(f){const d={...(editingMachine?.details||{})};for(const[k]of mfields)d[k]=f.elements['extra_'+k].value.trim();if(d.herstellerlink&&!safeUrl(d.herstellerlink))throw new Error('Herstellerlink muss mit https:// beginnen.');if(f.elements.typ.value!=='Akkuwerkzeug')d.spannung='';return d;}
+function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(k==='status'){machineStatusControl(c,m);continue;}if(!d[k]||k==='herstellerlink')continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k.endsWith('datum')?dateText(d[k]):d[k]),'meta'));}if(d.fruehere_inventarnummer)c.append(node('p','Frühere Inventarnummer: '+d.fruehere_inventarnummer,'meta'));if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}}
 function wineLabel(w,detail=false){return w?`${w.name}${w.jahrgang?' · '+w.jahrgang:''}${detail?' · '+nf(w.flaschengroesse)+' l':''}`:'Unbekannter Wein';}
 function placeLabel(p){return p?`${p.name}${p.position?' · '+p.position:''}`:'Unbekannter Platz';}
 function stocksAt(id){return lager.bestaende.filter(b=>b.platz_id===id&&Number(b.menge)>0);}
@@ -947,6 +945,21 @@ function devicePlaceholder(m){
  const box=node('div',undefined,'machine-placeholder');box.setAttribute('aria-label',m.typ==='Sonstiges'?(small?'Werkzeug':'Maschine'):m.typ);const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.innerHTML=paths[kind];box.append(svg);if(kind==='battery'&&m.details?.spannung&&m.details.spannung!=='Nicht angegeben')box.append(node('span',m.details.spannung));return box;
 }
 const css11=node('style');css11.textContent=`.compact-machine{grid-template-columns:56px minmax(0,1fr);padding:10px 12px;gap:12px;min-height:0}.compact-machine .machine-cover,.compact-machine .machine-placeholder{width:56px;height:56px;border-radius:9px}.machine-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#634078}.machine-placeholder svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.machine-placeholder span{font-size:10px;line-height:1;font-weight:700}.compact-machine .machine-summary{align-self:center;gap:3px 9px}.compact-machine .machine-summary>.meta{grid-column:1;margin:0;line-height:1.25}.compact-machine .machine-summary>h3{margin:0;font-size:16px}.compact-machine .machine-summary .machine-edit-row{grid-row:1 / span 2;align-self:start}.compact-machine .machine-summary .machine-edit-row button{padding:5px 8px;min-height:30px}@media(max-width:480px){.compact-machine{grid-template-columns:48px minmax(0,1fr);padding:9px 10px;gap:9px}.compact-machine .machine-cover,.compact-machine .machine-placeholder{width:48px;height:48px}.compact-machine .machine-summary>h3{font-size:15px;overflow-wrap:anywhere}}`;document.head.append(css11);
+
+
+// Update 13: ruhige Geräteansicht; Verwaltung ausschließlich beim Bearbeiten.
+function machineStatusControl(host,record){
+ const label=node('label','Status'),select=node('select');select.setAttribute('aria-label','Gerätestatus');
+ for(const value of ['Verfügbar','Ausgeliehen','Defekt','In Reparatur','Außer Betrieb']){const o=node('option',value==='Verfügbar'?'Auf Lager / verfügbar':value);o.value=value;select.append(o);}select.value=record.details?.status||'Verfügbar';select.disabled=fileBusy||$('machineDialog').open;
+ select.onchange=async()=>{if(fileBusy)return;const value=select.value,uid=user?.id;setFileBusy(true);try{await mutate('wg_maschinen',record,{details:{...(record.details||{}),status:value}});if(uid===user?.id)await refreshData();}catch(e){if(uid===user?.id){await refreshData();message(e.message,true);}}finally{setFileBusy(false);}};
+ label.append(select);host.append(label);
+}
+function machineEditControls(host,draft){
+ const record=editingMachine||machines.find(m=>m.id===draft.id);if(!record)return;
+ const controls=node('div',undefined,'item-actions');
+ const qr=action('QR-Code anzeigen / drucken',()=>showQr('maschine',record.id,record.name));qr.disabled=saving;controls.append(qr);
+ const remove=action('Gerät entfernen',async()=>{if(saving||fileBusy)return;if(draft.files.some(f=>!f.done))throw new Error('Bitte die Dateiauswahl zuerst speichern oder verwerfen.');await removeMachine(record);if(!machines.some(m=>m.id===record.id))closeForm('maschine');},'danger');remove.disabled=saving;controls.append(remove);host.append(controls);
+}
 
 syncDesktopLayout();
 
