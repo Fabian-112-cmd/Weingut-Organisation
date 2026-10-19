@@ -299,7 +299,7 @@ function loginEmail(name){
   return name+'@weintour.example.com';
 }
 function signedOut(){
-  resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
+  closeBoschPicker16();resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;closeDetails();
   disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
@@ -513,6 +513,7 @@ $('machineForm').onsubmit=async event=>{
     validateDraft(machineDraft);
     editingMachine=await saveParent('wg_maschinen',editingMachine,machineDraft,value);
     await saveDraftFiles('maschine',machineDraft,uid,'machineError');
+    await applyTemplateCover16(machineDraft,uid);
     if(uid!==user?.id)return;$('machineDialog').close();disposeDraft(machineDraft);machineDraft=null;await refreshData();
   }catch(error){$('machineError').textContent=error.message;}finally{formBusy(false);}
 };
@@ -706,6 +707,7 @@ function renderFormFiles(kind){
   if(camera)input.setAttribute('capture','environment');else input.multiple=true;
   input.addEventListener('change',()=>{addDraftFiles(kind,Array.from(input.files||[]));input.value='';});label.append(input);pickers.append(label);
  }
+ if(kind==='maschine'){const templates=action('Bosch-Bild auswählen',openBoschPicker16);templates.disabled=saving;pickers.prepend(templates);}
  host.append(pickers,node('p','Optional · bis zu 10 Dateien, jeweils maximal 20 MB. Wird zusammen mit dem Eintrag gespeichert.','helper'));
  const list=node('div',undefined,'pending-list');
  for(const item of draft.files){
@@ -714,7 +716,7 @@ function renderFormFiles(kind){
   row.append(node('span',item.file.name+(item.done?' · gespeichert':''),item.done?'success':''));
   if(!item.done){const remove=action('✕',()=>{if(saving)return;if(item.preview)URL.revokeObjectURL(item.preview);draft.files=draft.files.filter(f=>f.id!==item.id);renderFormFiles(kind);});remove.setAttribute('aria-label',item.file.name+' aus der Auswahl entfernen');remove.disabled=saving;row.append(remove);}list.append(row);
  }
- host.append(list);
+ host.append(list);if(kind==='maschine'&&draft.files.some(item=>item.templateCover16))host.append(node('p','Bosch-Bild ausgewählt. Mit Speichern wird es hochgeladen und als Titelbild verwendet.','helper'));
  const oldFiles=filesFor(kind,draft.id).filter(file=>!draft.files.some(item=>item.id===file.id));
  if(oldFiles.length){host.append(node('p',oldFiles.length+' vorhandene Datei(en): '+oldFiles.map(file=>file.name).join(', '),'helper'));const record=(kind==='maschine'?machines:entries).find(r=>r.id===draft.id);if(record){const open=action('Vorhandene Bilder & Dateien öffnen',()=>openAttachments(kind,record));open.disabled=saving;host.append(open);}}
 }
@@ -988,6 +990,41 @@ const css14=node('style');css14.textContent=`.machine-fields14{gap:14px}.machine
 function statusGroup15(m){const s=m.details?.status||'Verfügbar';return ['Verfügbar','Auf Lager','Auf Lager / verfügbar'].includes(s)?'Verfügbar':['Ausgeliehen','Verliehen'].includes(s)?'Ausgeliehen':'Sonstiges';}
 function statusBadge15(m){const g=statusGroup15(m),label=g==='Sonstiges'?(m.details?.status||'Sonstiges'):g;return node('span',label,'device-status15 '+(g==='Verfügbar'?'available':g==='Ausgeliehen'?'lent':'other'));}
 const css15=node('style');css15.textContent=`.machine-status-filters{margin-top:-3px}.machine-status-filters button{font-size:13px;min-height:34px;padding:6px 10px}.device-status15{grid-column:1;justify-self:start;display:inline-flex;align-items:center;gap:5px;font-size:11px;line-height:1.25;padding:3px 7px;border-radius:20px;background:#eeeae4;color:#62574e}.device-status15::before{content:'';width:6px;height:6px;flex:none;border-radius:50%;background:currentColor}.device-status15.available{color:#236548;background:#e9f2ec}.device-status15.lent{color:#805718;background:#f6efdf}.device-status15.other{color:#8a3f3f;background:#f5e8e6}`;document.head.append(css15);
+
+
+// Update 16: lokale Bosch-Vorlagen direkt im Geräteformular auswählen.
+let boschIndex16=null,boschVersion16=0;const boschParts16=new Map();
+const boschDialog16=node('dialog');boschDialog16.id='boschDialog16';boschDialog16.setAttribute('aria-label','Bosch-Bild auswählen');document.body.append(boschDialog16);
+function closeBoschPicker16(){boschVersion16++;document.getElementById('boschDialog16')?.close();}
+async function boschJson16(path){const response=await fetch(new URL(path,document.baseURI));if(!response.ok)throw new Error('Bildvorlagen fehlen. Bitte auch alle bosch-vorlagen-JSON-Dateien aus dem Update bei GitHub hochladen.');return response.json();}
+function boschPart16(name){if(!/^bosch-vorlagen-\d+\.json$/.test(name))throw new Error('Ungültige Vorlagendatei.');if(!boschParts16.has(name))boschParts16.set(name,boschJson16(name).catch(error=>{boschParts16.delete(name);throw error;}));return boschParts16.get(name);}
+async function openBoschPicker16(){
+ if(saving||!machineDraft||!user)return;const draft=machineDraft,uid=user.id,version=++boschVersion16;
+ boschDialog16.replaceChildren();const bar=node('div',undefined,'row between');bar.append(node('h2','Bosch-Bild auswählen'),action('Schließen',closeBoschPicker16));boschDialog16.append(bar,node('p','Bosch Professional · 12 V und 18 V · ohne EXPERT','muted'));
+ const filters=node('div',undefined,'bosch-filters16'),search=node('input'),voltage=node('select');search.type='search';search.placeholder='Modell suchen, z. B. GAL 18V6-80';search.setAttribute('aria-label','Bosch-Modell suchen');search.value=$('machineForm').elements.name.value;for(const v of ['Alle','12V','18V']){const o=node('option',v);o.value=v;voltage.append(o);}filters.append(search,voltage,action('Alle Bilder',()=>{search.value='';voltage.value='Alle';draw();}));boschDialog16.append(filters);
+ const info=node('p','Bildliste wird geladen …','muted'),error=node('p','', 'error'),grid=node('div',undefined,'bosch-grid16'),pager=node('div',undefined,'row between');error.setAttribute('role','alert');boschDialog16.append(info,error,grid,pager);boschDialog16.showModal();let pageNo=0,drawVersion=0;
+ const normal=v=>String(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+ function valid(){return boschDialog16.open&&version===boschVersion16&&draft===machineDraft&&uid===user?.id;}
+ async function choose(entry){if(!valid())return;error.textContent='';const buttons=grid.querySelectorAll('button');for(const b of buttons)b.disabled=true;
+  try{const part=await boschPart16(entry.part),p=part[entry.position];if(!p||p.name!==entry.name||!/^data:image\/(png|jpeg|webp);base64,/.test(p.image))throw new Error('Bildvorlage stimmt nicht mit dem Katalog überein.');if(!valid())return;
+   const comma=p.image.indexOf(','),mime=p.image.slice(5,p.image.indexOf(';')),bytes=Uint8Array.from(atob(p.image.slice(comma+1)),c=>c.charCodeAt(0));
+   for(const old of [...draft.files])if(old.boschTemplate16&&!old.done){if(old.preview)URL.revokeObjectURL(old.preview);draft.files=draft.files.filter(f=>f!==old);}for(const item of draft.files)item.templateCover16=false;
+   const before=draft.files.length;addDraftFiles('maschine',[new File([bytes],p.filename,{type:mime})]);if(draft.files.length!==before+1)throw new Error($('machineError').textContent||'Bild konnte nicht übernommen werden.');const added=draft.files[draft.files.length-1];added.boschTemplate16=true;added.templateCover16=true;renderFormFiles('maschine');closeBoschPicker16();
+  }catch(e){error.textContent=e.message;}finally{for(const b of buttons)b.disabled=false;}
+ }
+ function draw(){if(!valid()||!boschIndex16)return;const generation=++drawVersion;error.textContent='';const found=boschIndex16.filter(p=>(voltage.value==='Alle'||p.voltage===voltage.value)&&normal(p.name+' '+p.category).includes(normal(search.value)));const max=Math.max(1,Math.ceil(found.length/18));pageNo=Math.min(pageNo,max-1);grid.replaceChildren();pager.replaceChildren();info.textContent=found.length+' passende Bilder · Seite '+(pageNo+1)+' von '+max;
+  if(!found.length)grid.append(node('p','Kein Treffer. Nur den Modellnamen eingeben oder „Alle Bilder“ wählen.'));
+  for(const entry of found.slice(pageNo*18,pageNo*18+18)){const card=node('article'),picture=node('div','Bild lädt …','bosch-picture16'),title=node('strong',entry.name),pick=action('Übernehmen',()=>choose(entry));card.append(picture,title,node('small',entry.category||''),pick);grid.append(card);
+   boschPart16(entry.part).then(part=>{if(!valid()||generation!==drawVersion||!picture.isConnected)return;const p=part[entry.position];if(!p||p.name!==entry.name||!/^data:image\/(png|jpeg|webp);base64,/.test(p.image))throw new Error('Bildvorlage nicht gefunden.');const img=node('img');img.alt=entry.name;img.src=p.image;img.loading='lazy';picture.replaceChildren(img);}).catch(e=>{if(valid()&&generation===drawVersion){picture.textContent='Bild nicht geladen';error.textContent=e.message;}});
+  }
+  if(pageNo>0)pager.append(action('← Zurück',()=>{pageNo--;draw();}));if(pageNo<max-1)pager.append(action('Weitere Bilder →',()=>{pageNo++;draw();}));
+ }
+ search.oninput=voltage.onchange=()=>{pageNo=0;draw();};
+ try{if(!boschIndex16){const data=await boschJson16('bosch-vorlagen-index.json');if(!Array.isArray(data))throw new Error('Ungültiger Vorlagenkatalog.');boschIndex16=data;}if(valid())draw();}catch(e){if(valid()){info.textContent='';error.textContent=e.message;}}
+}
+boschDialog16.addEventListener('cancel',()=>{boschVersion16++;});
+async function applyTemplateCover16(draft,uid){const item=draft.files.find(f=>f.templateCover16&&f.done);if(!item||item.coverDone16)return;if(uid!==user?.id)throw new Error('Bitte erneut anmelden.');const {error}=await client.rpc('wg_titelbild',{p_datei:item.id});if(error)throw new Error('Bild ist gespeichert, konnte aber noch nicht als Titelbild gesetzt werden. Bitte erneut Speichern drücken. '+error.message);item.coverDone16=true;}
+const css16=node('style');css16.textContent=`#boschDialog16{width:min(1000px,96vw);max-height:90vh;overflow:auto}.bosch-filters16{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.bosch-filters16 input{flex:1;min-width:180px;padding:10px;border:1px solid var(--line);border-radius:9px}.bosch-filters16 select{padding:8px;border:1px solid var(--line);border-radius:9px}.bosch-grid16{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}.bosch-grid16 article{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;min-width:0}.bosch-grid16 article button{margin-top:auto}.bosch-grid16 small{color:#756c75}.bosch-picture16{height:125px;display:grid;place-items:center;background:white;border-radius:8px;font-size:12px;color:#756c75}.bosch-picture16 img{max-width:100%;max-height:120px;object-fit:contain}.bosch-grid16+p{margin-top:16px}@media(max-width:480px){.bosch-grid16{grid-template-columns:repeat(2,minmax(0,1fr))}.bosch-grid16 article{padding:9px;font-size:13px}.bosch-grid16 article button{padding:8px;font-size:12px}.bosch-picture16{height:100px}.bosch-picture16 img{max-height:95px}}`;document.head.append(css16);
 
 syncDesktopLayout();
 
