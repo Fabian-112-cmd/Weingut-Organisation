@@ -168,7 +168,10 @@
       .desktop-detail .desktop-hero-photo{display:block;width:100%;height:310px;max-height:42dvh;object-fit:contain;object-position:center;border-radius:11px}
       .desktop-detail .photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.desktop-detail .attachment-photo{height:160px;object-fit:contain}
     }
-  </style>
+  /* Compact, noninteractive device image; file controls remain in edit mode. */
+.device-detail-photo17{width:120px;height:100px;margin:8px 0 14px;overflow:hidden;border-radius:10px;background:var(--surface,#fff)}
+.device-detail-photo17 .device-detail-image17{display:block;width:100%;height:100%;object-fit:contain;object-position:center;cursor:default}
+</style>
 </head>
 <body>
 <main class="wrap">
@@ -566,7 +569,8 @@ function renderAttachments(){
  const list=$('fileGallery');list.replaceChildren();
  if(!record){list.append(node('p','Dieser Eintrag wurde inzwischen entfernt.','error'));return;}
  const heroFile=filesFor(kind,id).filter(inlinePhoto).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild))[0];
- if(canDockDetails()&&heroFile){const hero=action('',()=>openFile(heroFile),'desktop-hero');hero.setAttribute('aria-label','Bild von '+(record.name||record.titel)+' groß öffnen');hero.append(privateImage(heroFile,'desktop-hero-photo'));list.append(hero);}
+ if(kind==='maschine'&&!managingMachine&&heroFile){const photo=node('div',undefined,'device-detail-photo17');photo.append(privateImage(heroFile,'device-detail-image17'));list.append(photo);}
+ if(kind!=='maschine'&&canDockDetails()&&heroFile){const hero=action('',()=>openFile(heroFile),'desktop-hero');hero.setAttribute('aria-label','Bild von '+(record.name||record.titel)+' groß öffnen');hero.append(privateImage(heroFile,'desktop-hero-photo'));list.append(hero);}
  const details=node('div',undefined,'file-record-info');
  details.append(node('h3',kind==='maschine'?machineType(record.typ):sections[record.art]?.title||'Eintrag'));
  const data=node('dl');const field=(title,value)=>{if(value){data.append(node('dt',title),node('dd',value));}};
@@ -593,6 +597,7 @@ function renderAttachments(){
  const files=filesFor(kind,id).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild));
  const photos=node('div',undefined,'photo-grid');const documents=node('div');
  for(const file of files){
+  if(kind==='maschine'&&!managingMachine&&inlinePhoto(file))continue;
   const card=node('section',undefined,'attachment-card');
   if(inlinePhoto(file))card.append(privateImage(file));
   card.append(node('p',file.name,'attachment-name'),node('p',(file.groesse/1024/1024).toLocaleString('de-DE',{maximumFractionDigits:1})+' MB'+(file.titelbild?' · Titelbild':''),'meta'));
@@ -603,7 +608,7 @@ function renderAttachments(){
  if(photos.children.length){list.append(node('h3','Bilder'),photos);}
  if(documents.children.length){list.append(node('h3','Dokumente & weitere Dateien'),documents);}
  if(!files.length&&kind!=='maschine')list.append(node('p','Noch keine Bilder oder Dateien vorhanden.','muted'));
- if(files.some(f=>['image/heic','image/heif'].includes(f.mime)))list.append(node('p','HEIC/HEIF-Fotos lassen sich öffnen oder herunterladen. Für eine Vorschau und das Titelbild bitte JPG, PNG oder WebP verwenden.','helper'));
+ if((kind!=='maschine'||managingMachine)&&files.some(f=>['image/heic','image/heif'].includes(f.mime)))list.append(node('p','HEIC/HEIF-Fotos lassen sich öffnen oder herunterladen. Für eine Vorschau und das Titelbild bitte JPG, PNG oder WebP verwenden.','helper'));
 }
 function setFileBusy(value){fileBusy=value;$('uploadFiles').disabled=value;$('closeFiles').disabled=value;$('fileInput').disabled=value;$('logout').disabled=value;renderAttachments();}
 async function reloadAttachments(){
