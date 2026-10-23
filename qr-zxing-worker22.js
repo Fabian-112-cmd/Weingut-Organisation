@@ -1,0 +1,4 @@
+/* zxing-wasm 2.2.3 (MIT), ZXing-C++ (Apache-2.0). See accompanying licenses. */
+importScripts('./qr-zxing-reader-2.2.3.js');
+const ready=ZXingWASM.prepareZXingModule({overrides:{locateFile:path=>new URL(path.endsWith('.wasm')?'./zxing_reader.wasm':path,self.location.href).href},fireImmediately:true});
+self.onmessage=async event=>{const {id,type,data,width,height}=event.data||{};try{await ready;if(type==='init'){self.postMessage({id,ready:true});return;}if(type!=='decode')return;const results=await ZXingWASM.readBarcodes({data:new Uint8ClampedArray(data),width,height},{formats:['QRCode'],tryHarder:true,tryRotate:true,tryInvert:true,tryDownscale:true,tryDenoise:true,maxNumberOfSymbols:1});self.postMessage({id,text:results.find(r=>r.isValid!==false)?.text||''});}catch{self.postMessage({id,error:'QR-Erkennung konnte nicht geladen werden. Bitte alle Scanner-Dateien aus Update 22 hochladen.'});}};

@@ -1,0 +1,5 @@
+QR recognition in Update 22 uses zxing-wasm 2.2.3 by Ze-Zheng Wu (MIT), based on ZXing-C++ (Apache-2.0).
+https://github.com/Sec-ant/zxing-wasm
+https://github.com/zxing-cpp/zxing-cpp
+License texts are included as ZXing-WASM-LICENSE.txt and ZXing-CPP-LICENSE.txt.
+The earlier qr-scanner component and its existing license can remain installed.
