@@ -9,7 +9,7 @@
   <title>Weingut Pau &amp; Maya BIO · Organisation</title>
   <link rel="icon" href="weingut-logo.png?v=2">
   <link rel="apple-touch-icon" href="weingut-logo.png?v=2">
-  <link rel="manifest" href="manifest.json?v=2">
+  <link rel="manifest" href="manifest.json?v=18">
   <style>
     *{box-sizing:border-box} [hidden]{display:none!important}
     :root{--purple:#643985;--ink:#292333;--muted:#756d7e;--line:#e6dfea;--green:#236840;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#f5f3f7}
@@ -236,11 +236,11 @@
 <dialog id="machineDialog" aria-labelledby="machineDialogTitle">
   <form id="machineForm" class="form"><h2 id="machineDialogTitle">Maschine hinzufügen</h2>
     <label>Name<input name="name" maxlength="180" placeholder="Zum Beispiel Traktor Fendt" required></label>
-    <label>Art<select name="typ"><option value="Traktor">Traktor</option><option value="Fraese">Fräse</option><option>Mulcher</option><option>Laubschneider</option><option value="Haenger">Hänger</option><option>Auto</option><option>Bus</option><option>LKW</option><option>Presse</option><option>Akkuwerkzeug</option><option value="Elektrowerkzeug">Elektrowerkzeug (mit Kabel)</option><option>Handwerkzeug</option><option>Sonstiges</option></select></label>
+    <label>Art<select name="typ"><option value="Traktor">Traktor</option><option value="Fraese">Fräse</option><option>Mulcher</option><option>Laubschneider</option><option>Spritze</option><option value="Haenger">Hänger</option><option>Auto</option><option>Bus</option><option>LKW</option><option>Presse</option><option>Pumpe</option><option>Weinfilter</option><option>Messgerät</option><option>Kellergerät</option><option>Akkuwerkzeug</option><option value="Elektrowerkzeug">Elektrowerkzeug (mit Kabel)</option><option>Handwerkzeug</option><option>Sonstiges</option></select></label>
     <label>Hersteller / Modell<input name="modell" maxlength="180"></label>
     <label>Kennzeichen / Gerätenummer<input name="kennzeichen" maxlength="100"></label>
     <div class="two"><label>TÜV fällig am<input name="tuv_am" type="date"></label><label>Wartung fällig am<input name="wartung_am" type="date"></label></div>
-    <p class="helper">Optionale Termine. Wenn nur der TÜV-Monat bekannt ist, den letzten Tag dieses Monats eintragen. Hinweise erscheinen ab 60 Tagen vorher in dieser App; keine Push-Mitteilung bei geschlossener App.</p>
+    <p class="helper">Optionale Termine. Wenn nur der TÜV-Monat bekannt ist, den letzten Tag dieses Monats eintragen. Hinweise erscheinen ab 60 Tagen vorher. Push-Mitteilungen lassen sich unter Mitteilungen aktivieren.</p>
     <label>Notizen / Besonderheiten<textarea name="notizen" maxlength="8000" rows="4"></textarea></label>
     <div id="machineFiles" class="form-files"></div>
     <p id="machineError" class="error" role="alert"></p>
@@ -297,12 +297,12 @@ function safeUrl(value){try{const u=new URL(value);if(u.protocol!=='https:')retu
 // ============================================================
 function loginEmail(name){
   name=name.trim().toLowerCase();
-  if(name==='weintour' || name==='weingut')return 'fabian-112@t-online.de';
+  if(['fabian','weintour','weingut','weigut'].includes(name))return 'fabian-112@t-online.de';
   if(!/^[a-z0-9][a-z0-9._-]{1,39}$/.test(name))throw new Error('Bitte deinen Benutzernamen eingeben.');
   return name+'@weintour.example.com';
 }
 function signedOut(){
-  closeBoschPicker16();resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
+  void clearPushUser18();resetNotifications18();closeBoschPicker16();resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;closeDetails();
   disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
@@ -329,7 +329,7 @@ $('loginForm').onsubmit=async event=>{
   try{const {data,error}=await client.auth.signInWithPassword({email:loginEmail($('username').value),password:$('password').value});if(error)throw error;$('password').value='';await applySession(data.session);}
   catch(error){$('loginMessage').textContent=error.message;}finally{$('loginButton').disabled=false;}
 };
-$('logout').onclick=async()=>{if(saving||fileBusy||lagerBusy)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
+$('logout').onclick=async()=>{if(saving||fileBusy||lagerBusy)return;if(($('entryDialog').open || $('appDialog').open || $('machineDialog').open)&&!confirm('Abmelden und ungespeicherte Eingaben verwerfen?'))return;await disconnectPush18();const {error}=await client.auth.signOut({scope:'local'});if(error){message(error.message,true);return;}authVersion++;signedOut();};
 client.auth.onAuthStateChange((event,session)=>{if(event==='TOKEN_REFRESHED'&&user?.id===session?.user.id)return;setTimeout(()=>applySession(session),0);});
 client.auth.getSession().then(({data,error})=>{if(error)$('loginMessage').textContent=error.message;else applySession(data.session);});
 // ============================================================
@@ -361,7 +361,7 @@ async function refreshData(){
     $('person').textContent=nameFor(uid);
     $('teamNames').replaceChildren(...members.map(m=>{const o=node('option');o.value=m.anzeigename;return o;}));
     message('Aktualisiert um '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · für das ganze Team');
-    render();await followQr();if($('fileDialog').open&&!fileBusy)renderAttachments();
+    render();void refreshNotifications18();await followQr();if($('fileDialog').open&&!fileBusy)renderAttachments();
   }catch(error){if(uid===user?.id)message('Aktualisierung fehlgeschlagen: '+error.message+'. Erneut mit ↻ versuchen.',true);}
   finally{refreshing=false;}
 }
@@ -491,10 +491,10 @@ async function removeRecord(table,record){if(table==='wg_eintraege'&&filesFor('e
 // ============================================================
 function machineType(value){return ({Fraese:'Fräse',Haenger:'Hänger'})[value]||value;}
 function reminderLimit(){const d=new Date(today()+'T12:00:00');d.setDate(d.getDate()+60);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
-function machineReminders(){const limit=reminderLimit();return machines.flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
+function machineReminders(){const limit=reminderLimit();return machines.filter(m=>['Fahrzeuge','Anbaugeräte','Kellertechnik'].includes(machineCategory18(m))).flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
 function renderMachines(container){
   renderMachineTabs(container);
-  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||(m.details?.gruppe||'Großmaschinen')===machineGroup).filter(m=>machineStatus15==='Alle'||statusGroup15(m)===machineStatus15).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.fruehere_inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
+  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineStatus15==='Alle'||statusGroup15(m)===machineStatus15).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.fruehere_inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q||machineStatus15!=='Alle'?'Keine Geräte für diese Auswahl.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
   for(const m of found){
     const box=node('article',undefined,'card compact-machine');box.dataset.recordId=m.id;box.dataset.recordKind='maschine';if(fileContext?.id===m.id)box.classList.add('selected-record');
@@ -512,7 +512,7 @@ $('cancelMachine').onclick=()=>closeForm('maschine');
 async function removeMachine(machine){if(filesFor('maschine',machine.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieser Maschine entfernen.');if(!confirm('„'+machine.name+'“ entfernen? Zugeordnete Aufgaben bleiben erhalten und verlieren nur die Maschinenzuordnung.'))return;await mutate('wg_maschinen',machine,null,true);await refreshData();}
 $('machineForm').onsubmit=async event=>{
   event.preventDefault();if(saving)return;formBusy(true);$('machineError').textContent='';const uid=user?.id;
-  try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();value.details=machineExtras(f);for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');
+  try{const f=event.target,value={};for(const key of ['name','modell','kennzeichen','notizen','typ'])value[key]=f.elements[key].value.trim();value.details=machineExtras(f);for(const key of ['tuv_am','wartung_am'])value[key]=f.elements[key].value||null;if(!value.name)throw new Error('Bitte einen Namen eingeben.');if(!value.details.gruppe)throw new Error('Bitte eine Kategorie auswählen.');
     validateDraft(machineDraft);
     editingMachine=await saveParent('wg_maschinen',editingMachine,machineDraft,value);
     await saveDraftFiles('maschine',machineDraft,uid,'machineError');
@@ -869,7 +869,7 @@ function desktopPreview(kind){
 }
 desktopMedia.addEventListener?.('change',()=>{syncDesktopLayout();if(user)render();if($('fileDialog').open&&!fileBusy)renderAttachments();});
 // Update 8 – gemeinsame Geräte- und Lagerverwaltung
-let lager={weine:[],plaetze:[],bestaende:[],bewegungen:[]},lagerError='',lagerBusy=false,lagerBereich='Bio',lagerAnsicht='Übersicht',machineGroup='Alle',machineStatus15='Alle',qrHandled='';
+let lager={weine:[],plaetze:[],bestaende:[],bewegungen:[]},lagerError='',lagerBusy=false,lagerBereich='Bio',lagerAnsicht='Übersicht',machineGroup='Alle',machineStatus15='Alle',machineBrand18='Alle',qrHandled='';
 const nf=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:3});
 const lagerDialog=node('dialog');lagerDialog.id='lagerDialog';lagerDialog.setAttribute('aria-label','Weinbestand bearbeiten');document.body.append(lagerDialog);
 const exStyle=node('style');exStyle.textContent=`
@@ -880,14 +880,30 @@ function resetLager(){lager={weine:[],plaetze:[],bestaende:[],bewegungen:[]};lag
 async function loadLager(uid){const r=await client.rpc('wg_lager_snapshot');if(uid!==user?.id)return;if(r.error){lagerError='Weinbestand noch nicht verfügbar. Bitte zuerst Datenbank-Update-8.sql ausführen. '+r.error.message;return;}lager=r.data;lagerError='';}
 const baseRender8=render;render=function(){baseRender8();$('desktopWorkspace').classList.toggle('lager-wide',page==='weinbestand');};
 function tabs(values,current,change){const row=node('div',undefined,'lager-tabs');for(const v of values)row.append(action(v,()=>change(v),v===current?'active':''));return row;}
-function renderMachineTabs(c){c.append(tabs(['Alle','Großmaschinen','Werkzeuge & Kleingeräte'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';renderList();}));const pool=machines.filter(m=>machineGroup==='Alle'||(m.details?.gruppe||'Großmaschinen')===machineGroup),row=node('div',undefined,'lager-tabs machine-status-filters');row.setAttribute('aria-label','Nach Gerätestatus filtern');for(const value of ['Alle','Verfügbar','Ausgeliehen','Sonstiges']){const count=value==='Alle'?pool.length:pool.filter(m=>statusGroup15(m)===value).length;const b=action(value+' ('+count+')',()=>{machineStatus15=value;renderList();},machineStatus15===value?'active':'');b.setAttribute('aria-pressed',String(machineStatus15===value));row.append(b);}c.append(row);}
+function machineCategory18(m){
+ const explicit=m.details?.gruppe;
+ if(['Fahrzeuge','Anbaugeräte','Kellertechnik','Elektrowerkzeuge','Verschiedenes'].includes(explicit))return explicit;
+ if(['Akkuwerkzeug','Elektrowerkzeug'].includes(m.typ))return 'Elektrowerkzeuge';
+ if(['Pumpe','Weinfilter','Messgerät','Kellergerät'].includes(m.typ))return 'Kellertechnik';
+ if(['Traktor','Auto','Bus','LKW','Haenger'].includes(m.typ))return 'Fahrzeuge';
+ if(['Fraese','Mulcher','Laubschneider','Spritze','Presse'].includes(m.typ))return 'Anbaugeräte';
+ return 'Verschiedenes';
+}
+function deviceBrand18(m){const explicit=m.details?.marke;if(['Bosch','Stihl','Festool','Restliche'].includes(explicit))return explicit;const text=[m.modell,m.name].join(' ');return /bosch/i.test(text)?'Bosch':/stihl/i.test(text)?'Stihl':/festool/i.test(text)?'Festool':'Restliche';}
+function smallMachine18(group){return ['Elektrowerkzeuge','Verschiedenes','Werkzeuge & Kleingeräte'].includes(group);}
+function renderMachineTabs(c){
+ c.append(tabs(['Alle','Fahrzeuge','Anbaugeräte','Kellertechnik','Elektrowerkzeuge','Verschiedenes'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();}));
+ if(machineGroup==='Elektrowerkzeuge')c.append(tabs(['Alle','Bosch','Stihl','Festool','Restliche'],machineBrand18,v=>{machineBrand18=v;renderList();}));
+ const pool=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18),row=node('div',undefined,'lager-tabs machine-status-filters');row.setAttribute('aria-label','Nach Gerätestatus filtern');
+ for(const value of ['Alle','Verfügbar','Ausgeliehen','Sonstiges']){const count=value==='Alle'?pool.length:pool.filter(m=>statusGroup15(m)===value).length;const b=action(value+' ('+count+')',()=>{machineStatus15=value;renderList();},machineStatus15===value?'active':'');b.setAttribute('aria-pressed',String(machineStatus15===value));row.append(b);}c.append(row);
+}
 const mf=$('machineForm');
 const mex=node('section',undefined,'machine-extras');
-const mfields=[['gruppe','Bereich','select',['Großmaschinen','Werkzeuge & Kleingeräte']],['geraeteart','Geräteart (z. B. Fettpresse)','text'],['spannung','Akkuspannung','select',['Nicht angegeben','12 V','18 V','24 V']],['status','Status','select',['Verfügbar','Defekt','In Reparatur','Ausgeliehen','Außer Betrieb']],['standort','Standort','text'],['seriennummer','Seriennummer','text'],['inventarnummer','Inventarnummer (leer = automatisch)','text'],['ausgeliehen_an','Ausgeliehen an','text'],['rueckgabe_am','Rückgabe geplant','date'],['herstellungsdatum','Herstellungsdatum','date'],['kaufdatum','Kaufdatum','date'],['herstellerlink','Hersteller / Ersatzteile (https://…)','url']];
-for(const [key,title,type,opts] of mfields){const l=node('label',title);let input=node(type==='select'?'select':'input');input.name='extra_'+key;if(type==='select')for(const v of opts){const o=node('option',v);o.value=v;input.append(o);}else{input.type=type;input.maxLength=type==='url'?2000:180;}l.append(input);mex.append(l);}mf.insertBefore(mex,$('machineFiles'));
-function fillMachineExtras(f,m){for(const [k,,type,opts]of mfields)f.elements['extra_'+k].value=m?.details?.[k]||(type==='select'?opts[0]:'');if(!m&&machineGroup!=='Alle'){f.elements.extra_gruppe.value=machineGroup;if(machineGroup==='Werkzeuge & Kleingeräte')f.elements.typ.value='Sonstiges';}layoutMachine14();}
+const mfields=[['gruppe','Kategorie','select',['Fahrzeuge','Anbaugeräte','Kellertechnik','Elektrowerkzeuge','Verschiedenes']],['marke','Herstellerfilter','select',['Bosch','Stihl','Festool','Restliche']],['geraeteart','Geräteart (z. B. Fettpresse)','text'],['spannung','Akkuspannung','select',['Nicht angegeben','12 V','18 V','24 V']],['status','Status','select',['Verfügbar','Defekt','In Reparatur','Ausgeliehen','Außer Betrieb']],['standort','Standort','text'],['seriennummer','Seriennummer','text'],['inventarnummer','Inventarnummer (leer = automatisch)','text'],['ausgeliehen_an','Ausgeliehen an','text'],['rueckgabe_am','Rückgabe geplant','date'],['herstellungsdatum','Herstellungsdatum','date'],['kaufdatum','Kaufdatum','date'],['herstellerlink','Hersteller / Ersatzteile (https://…)','url']];
+for(const [key,title,type,opts] of mfields){const l=node('label',title);let input=node(type==='select'?'select':'input');input.name='extra_'+key;if(type==='select')for(const v of opts){const o=node('option',v);o.value=v;input.append(o);}else{input.type=type;input.maxLength=type==='url'?2000:180;}l.append(input);mex.append(l);}mf.insertBefore(mex,$('machineFiles'));const emptyCategory18=node('option','Bitte Kategorie auswählen …');emptyCategory18.value='';mf.elements.extra_gruppe.prepend(emptyCategory18);mf.elements.extra_gruppe.required=true;
+function fillMachineExtras(f,m){for(const [k,,type,opts]of mfields)f.elements['extra_'+k].value=m?.details?.[k]||(type==='select'?opts[0]:'');f.elements.extra_gruppe.value=m?machineCategory18(m):'';f.elements.extra_marke.value=m?deviceBrand18(m):machineBrand18!=='Alle'?machineBrand18:'Restliche';if(!m&&smallMachine18(f.elements.extra_gruppe.value))f.elements.typ.value=f.elements.extra_gruppe.value==='Elektrowerkzeuge'?'Akkuwerkzeug':'Handwerkzeug';layoutMachine14();}
 function machineExtras(f){const d={...(editingMachine?.details||{})};for(const[k]of mfields)d[k]=f.elements['extra_'+k].value.trim();if(d.herstellerlink&&!safeUrl(d.herstellerlink))throw new Error('Herstellerlink muss mit https:// beginnen.');if(f.elements.typ.value!=='Akkuwerkzeug')d.spannung='';return d;}
-function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(k==='status')continue;if(!d[k]||k==='herstellerlink'||(d.gruppe!=='Werkzeuge & Kleingeräte'&&['geraeteart','spannung'].includes(k)))continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k.endsWith('datum')?dateText(d[k]):d[k]),'meta'));}if(d.fruehere_inventarnummer)c.append(node('p','Frühere Inventarnummer: '+d.fruehere_inventarnummer,'meta'));if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}}
+function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(k==='status'||k==='marke')continue;if(!d[k]||k==='herstellerlink'||(!smallMachine18(machineCategory18(m))&&['geraeteart','spannung'].includes(k)))continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k.endsWith('datum')?dateText(d[k]):d[k]),'meta'));}if(d.fruehere_inventarnummer)c.append(node('p','Frühere Inventarnummer: '+d.fruehere_inventarnummer,'meta'));if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}}
 function wineLabel(w,detail=false){return w?`${w.name}${w.jahrgang?' · '+w.jahrgang:''}${detail?' · '+nf(w.flaschengroesse)+' l':''}`:'Unbekannter Wein';}
 function placeLabel(p){return p?`${p.name}${p.position?' · '+p.position:''}`:'Unbekannter Platz';}
 function stocksAt(id){return lager.bestaende.filter(b=>b.platz_id===id&&Number(b.menge)>0);}
@@ -943,13 +959,13 @@ function stableJson(v){return JSON.stringify(v&&typeof v==='object'?(Array.isArr
 
 
 // Update 11: Energieart, kompakte Gerätekarten und automatische Inventarnummern.
-function updateVoltage(){const f=$('machineForm');if(f.elements.extra_spannung)f.elements.extra_spannung.parentElement.hidden=f.elements.extra_gruppe.value!=='Werkzeuge & Kleingeräte'||f.elements.typ.value!=='Akkuwerkzeug';}
+function updateVoltage(){const f=$('machineForm');if(f.elements.extra_spannung)f.elements.extra_spannung.parentElement.hidden=f.elements.extra_gruppe.value!=='Elektrowerkzeuge'||f.elements.typ.value!=='Akkuwerkzeug';}
 mf.elements.typ.addEventListener('change',updateVoltage);
 mf.elements.extra_inventarnummer.placeholder='Wird beim Speichern automatisch vergeben';
 function savedValueMatches(key,actual,expected){if(key==='details'&&expected&&!expected.inventarnummer){const a={...(actual||{})},b={...expected};delete a.inventarnummer;delete b.inventarnummer;return stableJson(a)===stableJson(b);}return stableJson(actual??null)===stableJson(expected??null);}
 function devicePlaceholder(m){
- const small=m.details?.gruppe==='Werkzeuge & Kleingeräte',kind=m.typ==='Akkuwerkzeug'?'battery':m.typ==='Elektrowerkzeug'?'plug':small||m.typ==='Handwerkzeug'?'hand':'machine';
- const paths={battery:'<rect x="3" y="6" width="17" height="12" rx="2"/><path d="M20 10h2v4h-2M7 9v6M4 12h6M14 12h3"/>',plug:'<path d="M8 3v6m8-6v6M6 9h12v3a6 6 0 0 1-12 0zM12 18v4"/>',hand:'<path d="M14 4a6 6 0 0 0-7 7L2 16a3 3 0 0 0 4 4l5-5a6 6 0 0 0 7-7l-4 4-3-3z"/>',machine:'<circle cx="6" cy="17" r="4"/><circle cx="19" cy="18" r="3"/><path d="M5 13V5h9v11M7 5v7h7l5 2V9"/>'};
+ const small=smallMachine18(machineCategory18(m)),kind=machineCategory18(m)==='Kellertechnik'?'cellar':m.typ==='Akkuwerkzeug'?'battery':m.typ==='Elektrowerkzeug'?'plug':small||m.typ==='Handwerkzeug'?'hand':'machine';
+ const paths={cellar:'<circle cx="12" cy="12" r="6"/><path d="M2 10h4M18 14h4M8 19h8M10 12l2-3 2 3-2 3z"/>',battery:'<rect x="3" y="6" width="17" height="12" rx="2"/><path d="M20 10h2v4h-2M7 9v6M4 12h6M14 12h3"/>',plug:'<path d="M8 3v6m8-6v6M6 9h12v3a6 6 0 0 1-12 0zM12 18v4"/>',hand:'<path d="M14 4a6 6 0 0 0-7 7L2 16a3 3 0 0 0 4 4l5-5a6 6 0 0 0 7-7l-4 4-3-3z"/>',machine:'<circle cx="6" cy="17" r="4"/><circle cx="19" cy="18" r="3"/><path d="M5 13V5h9v11M7 5v7h7l5 2V9"/>'};
  const box=node('div',undefined,'machine-placeholder');box.setAttribute('aria-label',m.typ==='Sonstiges'?(small?'Werkzeug':'Maschine'):m.typ);const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.innerHTML=paths[kind];box.append(svg);if(kind==='battery'&&m.details?.spannung&&m.details.spannung!=='Nicht angegeben')box.append(node('span',m.details.spannung));return box;
 }
 const css11=node('style');css11.textContent=`.compact-machine{grid-template-columns:56px minmax(0,1fr);padding:10px 12px;gap:12px;min-height:0}.compact-machine .machine-cover,.compact-machine .machine-placeholder{width:56px;height:56px;border-radius:9px}.machine-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#634078}.machine-placeholder svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.machine-placeholder span{font-size:10px;line-height:1;font-weight:700}.compact-machine .machine-summary{align-self:center;gap:3px 9px}.compact-machine .machine-summary>.meta{grid-column:1;margin:0;line-height:1.25}.compact-machine .machine-summary>h3{margin:0;font-size:16px}.compact-machine .machine-summary .machine-edit-row{grid-row:1 / span 2;align-self:start}.compact-machine .machine-summary .machine-edit-row button{padding:5px 8px;min-height:30px}@media(max-width:480px){.compact-machine{grid-template-columns:48px minmax(0,1fr);padding:9px 10px;gap:9px}.compact-machine .machine-cover,.compact-machine .machine-placeholder{width:48px;height:48px}.compact-machine .machine-summary>h3{font-size:15px;overflow-wrap:anywhere}}`;document.head.append(css11);
@@ -975,19 +991,22 @@ const detailEdit14=action('Bearbeiten',()=>{});detailEdit14.id='detailEdit14';de
 const fields14={};for(const name of ['name','typ','modell','kennzeichen','tuv_am','wartung_am','notizen',...mfields.map(x=>'extra_'+x[0])])fields14[name]=mf.elements[name].closest('label');
 const layout14=node('div',undefined,'form machine-fields14');mf.insertBefore(layout14,$('machineFiles'));for(const label of Object.values(fields14))layout14.append(label);mf.querySelector('.two')?.remove();mex.remove();for(const p of mf.querySelectorAll(':scope > .helper'))p.remove();
 function layoutMachine14(){
- const small=mf.elements.extra_gruppe.value==='Werkzeuge & Kleingeräte',fresh=!editingMachine;
- const order=small?['name','extra_geraeteart','typ','extra_spannung','modell','extra_gruppe','extra_status','extra_standort','extra_inventarnummer','extra_herstellungsdatum','extra_kaufdatum','extra_seriennummer','kennzeichen','wartung_am','extra_ausgeliehen_an','extra_rueckgabe_am','notizen','extra_herstellerlink']:['name','typ','modell','kennzeichen','extra_status','extra_standort','extra_inventarnummer','extra_herstellungsdatum','extra_kaufdatum','extra_seriennummer','tuv_am','wartung_am','extra_ausgeliehen_an','extra_rueckgabe_am','notizen','extra_herstellerlink'];
- if(fresh)order.unshift('extra_gruppe');
+ const group=mf.elements.extra_gruppe.value;for(const [name,label]of Object.entries(fields14))for(const input of label.querySelectorAll('input,select,textarea'))input.disabled=!group&&name!=='extra_gruppe';
+ if(!group){for(const [name,label]of Object.entries(fields14))label.hidden=name!=='extra_gruppe';layout14.prepend(fields14.extra_gruppe);$('machineFiles').hidden=true;$('machineDialogTitle').textContent='Maschine oder Gerät hinzufügen';return;}
+ $('machineFiles').hidden=false;
+ const small=smallMachine18(mf.elements.extra_gruppe.value),fresh=!editingMachine;
+ const order=small?['name','extra_geraeteart','typ','extra_spannung','modell','extra_marke','extra_gruppe','extra_status','extra_standort','extra_inventarnummer','extra_herstellungsdatum','extra_kaufdatum','extra_seriennummer','kennzeichen','wartung_am','extra_ausgeliehen_an','extra_rueckgabe_am','notizen','extra_herstellerlink']:['name','typ','modell','kennzeichen','extra_status','extra_standort','extra_inventarnummer','extra_herstellungsdatum','extra_kaufdatum','extra_seriennummer','tuv_am','wartung_am','extra_ausgeliehen_an','extra_rueckgabe_am','notizen','extra_herstellerlink'];
+ if(!order.includes('extra_gruppe'))order.unshift('extra_gruppe');
  for(const [name,label]of Object.entries(fields14))label.hidden=!order.includes(name);
  for(const name of order)layout14.append(fields14[name]);
- if(fresh&&small)layout14.prepend(fields14.extra_gruppe);
- for(const o of mf.elements.typ.options){const tool=['Akkuwerkzeug','Elektrowerkzeug','Handwerkzeug'].includes(o.value);o.hidden=small?(!tool&&o.value!=='Sonstiges'):tool;}
+ if(fresh)layout14.prepend(fields14.extra_gruppe);
+ const allowed=group==='Fahrzeuge'?['Traktor','Auto','Bus','LKW','Haenger','Sonstiges']:group==='Anbaugeräte'?['Fraese','Mulcher','Laubschneider','Spritze','Presse','Sonstiges']:group==='Kellertechnik'?['Pumpe','Weinfilter','Messgerät','Kellergerät','Presse','Sonstiges']:group==='Elektrowerkzeuge'?['Akkuwerkzeug','Elektrowerkzeug','Sonstiges']:['Handwerkzeug','Sonstiges'];for(const o of mf.elements.typ.options)o.hidden=!allowed.includes(o.value);if(!allowed.includes(mf.elements.typ.value))mf.elements.typ.value=allowed[0];fields14.tuv_am.hidden=group!=='Fahrzeuge';
  fields14.kennzeichen.firstChild.textContent=small?'Artikel- / Gerätenummer':'Kennzeichen / Gerätenummer';
- fields14.typ.firstChild.textContent=small?'Art (Akku, Kabel oder Handwerkzeug)':'Art';
- $('machineDialogTitle').textContent=(fresh?'Hinzufügen: ':'Bearbeiten: ')+(small?'Werkzeug / Kleingerät':'Großmaschine');
+ fields14.typ.firstChild.textContent=group==='Elektrowerkzeuge'?'Art (Akku oder Kabel)':'Art';
+ fields14.extra_marke.hidden=mf.elements.extra_gruppe.value!=='Elektrowerkzeuge';$('machineDialogTitle').textContent=(fresh?'Hinzufügen: ':'Bearbeiten: ')+mf.elements.extra_gruppe.value;
  updateVoltage();
 }
-mf.elements.extra_gruppe.addEventListener('change',()=>{const small=mf.elements.extra_gruppe.value==='Werkzeuge & Kleingeräte',tool=['Akkuwerkzeug','Elektrowerkzeug','Handwerkzeug'].includes(mf.elements.typ.value);if(small&&!tool)mf.elements.typ.value='Sonstiges';if(!small&&tool)mf.elements.typ.value='Traktor';layoutMachine14();});
+mf.elements.extra_gruppe.addEventListener('change',()=>{const group=mf.elements.extra_gruppe.value;if(!editingMachine){mf.elements.typ.value=group==='Elektrowerkzeuge'?'Akkuwerkzeug':group==='Verschiedenes'?'Handwerkzeug':group==='Kellertechnik'?'Pumpe':group==='Anbaugeräte'?'Mulcher':'Traktor';}const small=smallMachine18(mf.elements.extra_gruppe.value),tool=['Akkuwerkzeug','Elektrowerkzeug','Handwerkzeug'].includes(mf.elements.typ.value);if(small&&!tool)mf.elements.typ.value='Sonstiges';if(!small&&tool)mf.elements.typ.value=mf.elements.extra_gruppe.value==='Anbaugeräte'?'Mulcher':'Traktor';layoutMachine14();});
 const css14=node('style');css14.textContent=`.machine-fields14{gap:14px}.machine-fields14 [hidden]{display:none!important}#detailEdit14{margin-left:auto}#fileDialog>.row>h2{margin-right:12px}.file-record-info>label{display:grid;gap:6px;margin-top:20px}.file-record-info>label select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:white;color:inherit}`;document.head.append(css14);
 
 
@@ -1032,6 +1051,41 @@ async function applyTemplateCover16(draft,uid){const item=draft.files.find(f=>f.
 const css16=node('style');css16.textContent=`#boschDialog16{width:min(1000px,96vw);max-height:90vh;overflow:auto}.bosch-filters16{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.bosch-filters16 input{flex:1;min-width:180px;padding:10px;border:1px solid var(--line);border-radius:9px}.bosch-filters16 select{padding:8px;border:1px solid var(--line);border-radius:9px}.bosch-grid16{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}.bosch-grid16 article{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;min-width:0}.bosch-grid16 article button{margin-top:auto}.bosch-grid16 small{color:#756c75}.bosch-picture16{height:125px;display:grid;place-items:center;background:white;border-radius:8px;font-size:12px;color:#756c75}.bosch-picture16 img{max-width:100%;max-height:120px;object-fit:contain}.bosch-grid16+p{margin-top:16px}@media(max-width:480px){.bosch-grid16{grid-template-columns:repeat(2,minmax(0,1fr))}.bosch-grid16 article{padding:9px;font-size:13px}.bosch-grid16 article button{padding:8px;font-size:12px}.bosch-picture16{height:100px}.bosch-picture16 img{max-height:95px}}`;document.head.append(css16);
 
 syncDesktopLayout();
+
+
+// Update 18 – persönliches Postfach, Web Push und Team-Einrichtung.
+let notices18=[],unread18=0,noticeReady18=false,noticeError18='',noticeVersion18=0;
+const bell18=action('Hinweise',()=>openNotice18());bell18.id='noticeButton18';bell18.setAttribute('aria-label','Mitteilungen öffnen');$('refresh').before(bell18);
+const noticeDialog18=node('dialog');noticeDialog18.id='noticeDialog18';document.body.append(noticeDialog18);
+const settingsDialog18=node('dialog');settingsDialog18.id='settingsDialog18';document.body.append(settingsDialog18);
+const css18=node('style');css18.textContent=`#noticeButton18{position:relative}.notice18{border-top:1px solid var(--line);padding:12px 0}.notice18.unread18{border-left:3px solid #674079;padding-left:10px}.notice18 h3{font-size:16px;margin:0 0 5px}.notice18 p{margin:5px 0}.notice-settings18{display:grid;gap:12px}.notice-settings18 input{width:100%;box-sizing:border-box}.notice-settings18 section{border-top:1px solid var(--line);padding-top:14px}#noticeDialog18,#settingsDialog18{width:min(580px,calc(100vw - 24px))}`;document.head.append(css18);
+function resetNotifications18(){noticeVersion18++;notices18=[];unread18=0;noticeReady18=false;noticeError18='';bell18.textContent='Hinweise';if(noticeDialog18.open)noticeDialog18.close();if(settingsDialog18.open)settingsDialog18.close();settingsDialog18.replaceChildren();void updateBadge18(0);}
+async function updateBadge18(n){try{if(navigator.setAppBadge){if(n>0)await navigator.setAppBadge(n);else await navigator.clearAppBadge();}}catch{}}
+async function refreshNotifications18(){if(!user)return;const uid=user.id,version=++noticeVersion18;try{const r=await client.rpc('wg_hinweis_snapshot');if(uid!==user?.id||version!==noticeVersion18)return;if(r.error)throw r.error;notices18=r.data?.eintraege||[];unread18=r.data?.ungelesen||0;noticeReady18=true;noticeError18='';bell18.textContent=unread18?'Hinweise ('+unread18+')':'Hinweise';bell18.setAttribute('aria-label',unread18+' ungelesene Mitteilungen');await updateBadge18(unread18);if(noticeDialog18.open)renderNotices18();void bindPushUser18();}catch{if(uid!==user?.id||version!==noticeVersion18)return;noticeReady18=false;noticeError18='Mitteilungen sind noch nicht eingerichtet. Bitte Datenbank-Update 18 ausführen.';if(noticeDialog18.open)renderNotices18();}}
+function openNotice18(){renderNotices18();noticeDialog18.showModal();void refreshNotifications18();}
+function renderNotices18(){noticeDialog18.replaceChildren();const head=node('div',undefined,'row');head.append(node('h2','Mitteilungen'),action('Schließen',()=>noticeDialog18.close()));noticeDialog18.append(head);noticeDialog18.append(action('Einstellungen',()=>{noticeDialog18.close();openSettings18();}));if(!noticeReady18){noticeDialog18.append(node('p',noticeError18||'Mitteilungen werden geladen …','helper'));return;}if(unread18)noticeDialog18.append(action('Alle als gelesen markieren',async()=>{const r=await client.rpc('wg_hinweise_gelesen',{p_id:null});if(r.error)throw r.error;await refreshNotifications18();}));if(!notices18.length)noticeDialog18.append(node('p','Keine Mitteilungen.','muted'));
+ for(const n of notices18){const card=node('section',undefined,'notice18'+(!n.gelesen_am&&n.aktiv?' unread18':''));card.append(node('h3',n.titel),node('p',n.text),node('p',new Date(n.erstellt_am).toLocaleString('de-DE')+(n.aktiv?'':' · abgeschlossen'),'meta'));if(n.art!=='test')card.append(action('Ansehen',async()=>{const uid=user?.id,r=await client.rpc('wg_hinweise_gelesen',{p_id:n.id});if(r.error)throw r.error;if(uid!==user?.id)return;await refreshNotifications18();const record=n.art==='aufgabe'?entries.find(e=>e.id===n.objekt_id):machines.find(m=>m.id===n.objekt_id);if(!record){message('Der zugehörige Eintrag ist nicht mehr vorhanden.',true);return;}noticeDialog18.close();showPage(n.art==='aufgabe'?record.art:'maschinen');openAttachments(n.art==='aufgabe'?'eintrag':'maschine',record);}));noticeDialog18.append(card);}}
+async function edge18(actionName,extra={}){const uid=user?.id;if(!uid)throw new Error('Bitte anmelden.');const session=await client.auth.getSession();if(uid!==user?.id||!session.data?.session?.access_token)throw new Error('Bitte erneut anmelden.');const r=await fetch('https://grrkvuqxjglfuynmxegv.supabase.co/functions/v1/swift-endpoint',{method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_5P58BQr8tEksRLUqb8vmOg_uEM_MA24','Authorization':'Bearer '+session.data.session.access_token},body:JSON.stringify({action:actionName,...extra})});let data;try{data=await r.json();}catch{throw new Error('Die Supabase-Funktion swift-endpoint ist noch nicht erreichbar.');}if(uid!==user?.id)throw new Error('Das Konto wurde gewechselt.');if(!r.ok||data.error)throw new Error(data.error||'Die Supabase-Funktion ist noch nicht richtig eingerichtet.');return data;}
+let swRegistration18=null;
+async function serviceWorker18(){if(!('serviceWorker'in navigator))throw new Error('Dieser Browser unterstützt keine Push-Mitteilungen.');if(!swRegistration18)swRegistration18=await navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'});return navigator.serviceWorker.ready;}
+async function workerUser18(uid){if(!('serviceWorker'in navigator))return;const r=await navigator.serviceWorker.getRegistration(new URL('./',location.href).href);if(!r?.active)return;await new Promise(resolve=>{const channel=new MessageChannel();const timeout=setTimeout(resolve,2000);channel.port1.onmessage=()=>{clearTimeout(timeout);resolve();};r.active.postMessage({type:'WG_USER',userId:uid},[channel.port2]);});}
+async function clearPushUser18(){try{await workerUser18(null);}catch{}}
+async function bindPushUser18(){if(!user)return;let enabled=false;try{enabled=localStorage.getItem('weingut-push-user-18')===user.id;}catch{}await workerUser18(enabled?user.id:null);}
+function b64bytes18(s){return Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}
+async function enablePush18(){
+ if(!('Notification'in window)||!('PushManager'in window))throw new Error('Auf iPhone/iPad die App zuerst über Teilen → Zum Home-Bildschirm installieren und von dort öffnen.');
+ const uid=user?.id;const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Mitteilungen sind nicht erlaubt. Bitte in den Geräteeinstellungen erlauben.');
+ const cfg=await edge18('config'),reg=await serviceWorker18();if(uid!==user?.id)return;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64bytes18(cfg.publicKey)});
+ try{await edge18('subscribe',{subscription:sub.toJSON()});if(uid!==user?.id)return;try{localStorage.setItem('weingut-push-user-18',uid);}catch{}await workerUser18(uid);await refreshNotifications18();}catch(e){await sub.unsubscribe().catch(()=>{});throw e;}
+}
+async function disconnectPush18(){try{localStorage.removeItem('weingut-push-user-18');}catch{}await clearPushUser18();if(!('serviceWorker'in navigator))return;try{const reg=await navigator.serviceWorker.getRegistration(new URL('./',location.href).href),sub=await reg?.pushManager.getSubscription();if(sub){try{if(user)await edge18('unsubscribe',{endpoint:sub.endpoint});}finally{await sub.unsubscribe();}}}catch{}}
+function openSettings18(){settingsDialog18.replaceChildren();const head=node('div',undefined,'row');head.append(node('h2','Mitteilungen & Team'),action('Schließen',()=>settingsDialog18.close()));settingsDialog18.append(head);const body=node('div',undefined,'notice-settings18'),status=node('p','','helper');body.append(node('p','Push-Mitteilungen gelten für dieses Gerät. Neue Zuteilungen kommen in dein Postfach. TÜV und Service werden 60, 30 und 7 Tage vorher sowie bei Fälligkeit gemeldet. Die Zahl am App-Symbol zählt ungelesene, noch aktuelle Hinweise.','helper'));
+ const on=action('Mitteilungen auf diesem Gerät aktivieren',async()=>{status.textContent='Wird eingerichtet …';try{await enablePush18();status.textContent='Push-Mitteilungen sind auf diesem Gerät aktiviert.';}catch(e){status.textContent=e.message;}}),off=action('Auf diesem Gerät ausschalten',async()=>{await disconnectPush18();status.textContent='Push-Mitteilungen auf diesem Gerät ausgeschaltet.';});body.append(on,off,action('Testnachricht senden',async()=>{try{await edge18('test');status.textContent='Testnachricht vorgemerkt. Sie sollte innerhalb von etwa einer Minute eintreffen.';}catch(e){status.textContent=e.message;}}),status);
+ if(user?.email?.toLowerCase()==='fabian-112@t-online.de'){const section=node('section');section.append(node('h3','Team einmalig einrichten'),node('p','Tanja, Tom, Achim und Maya erhalten getrennte Konten mit deinem bisherigen Passwort. Bestehende Teamkonten werden bei erneuter Einrichtung beibehalten.','helper'));const label=node('label','Dein bisheriges Passwort'),input=node('input');input.type='password';input.autocomplete='current-password';label.append(input);const result=node('p','','helper');section.append(label,action('Vier Teamzugänge einrichten',async()=>{const pw=input.value;input.value='';if(!pw){result.textContent='Bitte dein bisheriges Passwort eingeben.';return;}result.textContent='Team wird eingerichtet …';try{const r=await edge18('setup-team',{password:pw});result.textContent=r.message;await refreshData();}catch(e){result.textContent=e.message;}}),result);body.append(section);}settingsDialog18.append(body);settingsDialog18.showModal();}
+// Notification link contains only a server-side inbox ID, never a trusted target URL.
+const noticeLink18=new URL(location.href).searchParams.get('hinweis');let noticeLinkOpened18=false;
+const baseRefreshNotices18=refreshNotifications18;refreshNotifications18=async function(){await baseRefreshNotices18();if(noticeLink18&&!noticeLinkOpened18&&user&&noticeReady18){noticeLinkOpened18=true;openNotice18();const u=new URL(location.href);u.searchParams.delete('hinweis');history.replaceState(null,'',u);}};
+if('serviceWorker'in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='WG_REFRESH'&&user)void refreshNotifications18();});
 
 </script>
 </body>
