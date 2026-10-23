@@ -449,14 +449,14 @@ function renderList(){
 // EINTRÄGE: anlegen, bearbeiten, erledigen, wieder öffnen
 // Gleichzeitige Änderungen werden nicht still überschrieben.
 // ============================================================
-function openEntry(entry=null){
+function openEntry(entry=null,defaults={}){
   disposeDraft(entryDraft);entryDraft=newDraft(entry?.id);editing=entry?{...entry}:null;const f=$('entryForm');f.reset();
-  const art=entry?.art||page;
+  const art=entry?.art||defaults.art||page;f.dataset.art=art;f.elements.titel.placeholder='';
   $('dialogTitle').textContent=entry?'Eintrag bearbeiten':sections[art].add;
   for(const key of ['titel','beschreibung','zustaendig','von','bis'])f.elements[key].value=entry?.[key]||'';
   f.elements.kategorie.value=entry?.kategorie||(category==='Alle'?'Raiffeisen':category);
   $('categoryField').hidden=art!=='besorgung';$('assigneeField').hidden=art==='notiz';$('dateFields').hidden=art==='notiz';
-  const machineSelect=f.elements.maschine_id;machineSelect.replaceChildren();const empty=node('option','Keine Zuordnung');empty.value='';machineSelect.append(empty);for(const m of machines){const option=node('option',m.name);option.value=m.id;machineSelect.append(option);}machineSelect.value=entry?.maschine_id||'';
+  const machineSelect=f.elements.maschine_id;machineSelect.replaceChildren();const empty=node('option','Keine Zuordnung');empty.value='';machineSelect.append(empty);for(const m of machines){const option=node('option',m.name);option.value=m.id;machineSelect.append(option);}machineSelect.value=entry?.maschine_id||defaults.maschine_id||'';
   $('machineField').hidden=art==='notiz';
   $('entryError').textContent='';renderFormFiles('eintrag');$('entryDialog').showModal();
 }
@@ -473,7 +473,7 @@ async function mutate(table,record,change,remove=false){
 }
 function formBusy(value){saving=value;for(const id of ['entryForm','machineForm'])for(const input of $(id).querySelectorAll('input,select,textarea'))input.disabled=value;$('saveEntry').disabled=value;$('cancelEntry').disabled=value;$('saveApp').disabled=value;$('cancelApp').disabled=value;$('logout').disabled=value;$('saveMachine').disabled=value;$('cancelMachine').disabled=value;renderFormFiles('eintrag');renderFormFiles('maschine');}
 $('entryForm').onsubmit=async event=>{
-  event.preventDefault();if(saving)return;const f=event.target,art=editing?.art||page;const uid=user?.id;
+  event.preventDefault();if(saving)return;const f=event.target,art=editing?.art||f.dataset.art||page;const uid=user?.id;
   $('entryError').textContent='';formBusy(true);
   try{
     const value={art,maschine_id:art==='notiz'?null:f.elements.maschine_id.value||null,titel:f.elements.titel.value.trim(),beschreibung:f.elements.beschreibung.value.trim(),kategorie:art==='besorgung'?f.elements.kategorie.value:null,zustaendig:art==='notiz'?'':f.elements.zustaendig.value.trim(),von:art==='notiz'?null:f.elements.von.value||null,bis:art==='notiz'?null:f.elements.bis.value||null};
@@ -505,6 +505,7 @@ function renderMachines(container){
     const summary=node('div',undefined,'machine-summary');summary.append(node('h3',m.name));if(m.details?.geraeteart)summary.append(node('p',m.details.geraeteart,'meta'));
     for(const [key,label] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(m[key]&&m[key]<=reminderLimit())summary.append(node('p',label+(m[key]<today()?' abgelaufen · ':' bald fällig · ')+dateText(m[key]),m[key]<today()?'error':'meta'));
     summary.append(statusBadge15(m));
+    const pending24=machineTasks24(m);if(pending24.length)summary.append(node('p',pending24.length+' '+(pending24.length===1?'offener Punkt':'offene Punkte')+' · '+pending24[0].titel,'machine-pending24'));
     const editRow=node('div',undefined,'machine-edit-row');editRow.append(action('Bearbeiten',()=>openMachine(m)));summary.append(editRow);
     box.append(summary);clickableCard(box,()=>openAttachments('maschine',m),'Details zu '+m.name);container.append(box);
   }
@@ -568,6 +569,7 @@ function openAttachments(kind,record){
 function renderAttachments(){
  if(!fileContext)return;
  const {kind,id}=fileContext;const managingMachine=kind==='maschine'&&$('machineDialog').open;document.querySelector('#fileDialog .file-upload').hidden=kind==='maschine'&&!managingMachine;const record=(kind==='maschine'?machines:entries).find(r=>r.id===id);
+ const header25=document.querySelector('#fileDialog > .row');header25.append(detailEdit14,$('closeFiles'));
  const list=$('fileGallery');list.replaceChildren();
  if(!record){list.append(node('p','Dieser Eintrag wurde inzwischen entfernt.','error'));return;}
  const heroFile=filesFor(kind,id).filter(inlinePhoto).sort((a,b)=>Number(b.titelbild)-Number(a.titelbild))[0];
@@ -588,7 +590,7 @@ function renderAttachments(){
   field('Maschine',machines.find(m=>m.id===record.maschine_id)?.name);
   field('Status',record.erledigt?'Erledigt / Archiv':'Offen');
  }
- if(kind!=='maschine')field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);if(kind==='maschine')machineStatusControl(details,record);
+ if(kind!=='maschine')field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);if(kind==='maschine'){machineStatusControl(details,record);if(!managingMachine){machineActions25(details,record);if(largeMachine24(record))machineTaskControls24(details,record);}}
  const recordActions=node('div',undefined,'item-actions');
  const edit=()=>{if(fileBusy)return;closeDetails();kind==='maschine'?openMachine(record):openEntry(record);};
  if(kind==='maschine'){detailEdit14.hidden=managingMachine;detailEdit14.onclick=edit;detailEdit14.disabled=fileBusy;}else{detailEdit14.hidden=true;recordActions.append(action('Bearbeiten',edit));}
@@ -908,7 +910,7 @@ const mfields=[['symbol','Symbol ohne Foto','select',['Automatisch','Traktor','A
 for(const [key,title,type,opts] of mfields){const l=node('label',title);let input=node(type==='select'?'select':'input');input.name='extra_'+key;if(type==='select')for(const v of opts){const o=node('option',v);o.value=v;input.append(o);}else{input.type=type;input.maxLength=type==='url'?2000:180;}l.append(input);mex.append(l);}mf.insertBefore(mex,$('machineFiles'));const emptyCategory18=node('option','Bitte Kategorie auswählen …');emptyCategory18.value='';mf.elements.extra_gruppe.prepend(emptyCategory18);mf.elements.extra_gruppe.required=true;
 function fillMachineExtras(f,m){for(const [k,,type,opts]of mfields)f.elements['extra_'+k].value=m?.details?.[k]||(type==='select'?opts[0]:'');f.elements.extra_gruppe.value=m?machineCategory18(m):'';f.elements.extra_marke.value=m?deviceBrand18(m):machineBrand18!=='Alle'?machineBrand18:'Restliche';if(!m&&smallMachine18(f.elements.extra_gruppe.value))f.elements.typ.value=f.elements.extra_gruppe.value==='Elektrowerkzeuge'?'Akkuwerkzeug':'Handwerkzeug';layoutMachine14();}
 function machineExtras(f){const d={...(editingMachine?.details||{})};for(const[k]of mfields)d[k]=f.elements['extra_'+k].value.trim();if(d.herstellerlink&&!safeUrl(d.herstellerlink))throw new Error('Herstellerlink muss mit https:// beginnen.');if(f.elements.typ.value!=='Akkuwerkzeug')d.spannung='';return d;}
-function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(k==='status'||k==='marke'||k==='symbol')continue;if(!d[k]||k==='herstellerlink'||(!smallMachine18(machineCategory18(m))&&['geraeteart','spannung'].includes(k)))continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k.endsWith('datum')?dateText(d[k]):d[k]),'meta'));}if(d.fruehere_inventarnummer)c.append(node('p','Frühere Inventarnummer: '+d.fruehere_inventarnummer,'meta'));if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}}
+function machineDetailExtras(c,m){const d=m.details||{};for(const[k,label]of mfields){if(k==='status'||k==='marke'||k==='symbol'||(['ausgeliehen_an','rueckgabe_am'].includes(k)&&machineCategory18(m)!=='Elektrowerkzeuge'))continue;if(!d[k]||k==='herstellerlink'||(!smallMachine18(machineCategory18(m))&&['geraeteart','spannung'].includes(k)))continue;c.append(node('p',label.replace(/ \(.*/, '')+': '+(k.endsWith('_am')||k.endsWith('datum')?dateText(d[k]):d[k]),'meta'));}if(d.fruehere_inventarnummer)c.append(node('p','Frühere Inventarnummer: '+d.fruehere_inventarnummer,'meta'));if(d.herstellerlink&&safeUrl(d.herstellerlink)){const a=node('a','Hersteller / Ersatzteile öffnen ↗');a.href=safeUrl(d.herstellerlink);a.target='_blank';a.rel='noopener noreferrer';c.append(a);}}
 function wineLabel(w,detail=false){return w?`${w.name}${w.jahrgang?' · '+w.jahrgang:''}${detail?' · '+nf(w.flaschengroesse)+' l':''}`:'Unbekannter Wein';}
 function placeLabel(p){return p?`${p.name}${p.position?' · '+p.position:''}`:'Unbekannter Platz';}
 function stocksAt(id){return lager.bestaende.filter(b=>b.platz_id===id&&Number(b.menge)>0);}
@@ -1011,11 +1013,43 @@ function layoutMachine14(){
  fields14.kennzeichen.firstChild.textContent=small?'Artikel- / Gerätenummer':'Kennzeichen / Gerätenummer';
  fields14.typ.firstChild.textContent=group==='Elektrowerkzeuge'?'Art (Akku oder Kabel)':'Art';
  fields14.extra_marke.hidden=mf.elements.extra_gruppe.value!=='Elektrowerkzeuge';$('machineDialogTitle').textContent=(fresh?'Hinzufügen: ':'Bearbeiten: ')+mf.elements.extra_gruppe.value;
+ for(const key of ['extra_ausgeliehen_an','extra_rueckgabe_am'])fields14[key].hidden=group!=='Elektrowerkzeuge';
  updateVoltage();
 }
 mf.elements.extra_gruppe.addEventListener('change',()=>{const group=mf.elements.extra_gruppe.value;if(!editingMachine){mf.elements.typ.value=group==='Elektrowerkzeuge'?'Akkuwerkzeug':group==='Verschiedenes'?'Handwerkzeug':group==='Kellertechnik'?'Pumpe':group==='Anbaugeräte'?'Mulcher':'Traktor';}const small=smallMachine18(mf.elements.extra_gruppe.value),tool=['Akkuwerkzeug','Elektrowerkzeug','Handwerkzeug'].includes(mf.elements.typ.value);if(small&&!tool)mf.elements.typ.value='Sonstiges';if(!small&&tool)mf.elements.typ.value=mf.elements.extra_gruppe.value==='Anbaugeräte'?'Mulcher':'Traktor';layoutMachine14();});
 const css14=node('style');css14.textContent=`.machine-fields14{gap:14px}.machine-fields14 [hidden]{display:none!important}#detailEdit14{margin-left:auto}#fileDialog>.row>h2{margin-right:12px}.file-record-info>label{display:grid;gap:6px;margin-top:20px}.file-record-info>label select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:white;color:inherit}`;document.head.append(css14);
 
+
+
+// Update 24: Mängel als verknüpfte Erledigungen, unabhängig von der Verfügbarkeit.
+function largeMachine24(m){return ['Fahrzeuge','Anbaugeräte','Kellertechnik'].includes(machineCategory18(m));}
+function machineTasks24(m){return entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.maschine_id===m.id).sort((a,b)=>(a.bis||'9999').localeCompare(b.bis||'9999')||String(a.erstellt_am||'').localeCompare(String(b.erstellt_am||'')));}
+function reportMachineIssue24(m){
+ if(saving||fileBusy||!user)return;
+ closeDetails();openEntry(null,{art:'aufgabe',maschine_id:m.id});
+ $('dialogTitle').textContent='Mangel melden · '+m.name;
+ $('entryForm').elements.titel.placeholder='Zum Beispiel Reifen platt oder Licht kaputt';
+}
+function machineTaskControls24(host,m){
+ const section=node('section',undefined,'machine-tasks24');
+ const tasks=machineTasks24(m);
+ if(tasks.length){section.append(node('h3','Offene Erledigungen ('+tasks.length+')'));
+  for(const task of tasks){const row=node('div',undefined,'machine-task-row24');
+   const view=action(task.titel,()=>{if(fileBusy)return;showPage('aufgabe');openAttachments('eintrag',task);},'clear');
+   view.setAttribute('aria-label','Erledigung öffnen: '+task.titel);
+   const done=action('✓ Erledigt',async()=>{if(fileBusy||saving)return;setFileBusy(true);try{await toggleDone(task);}finally{setFileBusy(false);}},'success');done.disabled=fileBusy;
+   row.append(view,done);section.append(row);
+  }
+ }
+ if(tasks.length)host.append(section);
+}
+function machineActions25(host,m){
+ const row=node('div',undefined,'machine-actions25');row.append(detailEdit14,$('closeFiles'));
+ if(largeMachine24(m)){const report=action('Mangel melden',()=>reportMachineIssue24(m));report.disabled=fileBusy;row.append(report);}
+ else row.classList.add('two-actions25');host.append(row);
+}
+const css25=node('style');css25.textContent=`.machine-actions25{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.machine-actions25.two-actions25{grid-template-columns:repeat(2,minmax(0,1fr))}.machine-actions25 button{width:100%;min-width:0;min-height:40px;padding:8px 5px;font-size:13px;line-height:1.25;white-space:normal;overflow-wrap:normal}.machine-actions25 #detailEdit14{margin:0}#fileDialog>.row:has(+.file-gallery) h2{min-width:0;overflow-wrap:anywhere}`;document.head.append(css25);
+const css24=node('style');css24.textContent=`.compact-machine .machine-summary>.machine-pending24{grid-column:1 / -1;margin:3px 0 0;font-size:12px;line-height:1.35;color:#855a1b;overflow-wrap:anywhere}.machine-tasks24{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.machine-tasks24 h3{font-size:15px;margin:16px 0 8px}.machine-task-row24{display:flex;align-items:center;gap:8px;margin:6px 0}.machine-task-row24>button:first-child{flex:1;min-width:0;text-align:left;white-space:normal;overflow-wrap:anywhere}.machine-task-row24>button:last-child{flex-shrink:0;min-height:32px;padding:5px 8px;font-size:12px}`;document.head.append(css24);
 
 // Update 15: Gerätestatus direkt sichtbar und filterbar.
 function statusGroup15(m){const s=m.details?.status||'Verfügbar';return ['Verfügbar','Auf Lager','Auf Lager / verfügbar'].includes(s)?'Verfügbar':['Ausgeliehen','Verliehen'].includes(s)?'Ausgeliehen':'Sonstiges';}
