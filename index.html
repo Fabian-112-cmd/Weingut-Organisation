@@ -302,6 +302,7 @@ function loginEmail(name){
   return name+'@weintour.example.com';
 }
 function signedOut(){
+ document.getElementById('accountMenu20')?.removeAttribute('open');
  closeScan19();
   void clearPushUser18();resetNotifications18();closeBoschPicker16();resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;closeDetails();
@@ -893,10 +894,12 @@ function machineCategory18(m){
 function deviceBrand18(m){const explicit=m.details?.marke;if(['Bosch','Stihl','Festool','Restliche'].includes(explicit))return explicit;const text=[m.modell,m.name].join(' ');return /bosch/i.test(text)?'Bosch':/stihl/i.test(text)?'Stihl':/festool/i.test(text)?'Festool':'Restliche';}
 function smallMachine18(group){return ['Elektrowerkzeuge','Verschiedenes','Werkzeuge & Kleingeräte'].includes(group);}
 function renderMachineTabs(c){
- c.append(tabs(['Alle','Fahrzeuge','Anbaugeräte','Kellertechnik','Elektrowerkzeuge','Verschiedenes'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();}));
- if(machineGroup==='Elektrowerkzeuge')c.append(tabs(['Alle','Bosch','Stihl','Festool','Restliche'],machineBrand18,v=>{machineBrand18=v;renderList();}));
- const pool=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18),row=node('div',undefined,'lager-tabs machine-status-filters');row.setAttribute('aria-label','Nach Gerätestatus filtern');
- for(const value of ['Alle','Verfügbar','Ausgeliehen','Sonstiges']){const count=value==='Alle'?pool.length:pool.filter(m=>statusGroup15(m)===value).length;const b=action(value+' ('+count+')',()=>{machineStatus15=value;renderList();},machineStatus15===value?'active':'');b.setAttribute('aria-pressed',String(machineStatus15===value));row.append(b);}c.append(row);
+ const filters=node('div',undefined,'machine-dropdowns20'+(machineGroup==='Elektrowerkzeuge'?' has-brand20':''));
+ const dropdown=(label,id,values,current,change)=>{const field=node('label',label),select=node('select');select.id=id;for(const item of values){const [value,text]=Array.isArray(item)?item:[item,item],option=node('option',text);option.value=value;select.append(option);}select.value=current;select.onchange=()=>change(select.value);field.append(select);filters.append(field);};
+ dropdown('Kategorie','machineCategory20',[['Alle','Alle Kategorien'],'Fahrzeuge','Anbaugeräte','Kellertechnik','Elektrowerkzeuge','Verschiedenes'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();});
+ if(machineGroup==='Elektrowerkzeuge')dropdown('Hersteller','machineBrand20',[['Alle','Alle Hersteller'],'Bosch','Stihl','Festool','Restliche'],machineBrand18,v=>{machineBrand18=v;renderList();});
+ const pool=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18);
+ dropdown('Status','machineStatus20',['Alle','Verfügbar','Ausgeliehen','Sonstiges'].map(v=>[v,(v==='Alle'?'Alle Status':v)+' ('+(v==='Alle'?pool.length:pool.filter(m=>statusGroup15(m)===v).length)+')']),machineStatus15,v=>{machineStatus15=v;renderList();});c.append(filters);
 }
 const mf=$('machineForm');
 const mex=node('section',undefined,'machine-extras');
@@ -1128,6 +1131,26 @@ photoInput19.onchange=async()=>{const file=photoInput19.files?.[0];photoInput19.
 scanDialog19.addEventListener('cancel',e=>{e.preventDefault();closeScan19();});scanDialog19.addEventListener('close',()=>{qrGeneration19++;qrProcessing19=false;stopCamera19();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&scanDialog19.open){qrGeneration19++;qrProcessing19=false;stopCamera19();scanHint19.textContent='Kamera pausiert. Zum Fortsetzen „Kamera starten“ drücken.';}});
 window.addEventListener('pagehide',closeScan19);
+
+
+// Update 20 – kompakter Kopf mit einem Menü, keine umbrechenden Aktionsreihen.
+const accountMenu20=node('details');accountMenu20.id='accountMenu20';
+const accountToggle20=node('summary');accountToggle20.setAttribute('aria-label','Benutzermenü öffnen');accountToggle20.append(node('span','☰'));const count20=node('span','','account-count20');count20.hidden=true;accountToggle20.append(count20);
+const accountPanel20=node('div',undefined,'account-panel20');const who20=node('div',undefined,'account-person20');who20.append($('person'));accountPanel20.append(who20);
+for(const id of ['scanButton19','noticeButton18','refresh','logout'])accountPanel20.append($(id));
+accountPanel20.querySelector('#refresh').textContent='Aktualisieren';accountMenu20.append(accountToggle20,accountPanel20);$('account').append(accountMenu20);
+for(const button of accountPanel20.querySelectorAll('button'))button.addEventListener('click',()=>{accountMenu20.open=false;});
+document.addEventListener('click',e=>{if(!accountMenu20.contains(e.target))accountMenu20.open=false;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')accountMenu20.open=false;});
+function accountBadge20(){const n=Number($('noticeButton18').textContent.match(/\((\d+)\)/)?.[1]||0);count20.textContent=String(n);count20.hidden=!n;accountToggle20.setAttribute('aria-label',n?'Benutzermenü, '+n+' ungelesene Hinweise':'Benutzermenü öffnen');}
+new MutationObserver(accountBadge20).observe($('noticeButton18'),{childList:true,subtree:true,characterData:true});accountBadge20();
+const compactStyle20=node('style');compactStyle20.textContent=`
+main.wrap>header{display:flex;flex-wrap:nowrap;align-items:center;gap:14px}main.wrap>header .brand{flex:1 1 auto;min-width:0;gap:11px}main.wrap>header .brand>div{min-width:0}main.wrap>header .brand h1{font-size:clamp(20px,3vw,29px);line-height:1.18;text-wrap:initial;overflow-wrap:normal;word-break:normal}main.wrap>header #account{flex:0 0 auto;display:flex;margin:0;min-width:44px}main.wrap>header #account[hidden]{display:none!important}
+#accountMenu20{position:relative}#accountMenu20>summary{position:relative;display:flex;align-items:center;justify-content:center;box-sizing:border-box;list-style:none;width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:#fffaf4;color:var(--ink);cursor:pointer;font-size:23px;line-height:1}#accountMenu20>summary::-webkit-details-marker{display:none}#accountMenu20 .account-count20{position:absolute;right:-5px;top:-6px;background:#643985;color:white;border:2px solid #f3efe9;border-radius:20px;min-width:18px;height:18px;padding:1px 3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}#accountMenu20 .account-count20[hidden]{display:none}
+#accountMenu20 .account-panel20{position:absolute;right:0;top:calc(100% + 10px);z-index:40;display:grid;gap:4px;width:220px;max-width:calc(100vw - 32px);padding:9px;box-sizing:border-box;background:#fffdf8;border:1px solid var(--line);box-shadow:0 12px 34px #30203b24;border-radius:15px}#accountMenu20:not([open]) .account-panel20{display:none}#accountMenu20 .account-panel20 button{width:100%;margin:0;justify-content:flex-start;text-align:left;background:transparent;box-shadow:none;border-color:transparent;min-height:44px;font-size:15px;padding:9px 11px}#accountMenu20 .account-panel20 button:hover{background:#f2edf5}#accountMenu20 .account-person20{padding:7px 11px 10px;border-bottom:1px solid var(--line);margin-bottom:3px}#accountMenu20 #logout{color:#a83232}
+.machine-dropdowns20{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}.machine-dropdowns20 label{display:grid;min-width:0;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}.machine-dropdowns20 select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;font-size:14px;padding:10px 30px 10px 11px;background:#fffdf8;border-radius:11px}.machine-dropdowns20.has-brand20{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:600px){.machine-dropdowns20.has-brand20{grid-template-columns:repeat(2,minmax(0,1fr))}.machine-dropdowns20.has-brand20>label:first-child{grid-column:1/-1}main.wrap>header .brand img{width:42px;height:42px;border-radius:12px}main.wrap>header .brand h1{font-size:20px;letter-spacing:-.4px}main.wrap>header{gap:12px}}
+`;document.head.append(compactStyle20);
 
 </script>
 </body>
