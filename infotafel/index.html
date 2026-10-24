@@ -38,6 +38,27 @@ header{gap:20px}.brand{min-width:245px}.brand h1{font-size:25px;font-family:Geor
 .table-card table{width:100%;table-layout:fixed}.table-card table th:first-child{width:132px}.table-card table th:nth-child(2),.table-card table th:nth-child(3){width:80px}.table-card table th:nth-child(4){width:25px}.table-card table th:nth-child(5){width:33px}.table-card table th,.table-card table td{padding-left:4px;padding-right:4px}.table-card table td:first-child{overflow-wrap:normal;word-break:normal}
 .amount{gap:3px;justify-content:center}.amount input{width:58px;max-width:58px}.amount span{width:7px}.table-card table td:nth-child(4),.table-card table td:nth-child(5){text-align:center}
 }
+
+/* Einstellbare Aufteilung, nur für die breite Bildschirmansicht. */
+.layout-divider{display:none}
+@media screen and (min-width:1201px){
+.workspace{grid-template-columns:minmax(0,var(--delivery-width,36%)) 18px minmax(0,1fr);gap:7px;align-items:stretch}
+.layout-divider{display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:9px;background:transparent;cursor:col-resize;touch-action:none;min-height:160px;align-self:stretch}
+.layout-divider::before{content:'';width:4px;height:72px;border-radius:4px;background:#bca9c0;box-shadow:0 0 0 4px #eee7f0}
+.layout-divider:hover,.layout-divider:focus-visible{background:#eee7f0;outline:2px solid var(--accent);outline-offset:0}
+body.resizing-layout,body.resizing-layout *{cursor:col-resize!important;user-select:none!important}
+body.resizing-layout iframe{pointer-events:none}
+.tables-area{overflow:hidden}.table-scroll{overflow:auto}
+}
+
+@media screen and (min-width:1201px){
+#tables{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.table-head{flex-wrap:wrap;gap:3px}.table-head h2{font-size:16px}
+.table-card table th:first-child{width:112px}
+.table-card table th:nth-child(2),.table-card table th:nth-child(3){width:70px}
+.table-card table th:nth-child(4){width:24px}.table-card table th:nth-child(5){width:30px}
+.table-card table{min-width:306px}.amount input{width:52px;max-width:52px}
+}
 </style></head><body>
 <section id="login"><img src="infotafel-icon.png" alt="Weingut"><h1>Infotafel</h1><p class="hint">Mit deinem Weingut-Benutzer anmelden.</p><form id="loginForm"><label>Benutzername<input id="username" autocomplete="username" required></label><label>Passwort<input id="password" type="password" autocomplete="current-password" required></label><p id="loginError" class="error" role="alert"></p><button class="primary" id="loginButton">Anmelden</button></form></section>
 <section id="application" hidden><header><div class="brand"><img src="infotafel-icon.png" alt=""><div><h1>Weingut Pau & Maya BIO</h1><p>Infotafel</p></div></div><div class="clock"><strong id="clock"></strong><span id="date"></span></div><section class="calendar" aria-label="Aktueller Monat"><h2 id="month"></h2><div class="days" id="calendar"></div></section><div class="controls"><button id="fullscreen">Vollbild</button><details><summary aria-label="Menü öffnen">☰</summary><div class="account-pop"><span id="person"></span><button id="refresh">Aktualisieren</button><button id="logout">Abmelden</button></div></details></div></header><main><p id="globalError" class="error" role="alert"></p><div class="workspace"><div class="board" id="board"></div><section class="tables-area"><div class="yearbar"><label><select aria-label="Erntejahr auswählen" id="year"></select></label><button id="newYear">＋ Neues Jahr</button><span id="tableStatus" role="status"></span></div><div id="tables"></div></section></div><p class="board-status" id="sync"></p></main></section>
@@ -73,7 +94,7 @@ $('refresh').onclick=()=>void refresh();$('fullscreen').onclick=async()=>{try{if
 document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'Vollbild beenden':'Vollbild'});
 window.addEventListener('beforeunload',e=>{if(uploading){e.preventDefault();e.returnValue=''}});
 let monthKey='';function tick(){const now=new Date();$('clock').textContent=now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});$('date').textContent=now.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const key=now.toDateString();if(monthKey===key)return;monthKey=key;$('month').textContent=now.toLocaleDateString('de-DE',{month:'long',year:'numeric'});const c=$('calendar');c.replaceChildren();for(const d of ['Mo','Di','Mi','Do','Fr','Sa','So'])c.append(el('span',d,'week'));const offset=(new Date(now.getFullYear(),now.getMonth(),1).getDay()+6)%7;for(let i=0;i<offset;i++)c.append(el('span',''));const days=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();for(let d=1;d<=days;d++){const cell=el('span',d,d===now.getDate()?'today':'');if(d===now.getDate())cell.setAttribute('aria-current','date');c.append(cell)}}tick();setInterval(tick,1000);setInterval(()=>{if(!document.hidden)void refresh()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();void refresh()}});
-const tables=[['pau_ingo','PAU → Ingo'],['pau_gerd','PAU → Gerd'],['bio_ingo','BIO → Ingo'],['bio_gerd','BIO → Gerd']];
+const tables=[['pau_ingo','PAU → Ingo'],['pau_gerd','PAU → Gerd'],['pau_eigenbedarf','PAU → Eigenbedarf'],['bio_ingo','BIO → Ingo'],['bio_gerd','BIO → Gerd'],['bio_eigenbedarf','BIO → Eigenbedarf']];
 let rows=[],tableSaving=false,yearVersion=0,templateModes=new Set(),dirty=false,loadedYear=new Date().getFullYear();
 const activeYear=()=>Number($('year').value);
 for(let y=new Date().getFullYear()+1;y>=2020;y--){const o=el('option','Erntejahr '+y);o.value=y;$('year').append(o)}$('year').value=new Date().getFullYear();
@@ -104,4 +125,29 @@ function resetSlot8(slot){if($('viewer').open&&$('viewer').dataset.slot===slot)c
 for(const [slot]of slots){const del=button('Dokument löschen',()=>deleteDocument8(slot));del.id=slot+'-delete';del.className='delete-document8';del.hidden=true;$(slot+'-open').after(del)}
 async function deleteDocument8(slot){if(!uid||uploading||loading||tableSaving||dirty)return;const doc=current.find(d=>d.slot===slot);if(!doc)return;if(!confirm('„'+doc.dateiname+'“ aus '+slots.find(s=>s[0]===slot)[1]+' löschen?'))return;const g=generation;lock(true);$('globalError').textContent='';try{const r=await client.from('wg_infotafel').delete().eq('slot',slot).eq('revision',doc.revision).select('pfad');if(g!==generation)return;if(r.error)throw r.error;if(r.data?.length!==1)throw Error('Das Dokument wurde inzwischen geändert. Bitte aktualisieren.');current=current.filter(d=>d.slot!==slot);resetSlot8(slot);try{const cleanup=await client.storage.from(bucket).remove([doc.pfad]);if(cleanup.error)throw cleanup.error}catch(e){error(Error('Dokument aus der Infotafel entfernt. Die gespeicherte Datei konnte noch nicht bereinigt werden: '+e.message))}}catch(e){if(g===generation)error(e)}finally{lock(false);if(g===generation)await refresh()}}
 const css8=el('style');css8.textContent='.delete-document8{grid-column:1 / -1;color:#9a3232;background:transparent;border-color:transparent!important;min-height:26px!important;padding:3px 8px!important;font-size:11px!important}';document.head.append(css8);
-</script></body></html>
+</script>
+<script>
+(()=>{
+const workspace=document.querySelector('.workspace'),board=document.getElementById('board');
+const key='weingut-infotafel-layout-v2';
+const divider=document.createElement('div');divider.className='layout-divider';divider.tabIndex=0;
+divider.setAttribute('role','separator');divider.setAttribute('aria-label','Breite der Lieferpläne ändern');divider.setAttribute('aria-orientation','vertical');
+divider.setAttribute('aria-valuemin','25');divider.setAttribute('aria-valuemax','65');
+divider.title='Ziehen, um die Breite zu ändern. Wird automatisch gespeichert. Pfeiltasten zum Feinjustieren.';
+board.after(divider);
+let ratio=null,dragging=false;
+const clamp=value=>Math.max(25,Math.min(65,value));
+function apply(value){ratio=clamp(value);workspace.style.setProperty('--delivery-width',ratio+'%');divider.setAttribute('aria-valuenow',String(Math.round(ratio)));divider.setAttribute('aria-valuetext',Math.round(ratio)+' Prozent für Lieferpläne')}
+function save(){try{localStorage.setItem(key,String(ratio))}catch{} }
+try{const stored=localStorage.getItem(key);if(stored!==null&&Number.isFinite(Number(stored)))apply(Number(stored))}catch{}
+function current(){return ratio??(board.getBoundingClientRect().width/workspace.getBoundingClientRect().width*100)}
+divider.setAttribute('aria-valuenow',String(Math.round(current()||45)));
+divider.addEventListener('pointerdown',event=>{if(event.button!==0)return;dragging=true;divider.setPointerCapture(event.pointerId);document.body.classList.add('resizing-layout');event.preventDefault()});
+divider.addEventListener('pointermove',event=>{if(!dragging)return;const rect=workspace.getBoundingClientRect();apply((event.clientX-rect.left-7)/rect.width*100)});
+function finish(){if(!dragging)return;dragging=false;document.body.classList.remove('resizing-layout');if(ratio!==null)save()}
+divider.addEventListener('pointerup',finish);divider.addEventListener('pointercancel',finish);divider.addEventListener('lostpointercapture',finish);window.addEventListener('blur',finish);
+divider.addEventListener('keydown',event=>{let value=current();if(event.key==='ArrowLeft')value-=event.shiftKey?5:1;else if(event.key==='ArrowRight')value+=event.shiftKey?5:1;else if(event.key==='Home')value=25;else if(event.key==='End')value=65;else return;event.preventDefault();apply(value);save()});
+const reset=document.createElement('button');reset.textContent='Aufteilung zurücksetzen';reset.addEventListener('click',()=>{ratio=null;workspace.style.removeProperty('--delivery-width');try{localStorage.removeItem(key)}catch{}divider.setAttribute('aria-valuenow',String(Math.round(current()||45)))});document.querySelector('.account-pop').append(reset);
+})();
+</script>
+</body></html>
