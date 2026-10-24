@@ -793,7 +793,8 @@ function appLogo(app){
  const name=String(app.name||'').trim().toLocaleLowerCase('de');
  let path='';try{const url=new URL(app.url);if(url.hostname==='fabian-112-cmd.github.io')path=url.pathname.toLowerCase();}catch{}
  let src=null;
- if(path.startsWith('/pau-kasse/')||name==='kasse')src='app-logo-kasse.png';
+ if(path.startsWith('/weingut-organisation/infotafel/')||name==='infotafel')src='infotafel/infotafel-icon.png';
+ else if(path.startsWith('/pau-kasse/')||name==='kasse')src='app-logo-kasse.png';
  else if(path.startsWith('/mostrechner/')||name==='mostrechner')src='app-logo-mostrechner.png';
  else if(path.startsWith('/weintour/')||name==='weintour')src='app-logo-weintour.png';
  const fallback=()=>{const icon=node('span',String(app.name||'A').slice(0,1).toUpperCase(),'app-logo-fallback');icon.setAttribute('aria-hidden','true');return icon;};
