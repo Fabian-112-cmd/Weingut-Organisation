@@ -1,1 +1,0 @@
-{"name": "Weingut Infotafel", "short_name": "Infotafel", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#f1eee7", "theme_color": "#493251", "icons": [{"src": "infotafel-icon.png", "sizes": "any", "type": "image/png", "purpose": "any"}]}
