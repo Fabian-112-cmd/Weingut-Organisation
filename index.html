@@ -267,11 +267,45 @@ main.wrap>header::after{display:none}.header-clock4{display:flex;flex-direction:
 @media(max-width:760px){#home:not([hidden]){display:flex;flex-direction:column}#home .dash-main{display:flex}#home .dash-side{display:flex}#home .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(125px,1fr)}main.wrap>header{padding:12px;gap:8px;flex-wrap:wrap!important}main.wrap>header .brand{flex-basis:calc(100% - 120px)}.header-clock4{order:3;flex-basis:100%;flex-direction:row;gap:12px;justify-content:flex-end;align-items:center}.header-clock4 time{font-size:24px}.header-clock4 span{font-size:11px;margin:0}#home .dash-hero>h2{font-size:29px;padding:18px}#home .dash-summary{padding:8px}#home .dash-stat{padding:8px;min-height:90px}#home .dash-panel{padding:18px}#home .dash-shortcuts{gap:10px}#home .dash-app{padding:16px 12px}#home .dash-app strong{font-size:19px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
-<style>.greeting-clock4{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;background:#fcfaf0ed;border-radius:0 0 12px 12px;padding:0 24px 18px;margin-top:-14px;margin-bottom:14px;color:#39432f}.greeting-clock4 time{font:30px Georgia,serif;font-variant-numeric:tabular-nums}.greeting-clock4 span{font-size:14px}#home .dash-hero>h2{border-bottom:0;border-radius:12px 12px 0 0;margin-bottom:14px}</style></head>
+<style>.greeting-clock4{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;background:#fcfaf0ed;border-radius:0 0 12px 12px;padding:0 24px 18px;margin-top:-14px;margin-bottom:14px;color:#39432f}.greeting-clock4 time{font:30px Georgia,serif;font-variant-numeric:tabular-nums}.greeting-clock4 span{font-size:14px}#home .dash-hero>h2{border-bottom:0;border-radius:12px 12px 0 0;margin-bottom:14px}</style><style id="morgenlicht-feinschliff5">
+body::before{background:linear-gradient(#fff6d508,#102c160d),url('dashboard-morgenlicht.jpg') center center/cover no-repeat}
+main.wrap,body.desktop-mode main.wrap{padding:clamp(56px,12vh,140px) clamp(18px,2.5vw,46px) 30px;min-height:100dvh}
+main.wrap>header{padding:12px 20px;margin-bottom:22px;border-radius:10px;background:#fcfaecf0;box-shadow:0 3px 14px #1c321a1a}
+main.wrap>header .brand img{width:68px;height:54px;border-radius:0;border:0;box-shadow:none;object-fit:contain}
+main.wrap>header .brand h1{font:700 clamp(18px,1.5vw,27px)/1.2 Georgia,serif;color:#263721}
+main.wrap>header .brand small{font-size:11px;letter-spacing:1px;color:#73775f}
+.logo-previews{display:none!important}
+#home:not([hidden]){grid-template-columns:minmax(0,1fr) minmax(250px,27%);grid-template-rows:auto auto;align-content:start;gap:14px 18px;flex:0}
+#home .dash-hero{background:linear-gradient(90deg,#fcfaecef 0%,#fcfaecc2 55%,#fcfaec00 100%);border-radius:12px;padding:18px 0 0;overflow:hidden}
+#home .dash-hero>h2{background:transparent;border:0;box-shadow:none;padding:0 22px;margin:0;font-size:clamp(28px,3vw,45px);border-radius:0}
+#home .greeting-clock4{background:transparent;border:0;padding:8px 22px 20px;margin:0;gap:12px}
+#home .greeting-clock4 time{font-size:24px}#home .greeting-clock4 span{font-size:13px}
+#home .dash-hero>h3{padding:14px 18px 0;background:#fcfaecf5;font-size:20px}
+#home .dash-summary{padding:6px 12px 12px;background:#fcfaecf5}
+#home .dash-stat{min-height:62px;padding:9px 12px;grid-template-columns:29px 1fr;gap:2px 10px}
+#home .dash-stat .icon{width:26px;height:26px}#home .dash-stat strong{font-size:24px}
+#home .dash-main{height:auto}
+#home .dash-main>.dash-section-title{display:none}
+#home .dash-grid{flex:0;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:clamp(125px,17vh,190px);gap:12px;margin-bottom:14px}
+#home .dash-tile{min-height:0;padding:16px 12px;gap:8px;background:#fcfaecf5;color:#24361d;border-radius:10px}
+#home .dash-tile .icon,#home .dash-tile svg{width:clamp(36px,3vw,52px);height:clamp(36px,3vw,52px);margin:0}
+#home .dash-tile strong{font:clamp(16px,1.3vw,22px)/1.2 Georgia,serif}#home .dash-tile small{font-size:12px;margin:0}
+.dash-shortcut-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 9px;gap:12px;background:#fcfaeceb;border-radius:8px;padding:5px 10px}.dash-shortcut-heading h3{font:16px Georgia,serif;margin:0}.dash-choose{background:transparent;border:0;box-shadow:none;min-height:36px;padding:4px 8px;font-size:13px;color:#592639;text-decoration:underline}
+#home .dash-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#home .dash-app{min-width:0;min-height:78px;padding:15px 18px;gap:12px;border-radius:9px}#home .dash-app strong{font-size:clamp(18px,1.5vw,25px)}#home .dash-app .app-mini-logo{width:40px;height:40px}
+#home .dash-side{align-self:stretch;gap:14px}#home .dash-panel{padding:18px;flex:1;min-height:0;max-height:420px;overflow:auto}#home #dash-mine{flex:1.1}#home .dash-panel h3{font-size:clamp(18px,1.4vw,23px)}#home .dash-task{min-height:52px;font-size:14px}#home .dash-task strong{font-size:14px}
+#application>.footer{margin-top:18px;font-size:10px}
+.favorite-option5{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #e3dfd1;cursor:pointer}.favorite-option5 input{flex:none;width:22px;height:22px;min-height:22px}.favorite-option5 .app-mini-logo{width:34px;height:34px}.favorite-option5 span{font-weight:550}#dashboard-favorites5{max-width:560px}.dash-favorites-empty{background:#fcfaec;padding:12px;border-radius:9px}
+#home .dash-create[open]{max-height:70dvh;overflow:auto}
+@media(min-width:1800px){#home .dash-grid{grid-auto-rows:clamp(150px,18vh,230px)}}
+@media(max-width:1050px){main.wrap,body.desktop-mode main.wrap{padding:70px 20px 28px}#home:not([hidden]){grid-template-columns:minmax(0,1fr) minmax(230px,29%)}#home .dash-stat{display:flex;flex-direction:column;align-items:flex-start}#home .dash-stat>span:last-child{font-size:11px}#home .dash-tile strong{font-size:16px}#home .dash-app{padding:14px 12px}}
+@media(max-width:760px){main.wrap,body.desktop-mode main.wrap{padding:36px 12px 90px}main.wrap>header{padding:11px 13px}main.wrap>header .brand img{width:52px;height:45px}main.wrap>header .brand h1{font-size:18px}#home:not([hidden]){display:flex;gap:14px}#home .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:135px}#home .dash-tile .icon,#home .dash-tile svg{width:40px;height:40px}#home .dash-hero>h2{font-size:29px;padding:0 16px}#home .greeting-clock4{padding:8px 16px 18px}#home .dash-panel{max-height:320px}#home .dash-app strong{font-size:18px}#home .dash-app .app-mini-logo{width:30px;height:30px}#home .dash-app{gap:8px;padding:14px 10px}#home .dash-side{width:100%}}
+</style>
+</head>
 <body>
 <main class="wrap">
   <header>
-    <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Organisation</small></div></div>
+    <div class="brand"><img src="weingut-marke.svg" alt="Weingut W mit Traube"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Organisation</small></div></div>
     
     <div class="logo-previews" aria-label="Platzhalter für die späteren Betriebslogos"><span class="logo-preview">♧ Logo Pau</span><span class="logo-preview">♧ Logo Maya</span></div>
     <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
@@ -396,6 +430,7 @@ function safeUrl(value){try{const u=new URL(value);if(u.protocol!=='https:')retu
 async function loginEmail(name){const r=await client.rpc('wg_login_email',{p_name:name.trim()});if(r.error)throw r.error;if(!r.data)throw Error('Benutzername oder Passwort stimmt nicht.');return r.data;}
 
 function signedOut(){
+ document.getElementById('dashboard-favorites5')?.remove();
  document.getElementById('accountMenu20')?.removeAttribute('open');
  closeScan19();
   void clearPushUser18();resetNotifications18();closeBoschPicker16();closeStihlPicker26();resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
@@ -488,6 +523,23 @@ function render(){
   if(page==='besorgung')$('categories').append(action('Einkaufsmodus',startShopping,'shopping-start'));
   renderList();
 }
+function dashboardFavoriteKey5(){return 'weingut-dashboard-favoriten5:'+user.id;}
+function dashboardFavorites5(){
+ let chosen=null;try{const raw=localStorage.getItem(dashboardFavoriteKey5());if(raw!==null){const parsed=JSON.parse(raw);if(Array.isArray(parsed)&&parsed.every(x=>typeof x==='string'))chosen=parsed;}}catch{}
+ if(chosen!==null)return chosen.map(id=>apps.find(a=>String(a.id)===id)).filter(Boolean);
+ const plant=apps.find(a=>/pflanzenschutz/i.test(a.name));const vyc=apps.find(a=>/v\s*y\s*c.*one|vyc/i.test(a.name));return [plant,vyc].filter(Boolean);
+}
+function openDashboardFavorites5(){
+ if(!user)return;document.getElementById('dashboard-favorites5')?.remove();
+ const uid=user.id,dialog=node('dialog');dialog.id='dashboard-favorites5';dialog.setAttribute('aria-labelledby','dashboard-favorites-title5');
+ const title=node('h2','Direkte App-Zugänge');title.id='dashboard-favorites-title5';dialog.append(title,node('p','Wähle die Apps für deine Startseite. Die Auswahl wird für dein Konto auf diesem Gerät gespeichert.','muted'));
+ const form=node('form');form.method='dialog';const selected=new Set(dashboardFavorites5().map(a=>String(a.id)));
+ for(const app of apps){if(!safeUrl(app.url))continue;const label=node('label',undefined,'favorite-option5'),check=node('input');check.type='checkbox';check.value=String(app.id);check.checked=selected.has(String(app.id));label.append(check,appLogo(app),node('span',app.name));form.append(label);}
+ if(!apps.length)form.append(node('p','Für dich sind noch keine Apps freigegeben.','muted'));
+ const error=node('p',undefined,'error');error.setAttribute('role','status');form.append(error);
+ const controls=node('div',undefined,'dialog-actions');controls.append(action('Abbrechen',()=>dialog.close()),action('Auswahl speichern',()=>{if(user?.id!==uid){dialog.close();return;}const selected=[...form.querySelectorAll('input:checked')].map(x=>x.value);try{localStorage.setItem(dashboardFavoriteKey5(),JSON.stringify(selected));}catch{error.textContent='Die Auswahl konnte auf diesem Gerät nicht gespeichert werden.';return;}dialog.close();renderHome();},'primary'));form.append(controls);dialog.append(form);dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();
+}
+
 function renderHome(){
  const home=$('home');home.replaceChildren();
  const hero=node('section',undefined,'dash-hero');
@@ -516,12 +568,13 @@ function renderHome(){
  if(key==='maschinen')count=machines.length+' im Bestand';if(key==='apps')count=apps.length+' verfügbar';if(key==='weinbestand')count='Bestand & Lagerbewegungen';
  button.append(node('small',count));grid.append(button);
  }main.append(grid);
- const shortcuts=apps.filter(a=>/^(pflanzenschutz|infotafel)$/i.test(String(a.name).trim())||/\/(pflanzenschutz|infotafel)\/?$/i.test((()=>{try{return new URL(a.url).pathname}catch{return ''}})()));
- shortcuts.sort((a,b)=>Number(!/pflanzenschutz/i.test(a.name))-Number(!/pflanzenschutz/i.test(b.name)));
- if(shortcuts.length){main.append(node('h3','Direkt zu euren Apps','dash-section-title'));const links=node('div',undefined,'dash-shortcuts');
- for(const app of shortcuts){const url=safeUrl(app.url);if(!url)continue;const link=node('a',undefined,'dash-app');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.append(appLogo(app),node('strong',app.name),node('span','↗'));links.append(link);}main.append(links);}
+ const shortcuts=dashboardFavorites5();
+ const shortcutHead=node('div',undefined,'dash-shortcut-heading');shortcutHead.append(node('h3','Direkt zu euren Apps'),action('Auswählen',openDashboardFavorites5,'dash-choose'));main.append(shortcutHead);
+ const links=node('div',undefined,'dash-shortcuts');
+ for(const app of shortcuts){const url=safeUrl(app.url);if(!url)continue;const link=node('a',undefined,'dash-app');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.append(appLogo(app),node('strong',app.name),node('span','›'));links.append(link);}main.append(links);
+ if(!shortcuts.length)main.append(node('p','Wähle deine direkten App-Zugänge über „Auswählen“.','dash-favorites-empty'));
  const quick=node('details',undefined,'dash-create');const plus=node('summary','＋');plus.setAttribute('aria-label','Schnell hinzufügen');plus.title='Schnell hinzufügen';quick.append(plus);
- for(const [kind,label]of [['aufgabe','Erledigung'],['besorgung','Besorgung'],['notiz','Notiz']])quick.append(action(label,()=>{showPage(kind);openEntry();}));main.append(quick);
+ for(const [kind,label]of [['aufgabe','Erledigung'],['besorgung','Besorgung'],['notiz','Notiz']])quick.append(action(label,()=>{showPage(kind);openEntry();}));quick.append(action('App-Zugänge auswählen',()=>{quick.open=false;openDashboardFavorites5();}));main.append(quick);
  const side=node('aside',undefined,'dash-side');const personal=node('section',undefined,'dash-panel');personal.id='dash-mine';personal.append(node('h3','Meine nächsten Aufgaben'));
  if(!mine.length)personal.append(node('p','Dir sind aktuell keine offenen Punkte zugewiesen.','muted'));
  for(const entry of mine){const button=action('',()=>openAttachments('eintrag',entry),'dash-task');const text=node('span');text.append(node('strong',entry.titel),node('small',(entry.art==='besorgung'?'Besorgung':'Erledigung')+(entry.bis?' · '+dateText(entry.bis):'')));button.append(node('span','○','dash-circle'),text,node('span','›'));personal.append(button);}side.append(personal);
@@ -889,12 +942,12 @@ async function saveDraftFiles(kind,draft,uid,errorId){
 // Einheitliche, ruhige Menü-Icons; ausschließlich feste SVG-Pfade.
 function menuIcon(key,fallback){
  const icons={
-  aufgabe:'<path d="m5 12 4 4L19 6"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"/>',
-  besorgung:'<path d="M3 4h2l2 12h12l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
-  notiz:'<path d="M13 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8"/><path d="m11 14 1-4 8-8 3 3-8 8-4 1ZM18 4l3 3"/>',
-  maschinen:'<circle cx="7" cy="17" r="4"/><circle cx="19" cy="18" r="3"/><path d="M3 13V6h8l2 8h6a2 2 0 0 1 2 2M11 17h5M11 6v8M5 6V3h6M17 14V9"/>',
-  weinbestand:'<circle cx="8" cy="8" r="3"/><circle cx="15" cy="8" r="3"/><circle cx="8" cy="15" r="3"/><circle cx="15" cy="15" r="3"/><circle cx="11.5" cy="21" r="2"/><path d="M12 5V1m0 2 5-2"/>',
-  apps:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
+ aufgabe:'<rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 13 3 3 5-6"/>',
+ besorgung:'<path d="M2 3h3l3 13h11l3-10H6M9 20h.01M18 20h.01"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/>',
+ notiz:'<path d="M5 2h10l5 5v15H5zM15 2v6h5M8 12h9M8 15h9M8 18h6"/>',
+ maschinen:'<circle cx="7" cy="17" r="4"/><circle cx="19" cy="18" r="3"/><path d="M3 13V7h8l2 7h6a2 2 0 0 1 2 2M11 17h5M11 7V3H6v4M16 14V9h3M5 17h4"/>',
+ weinbestand:'<path d="M7 2h10q7 10 0 20H7Q0 12 7 2ZM7 2q-4 10 0 20M17 2q4 10 0 20M5 6h14M4 18h16M9 7v8m3-8v8m3-8v8M9 19h6"/>',
+ apps:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
  };
  const icon=node('span',undefined,'icon');icon.setAttribute('aria-hidden','true');
  if(icons[key])icon.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+icons[key]+'</svg>';else icon.textContent=fallback;
