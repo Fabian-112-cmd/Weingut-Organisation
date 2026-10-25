@@ -9,7 +9,7 @@
   <title>Weingut Pau &amp; Maya BIO · Organisation</title>
   <link rel="icon" href="weingut-logo.png?v=2">
   <link rel="apple-touch-icon" href="weingut-logo.png?v=2">
-  <link rel="manifest" href="manifest.json?v=18">
+  <link rel="manifest" href="manifest.json?v=install1">
   <style>
     *{box-sizing:border-box} [hidden]{display:none!important}
     :root{--purple:#643985;--ink:#292333;--muted:#756d7e;--line:#e6dfea;--green:#236840;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#f5f3f7}
@@ -172,6 +172,9 @@
 .device-detail-photo17{width:120px;height:100px;margin:8px 0 14px;overflow:hidden;border-radius:10px;background:var(--surface,#fff)}
 .device-detail-photo17 .device-detail-image17{display:block;width:100%;height:100%;object-fit:contain;object-position:center;cursor:default}
 </style>
+<script src="app-installation.js?v=1" data-app-name="Weingut" defer></script>
+<script src="app-home.js?v=1" data-app-home="hauptapp" defer></script>
+<style>.central-app-actions{display:flex;gap:6px;flex-wrap:wrap}.central-links>.central-link{grid-template-columns:130px minmax(0,1fr);align-items:center}.central-link>.central-app-actions{grid-column:2}.central-links>button{margin:6px 0 16px}@media(max-width:600px){.central-links>.central-link{grid-template-columns:1fr}.central-link>.central-app-actions{grid-column:1}}</style>
 </head>
 <body>
 <main class="wrap">
@@ -290,7 +293,7 @@ function action(label,fn,cls='') {
 function message(text,error=false){$('sync').textContent=error?text:'';$('sync').hidden=!error;$('sync').className='status'+(error?' error':'');}
 function today(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function dateText(value){return value ? new Date(value+'T12:00:00').toLocaleDateString('de-DE') : '';}
-let centralDisplayName='';
+let centralDisplayName='',centralIsAdmin=false;
 function nameFor(id){return (id===user?.id&&centralDisplayName)||members.find(m=>m.user_id===id)?.anzeigename || 'Team';}
 function safeUrl(value){try{const u=new URL(value);if(u.protocol!=='https:')return null;return u.href;}catch{return null;}}
 // ============================================================
@@ -373,7 +376,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!saving&&
 function showPage(next){if(fileBusy){message('Bitte den Datei-Upload zuerst abschließen.',true);return;}closeDetails();shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');appsEditing=false;page=next;category='Alle';$('search').value='';$('statusFilter').value='offen';render();window.scrollTo({top:0,behavior:'smooth'});}
 $('back').onclick=()=>showPage(null);
 $('search').oninput=renderList;$('statusFilter').onchange=renderList;
-$('newEntry').onclick=()=>page==='weinbestand'?editStamm('wein'):page==='apps'?openApp():page==='maschinen'?openMachine():openEntry();
+$('newEntry').onclick=()=>page==='weinbestand'?editStamm('wein'):page==='apps'?window.dispatchEvent(new Event('wg-open-app-admin')):page==='maschinen'?openMachine():openEntry();
 function render(){
   if(!user)return;
   syncDesktopLayout();
@@ -383,7 +386,7 @@ function render(){
   $('back').parentElement.hidden=!page;
   if(!page){renderHome();return;}
   $('listPage').classList.toggle('apps-page',page==='apps');
-  $('pageTitle').textContent=sections[page].title;$('newEntry').textContent='＋ '+sections[page].add;
+  $('newEntry').hidden=page==='apps'&&!centralIsAdmin;$('pageTitle').textContent=sections[page].title;$('newEntry').textContent='＋ '+sections[page].add;
   $('filterCard').hidden=page==='apps'||page==='weinbestand';$('statusFilter').hidden=page==='maschinen';
   $('statusFilter').options[0].textContent=page==='notiz'?'Aktuelle Notizen':'Offen';
   $('categories').hidden=page!=='besorgung';$('categories').replaceChildren();
@@ -659,13 +662,13 @@ $('fileDialog').addEventListener('cancel',event=>{if(fileBusy)event.preventDefau
 // APP-VERKNÜPFUNGEN
 // ============================================================
 function renderApps(container){
-  if(!apps.length)container.append(node('p','Hier kannst du eure Apps verknüpfen.','card empty'));
+  if(!apps.length)container.append(node('p','Für dich sind noch keine App-Links freigegeben.','card empty'));
   for(const app of apps){
     const card=node('article',undefined,'card compact-app'),row=node('div',undefined,'app-link');const identity=node('div',undefined,'app-name-group');identity.append(appLogo(app),node('h3',app.name));row.append(identity);
     const url=safeUrl(app.url);if(url){const link=node('a','Öffnen ↗','btn primary');link.href=url;link.target='_blank';link.rel='noopener noreferrer';row.append(link);}card.append(row);
-    if(appsEditing){const controls=node('div',undefined,'item-actions app-management');controls.append(action('Bearbeiten',()=>openApp(app)),action('Entfernen',()=>removeRecord('wg_apps',app),'danger'));card.append(controls);}container.append(card);
+    if(appsEditing&&centralIsAdmin){const controls=node('div',undefined,'item-actions app-management');controls.append(action('Bearbeiten',()=>openApp(app)),action('Entfernen',()=>removeRecord('wg_apps',app),'danger'));card.append(controls);}container.append(card);
   }
-  const footer=node('div',undefined,'apps-edit-row');footer.append(action(appsEditing?'Bearbeiten beenden':'Apps bearbeiten',()=>{appsEditing=!appsEditing;renderList();}));container.append(footer);
+  if(centralIsAdmin){const footer=node('div',undefined,'apps-edit-row');footer.append(action(appsEditing?'Bearbeiten beenden':'Apps bearbeiten',()=>{appsEditing=!appsEditing;renderList();}),action('Apps & Freigaben verwalten',()=>window.dispatchEvent(new Event('wg-open-app-admin'))));container.append(footer);}
 }
 function openApp(app=null){editingApp=app?{...app}:null;$('appForm').reset();for(const key of ['name','beschreibung','url'])$('appForm').elements[key].value=app?.[key]||'';$('appDialogTitle').textContent=app?'App bearbeiten':'App verknüpfen';$('appError').textContent='';$('appDialog').showModal();}
 $('cancelApp').onclick=()=>{if(!saving)$('appDialog').close();};
@@ -794,6 +797,7 @@ function appLogo(app){
  else if(path.startsWith('/pau-kasse/')||name==='kasse')src='app-logo-kasse.png';
  else if(path.startsWith('/mostrechner/')||name==='mostrechner')src='app-logo-mostrechner.png';
  else if(path.startsWith('/weintour/')||name==='weintour')src='app-logo-weintour.png';
+ else if(name==='pflanzenschutz'||path.startsWith('/pflanzenschutz/'))src='app-logo-pflanzenschutz.png';
  const fallback=()=>{const icon=node('span',String(app.name||'A').slice(0,1).toUpperCase(),'app-logo-fallback');icon.setAttribute('aria-hidden','true');return icon;};
  if(!src)return fallback();
  const image=node('img');image.src=src;image.alt='';image.className='app-mini-logo';image.loading='lazy';image.onerror=()=>image.replaceWith(fallback());return image;
@@ -1248,7 +1252,8 @@ async function strongPhoto22(file,generation,uid){const active=()=>{if(generatio
 </script>
 <script>
 (()=>{
-const appKeys=[['hauptapp','Haupt-App'],['infotafel','Infotafel'],['kasse','Kasse'],['mostrechner','Mostrechner'],['weintour','Weintour']];
+const baseAppKeys=[['hauptapp','Haupt-App'],['infotafel','Infotafel'],['kasse','Kasse'],['mostrechner','Mostrechner'],['weintour','Weintour']];let appKeys=[...baseAppKeys],appLinks=[];
+function receive(result){users=result.users;appLinks=result.appLinks||[];const known=new Set(baseAppKeys.map(([k])=>k));appKeys=[...baseAppKeys];for(const a of appLinks)if(a.zugang_key&&!known.has(a.zugang_key)){appKeys.push([a.zugang_key,a.name]);known.add(a.zugang_key)}}
 const make=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e};const btn=(text,fn)=>{const b=make('button',text);b.type='button';b.onclick=fn;return b};
 const panel=document.querySelector('.account-panel20'),dialog=make('dialog');dialog.id='usersCentral1';dialog.className='users-central1';document.body.append(dialog);
 let adminPassword='',busy=false,users=[],profile=null,token=0;
@@ -1256,18 +1261,35 @@ function clear(){token++;adminPassword='';users=[];dialog.replaceChildren();if(d
 dialog.addEventListener('close',()=>{adminPassword='';users=[];dialog.replaceChildren()});dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault()});
 const adminButton=btn('Benutzerverwaltung',()=>{accountMenu20.open=false;gate()});adminButton.hidden=true;
 const ownButton=btn('Mein Passwort ändern',()=>{accountMenu20.open=false;ownPassword()});panel.insertBefore(ownButton,$('logout'));panel.insertBefore(adminButton,$('logout'));
-async function who(){const version=++token;const session=await client.auth.getSession();if(!session.data?.session){profile=null;adminButton.hidden=true;clear();return}const result=await client.rpc('wg_benutzer_profil');if(version!==token)return;profile=result.data;centralDisplayName=profile?.name||profile?.benutzername||'';$('person').textContent=centralDisplayName||nameFor(user?.id);adminButton.hidden=!profile?.administrator;}
-client.auth.onAuthStateChange((event,session)=>{if(!session){profile=null;centralDisplayName='';$('person').textContent='';adminButton.hidden=true;clear()}else setTimeout(()=>void who(),0)});void who();
+async function who(){const version=++token;const session=await client.auth.getSession();if(!session.data?.session){profile=null;centralIsAdmin=false;adminButton.hidden=true;clear();return}const result=await client.rpc('wg_benutzer_profil');if(version!==token)return;profile=result.data;centralDisplayName=profile?.name||profile?.benutzername||'';$('person').textContent=centralDisplayName||nameFor(user?.id);centralIsAdmin=!!profile?.administrator;adminButton.hidden=!centralIsAdmin;if(page==='apps')renderList();}
+client.auth.onAuthStateChange((event,session)=>{if(!session){profile=null;centralIsAdmin=false;centralDisplayName='';$('person').textContent='';adminButton.hidden=true;clear()}else setTimeout(()=>void who(),0)});void who();
 function frame(title){dialog.replaceChildren();const head=make('div');head.className='central-head';head.append(make('h2',title),btn('Schließen',()=>{if(!busy)dialog.close()}));dialog.append(head)}
 function field(form,label,type='text',value=''){const l=make('label',label),i=make('input');i.type=type;i.value=value;i.required=true;if(type==='password')i.autocomplete='new-password';l.append(i);form.append(l);return i}
 async function call(action,extra={}){if(!adminPassword)throw Error('Bitte Administrator-Passwort erneut bestätigen.');return edge18(action,{adminPassword,...extra})}
 function status(container,text){let p=container.querySelector('[role=status]');if(!p){p=make('p');p.setAttribute('role','status');container.append(p)}p.textContent=text;return p}
 async function loading(action){if(busy)return;busy=true;const controls=[...dialog.querySelectorAll('input,button')].map(x=>[x,x.disabled]);controls.forEach(([x])=>x.disabled=true);try{await action()}catch(e){status(dialog,e.message)}finally{busy=false;controls.forEach(([x,disabled])=>{if(x.isConnected)x.disabled=disabled})}}
-function gate(){clear();frame('Benutzerverwaltung');dialog.append(make('p','Nur für Fabian. Bitte dein eigenes Anmeldepasswort bestätigen.'));const f=make('form'),pass=field(f,'Administrator-Passwort','password');pass.autocomplete='current-password';const submit=make('button','Entsperren');submit.type='submit';f.append(submit);f.onsubmit=e=>{e.preventDefault();void loading(async()=>{adminPassword=pass.value;const result=await call('users-list');users=result.users;drawUsers()})};dialog.append(f);dialog.showModal();pass.focus()}
-function links(){const section=make('section');section.className='central-links';section.append(make('h3','App-Links'),make('p','Nur die Adresse kopieren oder teilen. Benutzername und Passwort werden nicht mitgeschickt.'));const main=new URL(location.href);main.search='';main.hash='';const base=new URL('./',main);const info=new URL('infotafel/',base).href;
-for(const[key,title]of appKeys){const row=make('div');row.className='central-link';const source=typeof apps!=='undefined'?apps.find(a=>{const n=a.name.toLowerCase();return key==='kasse'?n.includes('kass'):key==='infotafel'?n.includes('infotafel'):n.includes(key)}):null;const input=make('input');input.type='url';input.setAttribute('aria-label',title+' Adresse');input.value=key==='hauptapp'?base.href:key==='infotafel'?info:source?.url||'';input.placeholder='Adresse aus „Unsere Apps“';const copy=btn('Kopieren',async()=>{try{const url=new URL(input.value);if(url.protocol!=='https:')throw Error('Bitte eine vollständige https-Adresse eingeben.');await navigator.clipboard.writeText(url.href);status(section,'Link kopiert.')}catch(e){input.focus();input.select();status(section,'Adresse markieren und kopieren; bitte die https-Adresse prüfen.')}});row.append(make('strong',title),input,copy);if(navigator.share)row.append(btn('Teilen',async()=>{try{const url=new URL(input.value);if(url.protocol!=='https:')throw Error('Bitte eine https-Adresse eingeben.');await navigator.share({title,url:url.href})}catch(e){if(e.name!=='AbortError')status(section,e.message)}}));section.append(row)}return section}
-function drawUsers(){frame('Benutzerverwaltung');dialog.append(make('p','Ein persönliches Konto für alle freigegebenen Apps. Passwörter sind nicht auslesbar und werden bei Bedarf neu gesetzt.'));const list=make('div');list.className='central-users';for(const u of users){const card=make('section');card.className='central-user';card.append(make('h3',u.name+(u.administrator?' · Administrator':'')),make('p','Benutzername: '+u.benutzername+' · '+(u.aktiv?'Aktiv':'Gesperrt')),make('p',appKeys.filter(([k])=>u.administrator||u.apps[k]).map(([,t])=>t).join(' · ')||'Keine App freigegeben'));card.append(btn('Bearbeiten',()=>edit(u)),btn('Passwort neu setzen',()=>resetPassword(u)));list.append(card)}dialog.append(list,links());const retire=btn('Alte Sammelzugänge sperren',()=>{if(!confirm('Alte Konten Mostrechner, Test und Bedienung 1–3 sperren? Umsätze und andere gespeicherte Daten bleiben erhalten.'))return;void loading(async()=>{const r=await call('users-retire');status(dialog,r.message)})});dialog.append(retire)}
-function edit(u){frame(u.name+' bearbeiten');const form=make('form'),name=field(form,'Name','text',u.name),login=field(form,'Benutzername','text',u.benutzername);name.maxLength=80;login.pattern='[a-z0-9][a-z0-9._-]{1,39}';login.maxLength=40;const active=field(form,'Konto aktiv','checkbox');active.checked=u.aktiv;active.required=false;active.disabled=u.administrator;const checks={};for(const[k,title]of appKeys){const i=field(form,title,'checkbox');i.checked=u.administrator||!!u.apps[k];i.required=false;i.disabled=u.administrator;checks[k]=i}const save=make('button','Speichern');save.type='submit';form.append(save,btn('Zurück',drawUsers));form.onsubmit=e=>{e.preventDefault();void loading(async()=>{const rights=Object.fromEntries(appKeys.map(([k])=>[k,checks[k].checked]));await call('users-save',{userId:u.user_id,revision:u.revision,name:name.value,username:login.value,active:u.administrator?true:active.checked,apps:rights});users=(await call('users-list')).users;drawUsers();status(dialog,'Gespeichert.')})};dialog.append(form)}
+function gate(){clear();frame('Benutzerverwaltung');dialog.append(make('p','Nur für Fabian. Bitte dein eigenes Anmeldepasswort bestätigen.'));const f=make('form'),pass=field(f,'Administrator-Passwort','password');pass.autocomplete='current-password';const submit=make('button','Entsperren');submit.type='submit';f.append(submit);f.onsubmit=e=>{e.preventDefault();void loading(async()=>{adminPassword=pass.value;const result=await call('users-list');receive(result);drawUsers()})};dialog.append(f);dialog.showModal();pass.focus()}
+function links(){
+ const section=make('section');section.className='central-links';section.append(make('h3','Apps & App-Links'),make('p','Neue Apps hier hinzufügen und für alle oder einzelne Benutzer freigeben. Bei öffentlichen und fremden Apps betrifft die Freigabe den Link in der Haupt-App; sie schützt nicht die externe Webseite.'));
+ section.append(btn('＋ App hinzufügen',()=>appForm()));
+ const base=new URL('./',location.href);base.search='';base.hash='';
+ const rows=[{name:'Haupt-App',url:base.href,zugang_key:'hauptapp'},...appLinks];
+ if(!appLinks.some(a=>a.zugang_key==='infotafel'))rows.push({name:'Infotafel',url:new URL('infotafel/',base).href,zugang_key:'infotafel'});
+ for(const a of rows){const row=make('div');row.className='central-link';const input=make('input');input.type='url';input.value=a.url;input.readOnly=true;input.setAttribute('aria-label',a.name+' Adresse');const buttons=make('div');buttons.className='central-app-actions';
+ buttons.append(btn('Kopieren',async()=>{try{await navigator.clipboard.writeText(a.url);status(section,'Link kopiert.')}catch{input.focus();input.select();status(section,'Adresse markieren und kopieren.')}}));
+ if(navigator.share)buttons.append(btn('Teilen',async()=>{try{await navigator.share({title:a.name,url:a.url})}catch(e){if(e.name!=='AbortError')status(section,e.message)}}));
+ if(a.id)buttons.append(btn('Bearbeiten / Freigeben',()=>appForm(a)));
+ row.append(make('strong',a.name),input,buttons);section.append(row)}return section;
+}
+function appForm(app=null){
+ frame(app?'App bearbeiten':'App hinzufügen');const f=make('form'),name=field(f,'Name der App','text',app?.name||''),url=field(f,'Internetadresse (https://…)','url',app?.url||''),desc=field(f,'Kurze Beschreibung (optional)','text',app?.beschreibung||'');name.maxLength=100;url.maxLength=2000;desc.maxLength=300;desc.required=false;
+ const all=field(f,'Für alle Benutzer freigeben','checkbox');all.required=false;all.checked=!app;
+ f.append(make('p',app?'Ohne Haken bleiben vorhandene Freigaben erhalten. Einzelne Freigaben änderst du über Benutzer → Bearbeiten.':'Ohne Haken sieht zunächst nur der Administrator den neuen Link.'));
+ const save=make('button','App speichern');save.type='submit';f.append(save,btn('Zurück',drawUsers));f.onsubmit=e=>{e.preventDefault();void loading(async()=>{const result=await call('apps-save',{appId:app?.id||null,updatedAt:app?.aktualisiert_am||null,name:name.value,url:url.value,description:desc.value,grantAll:all.checked});receive(await call('users-list'));await refreshData();drawUsers();status(dialog,result.message)})};dialog.append(f);
+}
+window.addEventListener('wg-open-app-admin',()=>gate());
+function drawUsers(){frame('Benutzerverwaltung');dialog.append(make('p','Ein persönliches Konto für alle geschützten Apps. Zusätzliche App-Links verwaltest du unten. Passwörter sind nicht auslesbar.'));const list=make('div');list.className='central-users';for(const u of users){const card=make('section');card.className='central-user';card.append(make('h3',u.name+(u.administrator?' · Administrator':'')),make('p','Benutzername: '+u.benutzername+' · '+(u.aktiv?'Aktiv':'Gesperrt')),make('p',appKeys.filter(([k])=>u.administrator||u.apps[k]).map(([,t])=>t).join(' · ')||'Keine App freigegeben'));card.append(btn('Bearbeiten',()=>edit(u)),btn('Passwort neu setzen',()=>resetPassword(u)));list.append(card)}dialog.append(list,links());const retire=btn('Alte Sammelzugänge sperren',()=>{if(!confirm('Alte Konten Mostrechner, Test und Bedienung 1–3 sperren? Umsätze und andere gespeicherte Daten bleiben erhalten.'))return;void loading(async()=>{const r=await call('users-retire');status(dialog,r.message)})});dialog.append(retire)}
+function edit(u){frame(u.name+' bearbeiten');const form=make('form'),name=field(form,'Name','text',u.name),login=field(form,'Benutzername','text',u.benutzername);name.maxLength=80;login.pattern='[a-z0-9][a-z0-9._-]{1,39}';login.maxLength=40;const active=field(form,'Konto aktiv','checkbox');active.checked=u.aktiv;active.required=false;active.disabled=u.administrator;const checks={};for(const[k,title]of appKeys){const i=field(form,title,'checkbox');i.checked=u.administrator||!!u.apps[k];i.required=false;i.disabled=u.administrator;checks[k]=i}const save=make('button','Speichern');save.type='submit';form.append(save,btn('Zurück',drawUsers));form.onsubmit=e=>{e.preventDefault();void loading(async()=>{const rights=Object.fromEntries(appKeys.map(([k])=>[k,checks[k].checked]));await call('users-save',{userId:u.user_id,revision:u.revision,name:name.value,username:login.value,active:u.administrator?true:active.checked,apps:rights});receive(await call('users-list'));drawUsers();status(dialog,'Gespeichert.')})};dialog.append(form)}
 function resetPassword(u){frame('Passwort für '+u.name);const f=make('form'),one=field(f,'Neues persönliches Passwort','password'),two=field(f,'Wiederholen','password');one.minLength=two.minLength=8;const submit=make('button','Für alle Apps setzen');submit.type='submit';f.append(submit,btn('Zurück',drawUsers));f.onsubmit=e=>{e.preventDefault();if(one.value!==two.value){status(f,'Passwörter stimmen nicht überein.');return}void loading(async()=>{const r=await call('users-password',{userId:u.user_id,newPassword:one.value});f.reset();if(r.self){dialog.close();alert('Dein Passwort wurde für alle Apps geändert. Beim nächsten Öffnen der Benutzerverwaltung das neue Passwort verwenden.')}else{drawUsers();status(dialog,'Neues Passwort für '+u.name+' gesetzt.')}})};dialog.append(make('p','Gilt für die Haupt-App und alle freigegebenen Apps dieses Benutzers.'),f)}
 function ownPassword(){clear();frame('Mein Passwort ändern');const f=make('form'),current=field(f,'Aktuelles Passwort','password'),one=field(f,'Neues Passwort','password'),two=field(f,'Wiederholen','password');current.autocomplete='current-password';one.minLength=two.minLength=8;const submit=make('button','Für alle Apps ändern');submit.type='submit';f.append(submit);f.onsubmit=e=>{e.preventDefault();if(one.value!==two.value){status(f,'Passwörter stimmen nicht überein.');return}void loading(async()=>{const account=await client.auth.getUser();if(account.error||!account.data.user)throw Error('Bitte erneut anmelden.');const verifier=supabase.createClient('https://grrkvuqxjglfuynmxegv.supabase.co','sb_publishable_5P58BQr8tEksRLUqb8vmOg_uEM_MA24',{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const check=await verifier.auth.signInWithPassword({email:account.data.user.email,password:current.value});if(check.error||check.data.user?.id!==account.data.user.id)throw Error('Aktuelles Passwort stimmt nicht.');await verifier.auth.signOut({scope:'local'});const result=await client.auth.updateUser({password:one.value});if(result.error)throw result.error;f.reset();dialog.close();alert('Dein persönliches Passwort wurde für alle Apps geändert.')})};dialog.append(f);dialog.showModal()}
 const css=make('style');css.textContent='.users-central1{max-width:950px;width:calc(100vw - 24px);max-height:90dvh;height:auto;overflow:auto;padding:20px;border:1px solid #ddd5cf;border-radius:16px;background:#fffdf8;color:#302638}.central-head{display:flex;justify-content:space-between;align-items:center;gap:15px}.users-central1 form{display:grid;gap:13px;max-width:550px}.users-central1 label{display:grid;gap:6px}.users-central1 input{padding:9px;border:1px solid #ddd5cf;border-radius:7px;font:inherit}.users-central1 input[type=checkbox]{width:20px;height:20px;accent-color:#634078}.central-users{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:18px 0}.central-user{border:1px solid #ddd5cf;border-radius:10px;padding:12px}.central-user h3{margin:0 0 7px}.central-user button{margin:3px}.central-links{border-top:1px solid #ddd5cf;padding-top:15px;margin:18px 0}.central-link{display:grid;grid-template-columns:120px 1fr auto auto;gap:8px;align-items:center;margin:10px 0}.central-link input{min-width:0;width:100%}.users-central1 [role=status]{color:#74421d;white-space:pre-wrap}.users-central1 button{white-space:normal}@media(max-width:600px){.central-link{grid-template-columns:1fr auto}.central-link strong{grid-column:1 / -1}.central-link input{grid-column:1 / -1}}';document.head.append(css);
