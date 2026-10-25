@@ -242,11 +242,37 @@ main.wrap,body.desktop-mode main.wrap{padding:clamp(18px,2.5vw,44px);background:
 @media(max-width:1050px){#home .dash-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#home .dash-hero{grid-template-columns:minmax(0,1fr) minmax(250px,30%);gap:14px}#home .dash-stat{padding:14px 10px;display:flex;flex-direction:column;align-items:flex-start}#home .dash-shortcuts{width:100%}}
 @media(max-width:650px){main.wrap,body.desktop-mode main.wrap{padding:16px 12px 90px}#home .dash-hero{display:flex;flex-direction:column;gap:16px;padding:16px 0;background:linear-gradient(90deg,#f5f2e9f0,#f5f2e980),url('dashboard-weinberge.jpg') center/cover}#home .dash-hero>h2{font-size:29px;margin:0}#home .dash-hero>#dash-mine{width:100%;max-height:240px}#home .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(125px,1fr)}#home .dash-tile{min-height:125px;padding:15px 10px}#home .dash-tile strong{font-size:17px}#home .dash-app{padding:16px 12px;min-height:90px}#home .dash-app strong{font-size:19px}#home .dash-summary{width:100%;gap:8px}#home .dash-stat{min-height:105px}#home .dash-secondary{display:flex}#home .dash-create{right:18px;bottom:20px}}
 </style>
-</head>
+<style id="morgenlicht4">
+html{background:#e5e4d5}body{background:transparent;isolation:isolate}body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-gradient(#c0cba31f,#596a4426),url('dashboard-weinberge.jpg') center center/cover no-repeat;pointer-events:none}
+main.wrap,body.desktop-mode main.wrap{background:transparent;min-height:100dvh;padding:clamp(16px,2vw,34px);width:100%;max-width:none!important}
+main.wrap>header{background:#fcfaf0f2;border:1px solid #eee9d9;border-radius:12px;padding:16px 22px;margin:0 0 20px;box-shadow:0 4px 18px #24301e12}
+main.wrap>header::after{display:none}.header-clock4{display:flex;flex-direction:column;text-align:right;margin-left:auto;white-space:nowrap;color:#343d2c}.header-clock4 time{font:30px/1.1 Georgia,serif;font-variant-numeric:tabular-nums}.header-clock4 span{font-size:12px;margin-top:4px}.logo-previews{margin:0 16px}.logo-preview{background:#fffdf2}
+#home:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,28%);grid-template-rows:auto 1fr;gap:18px 22px;flex:1}
+#home .dash-hero{grid-column:1;grid-row:1;display:block;background:transparent;min-height:0;padding:0;border:0;margin:0}
+#home .dash-hero>h2{background:#fcfaf0ed;border:1px solid #e4dfcb;border-radius:12px;padding:22px 24px;margin:0 0 14px;font:clamp(30px,3.1vw,48px)/1.2 Georgia,serif}
+#home .dash-hero>h3{background:#fcfaf0f2;padding:16px 20px 0;margin:0;border-radius:12px 12px 0 0;font-size:20px}
+#home .dash-summary{background:#fcfaf0f2;padding:12px 14px 16px;border-radius:0 0 12px 12px;gap:8px;margin:0}
+#home .dash-stat{background:transparent;border:0;border-right:1px solid #dddcc9;box-shadow:none;min-height:70px;padding:8px 12px;display:grid;grid-template-columns:32px 1fr;text-align:left}#home .dash-stat:last-child{border-right:0}#home .dash-stat strong{font-size:28px}
+#home .dash-content{display:contents}
+#home .dash-main{grid-column:1;grid-row:2;display:flex;min-width:0;gap:0}
+#home .dash-main>.dash-section-title{background:#fcfaf0ef;align-self:flex-start;border-radius:7px;padding:6px 12px;font-size:18px;margin:0 0 10px}
+#home .dash-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(135px,1fr);gap:12px;margin:0 0 16px;flex:1}
+#home .dash-tile{background:#fcfaf0f5;border:1px solid #e9e3d0;min-height:135px;align-items:center;text-align:center;padding:20px 14px;box-shadow:0 3px 15px #26371e0a}#home .dash-tile strong{font:clamp(17px,1.5vw,24px)/1.25 Georgia,serif}#home .dash-tile small{color:#687055}
+#home .dash-shortcuts{width:100%;gap:14px;margin:0}#home .dash-app{background:linear-gradient(120deg,#6c2636,#4e192a);min-height:100px;border:1px solid #b08a76;box-shadow:0 4px 15px #251b191c}#home .dash-app strong{font-size:clamp(20px,2vw,28px)}
+#home .dash-side{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;gap:16px;padding:0;min-width:0}#home .dash-panel{background:#fcfaf0f5;border:1px solid #e3dfcb;border-radius:12px;box-shadow:0 4px 18px #24301e12;margin:0;padding:22px;flex:1;max-height:none;overflow:visible}#home #dash-mine{flex:1.4}#home .dash-panel h3{font-size:23px}#home .dash-task{font-size:16px;min-height:60px}#home .dash-task strong{font-size:16px}
+#application>.footer{color:#273b22;background:#fcfaf0d9;align-self:center;padding:6px 14px;border-radius:20px;margin-top:18px}
+#home .dash-create{position:fixed;right:24px;bottom:24px;z-index:25}
+#listPage{background:#fcfaf2f7;border-radius:16px;padding:18px}#sync:not([hidden]){background:#fff9ed;padding:10px;border-radius:10px}
+@media(max-width:1100px){.logo-previews{display:none}#home:not([hidden]){grid-template-columns:minmax(0,1fr) minmax(245px,29%)}#home .dash-stat{display:flex;flex-direction:column;align-items:flex-start}#home .dash-tile strong{font-size:18px}#home .dash-panel{padding:17px}}
+@media(max-width:760px){#home:not([hidden]){display:flex;flex-direction:column}#home .dash-main{display:flex}#home .dash-side{display:flex}#home .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(125px,1fr)}main.wrap>header{padding:12px;gap:8px;flex-wrap:wrap!important}main.wrap>header .brand{flex-basis:calc(100% - 120px)}.header-clock4{order:3;flex-basis:100%;flex-direction:row;gap:12px;justify-content:flex-end;align-items:center}.header-clock4 time{font-size:24px}.header-clock4 span{font-size:11px;margin:0}#home .dash-hero>h2{font-size:29px;padding:18px}#home .dash-summary{padding:8px}#home .dash-stat{padding:8px;min-height:90px}#home .dash-panel{padding:18px}#home .dash-shortcuts{gap:10px}#home .dash-app{padding:16px 12px}#home .dash-app strong{font-size:19px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+<style>.greeting-clock4{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;background:#fcfaf0ed;border-radius:0 0 12px 12px;padding:0 24px 18px;margin-top:-14px;margin-bottom:14px;color:#39432f}.greeting-clock4 time{font:30px Georgia,serif;font-variant-numeric:tabular-nums}.greeting-clock4 span{font-size:14px}#home .dash-hero>h2{border-bottom:0;border-radius:12px 12px 0 0;margin-bottom:14px}</style></head>
 <body>
 <main class="wrap">
   <header>
     <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Organisation</small></div></div>
+    
     <div class="logo-previews" aria-label="Platzhalter für die späteren Betriebslogos"><span class="logo-preview">♧ Logo Pau</span><span class="logo-preview">♧ Logo Maya</span></div>
     <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
   </header>
@@ -467,6 +493,7 @@ function renderHome(){
  const hero=node('section',undefined,'dash-hero');
  const hour=new Date().getHours(),greeting=hour<11?'Guten Morgen':hour<18?'Guten Tag':'Guten Abend';
  hero.append(node('p',new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}),'dash-date'),node('h2',greeting+', '+nameFor(user.id)),node('p','Alles im Blick. Gemeinsam im Betrieb.','dash-subtitle'));
+ const clock=document.createElement('div');clock.className='greeting-clock4';clock.setAttribute('aria-label','Aktuelle Uhrzeit und Datum');clock.innerHTML='<time></time><span></span>';hero.querySelector('h2').after(clock);
  const me=members.find(m=>m.user_id===user.id)?.anzeigename||centralDisplayName;
  const norm=v=>String(v||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('de');
  const mine=entries.filter(e=>!e.erledigt&&['aufgabe','besorgung'].includes(e.art)&&me&&norm(e.zustaendig)===norm(me)).sort((a,b)=>(a.bis||'9999').localeCompare(b.bis||'9999')||String(a.titel).localeCompare(String(b.titel),'de'));
@@ -503,7 +530,7 @@ function renderHome(){
  for(const r of reminders)maintenance.append(action(r.machine.name+' · '+r.label+' · '+dateText(r.date),()=>{showPage('maschinen');openMachine(r.machine);},'dash-task'+(r.date<today()?' danger':'')));side.append(maintenance);
  const next=entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.bis).sort((a,b)=>a.bis.localeCompare(b.bis)).slice(0,3);
  if(next.length){const box=node('section',undefined,'dash-panel');box.append(node('h3','Nächste Termine im Team'));for(const e of next)box.append(action(dateText(e.bis)+' · '+e.titel,()=>{showPage('aufgabe');openEntry(e);},'dash-task'));side.append(box);}
- hero.append(personal);content.append(main);home.append(content);if(reminders.length||next.length){side.classList.add('dash-secondary');home.append(side);}
+ side.prepend(personal);content.append(main,side);home.append(content);
 }
 
 function renderList(){
@@ -1380,5 +1407,5 @@ const css=make('style');css.textContent='.users-central1{max-width:950px;width:c
 })();
 </script>
 
-<script>setInterval(async()=>{try{if(user){const r=await client.rpc('wg_app_erlaubt',{p_app:'hauptapp'});if(!r.error&&r.data===false)await applySession(null)}}catch{}},60000);</script></body>
+<script>setInterval(async()=>{try{if(user){const r=await client.rpc('wg_app_erlaubt',{p_app:'hauptapp'});if(!r.error&&r.data===false)await applySession(null)}}catch{}},60000);</script><script>(()=>{function tick(){const d=new Date();for(const clock of document.querySelectorAll('.greeting-clock4')){const t=clock.querySelector('time');t.textContent=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});t.dateTime=d.toISOString();clock.querySelector('span').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}}new MutationObserver(tick).observe(document.getElementById('home'),{childList:true});tick();setInterval(tick,10000);})();</script></body>
 </html>
