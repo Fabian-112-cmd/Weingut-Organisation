@@ -961,6 +961,7 @@ function appLogo(app){
  else if(path.startsWith('/mostrechner/')||name==='mostrechner')src='app-logo-mostrechner.png';
  else if(path.startsWith('/weintour/')||name==='weintour')src='app-logo-weintour.png';
  else if(name==='pflanzenschutz'||path.startsWith('/pflanzenschutz/'))src='app-logo-pflanzenschutz.png';
+ else if(/v\s*y\s*c/i.test(name))src='app-logo-vyc.svg';
  const fallback=()=>{const icon=node('span',String(app.name||'A').slice(0,1).toUpperCase(),'app-logo-fallback');icon.setAttribute('aria-hidden','true');return icon;};
  if(!src)return fallback();
  const image=node('img');image.src=src;image.alt='';image.className='app-mini-logo';image.loading='lazy';image.onerror=()=>image.replaceWith(fallback());return image;
