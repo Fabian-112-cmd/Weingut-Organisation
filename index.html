@@ -175,11 +175,28 @@
 <script src="app-installation.js?v=1" data-app-name="Weingut" defer></script>
 <script src="app-home.js?v=1" data-app-home="hauptapp" defer></script>
 <style>.central-app-actions{display:flex;gap:6px;flex-wrap:wrap}.central-links>.central-link{grid-template-columns:130px minmax(0,1fr);align-items:center}.central-link>.central-app-actions{grid-column:2}.central-links>button{margin:6px 0 16px}@media(max-width:600px){.central-links>.central-link{grid-template-columns:1fr}.central-link>.central-app-actions{grid-column:1}}</style>
+
+<style id="dashboard-design1">
+:root{--purple:#592639;--ink:#26332d;--muted:#6e756b;--line:#dfdfd2;background:#f5f2e9}
+body{background:#f5f2e9}main.wrap,body.desktop-mode main.wrap{max-width:1480px;padding:28px 32px 70px}
+main.wrap>header{padding-bottom:22px;margin-bottom:24px}main.wrap>header .brand h1{font-family:Georgia,serif;font-size:clamp(18px,2.1vw,28px)}
+.brand small{color:#717861}.logo-previews{display:flex;gap:12px;margin:0 28px}.logo-preview{border:1px solid #cbcdbd;padding:12px 18px;border-radius:7px;color:#757b65;font:12px Georgia,serif;background:#faf9f3}
+.dash-hero{padding:24px 28px 28px;border:1px solid #e4e2d5;border-radius:22px;background:radial-gradient(ellipse at 95% 5%,#b1bd9770,transparent 58%),linear-gradient(90deg,#fcfaf3fa 5%,#fcfaf3d9 40%,#fcfaf335 100%),url("dashboard-weinberge.jpg") center/cover;margin-bottom:28px}
+.dash-date{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;color:#69745f;margin:0 0 12px}.dash-hero h2{font:clamp(27px,3vw,42px)/1.2 Georgia,serif;color:#26332d}.dash-subtitle{color:#69745f;margin:10px 0 28px}.dash-hero h3,.dash-section-title,.dash-panel h3{font:20px Georgia,serif;color:#28372d}
+.dash-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px;max-width:850px}.dash-stat{background:#fffdf5c9;border:1px solid #e3e1d4;border-radius:12px;display:grid;grid-template-columns:36px 1fr;gap:3px 14px;text-align:left;padding:18px;justify-content:start;box-shadow:0 4px 16px #23342604}.dash-stat .icon{grid-row:1/3;width:30px;height:30px}.dash-stat svg{width:100%;height:100%}.dash-stat strong{font:30px Georgia,serif}.dash-stat>span:last-child{font-size:13px}
+.dash-content{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start}.dash-main,.dash-side{min-width:0}.dash-section-title{margin:0 0 14px}.dash-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:28px}
+.dash-tile{min-width:0;min-height:145px;padding:20px 16px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #dce0d1;border-radius:13px;background:linear-gradient(140deg,#f1f2e9,#e8ecde);gap:8px;transition:transform .15s,box-shadow .15s}.dash-tile:hover{transform:translateY(-2px);box-shadow:0 7px 20px #34433212}.dash-tile .icon{display:block;width:31px;height:31px;font-size:28px;margin:0 0 4px}.dash-tile svg{width:31px;height:31px}.dash-tile strong{font-size:16px;line-height:1.3}.dash-tile small{font-size:12px;color:#69745f}
+.dash-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.dash-app{display:flex;align-items:center;gap:14px;padding:22px 18px;border-radius:13px;background:linear-gradient(120deg,#612a3b,#481b30);color:#fff9e8;text-decoration:none;min-height:90px}.dash-app .app-mini-logo{width:48px;height:48px;border-radius:9px}.dash-app strong{font:20px Georgia,serif;overflow-wrap:anywhere}.dash-app>span:last-child{margin-left:auto}.dash-panel{padding:20px;background:#faf9f2;border:1px solid #e1e2d7;border-radius:15px;margin-bottom:16px}.dash-panel h3{margin:0 0 14px}.dash-task{width:100%;padding:14px 0;border:0;border-top:1px solid #e3e3d8;border-radius:0;background:transparent;text-align:left;justify-content:flex-start;font-size:14px;box-shadow:none;gap:12px}.dash-task>span:nth-child(2){flex:1;min-width:0}.dash-task strong{display:block;font-size:14px;font-weight:550;overflow-wrap:anywhere}.dash-task small{display:block;color:#747b6c;font-size:12px;margin-top:5px}.dash-circle{color:#8a947c;font-size:24px}.dash-panel{max-height:430px;overflow:auto;scroll-margin-top:20px}.dash-create{margin-top:24px}.dash-create summary{cursor:pointer;border-radius:12px;background:#592639;color:#fff9e8;padding:14px 20px;display:inline-block;font-weight:600;min-height:48px}.dash-create button{margin:12px 6px 0 0}
+@media(min-width:1500px){.dash-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.dash-content{grid-template-columns:minmax(0,1fr) 310px}}
+@media(max-width:1050px){.dash-content{grid-template-columns:1fr}.dash-side{display:grid;grid-template-columns:1fr 1fr;gap:16px}.logo-previews{margin:0 12px}.logo-preview{padding:10px}.dash-side .dash-panel{margin:0}.dash-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){main.wrap,body.desktop-mode main.wrap{padding:18px 14px 55px}.logo-previews{display:none}main.wrap>header .brand h1{font-size:18px}main.wrap>header .brand img{width:40px;height:40px}.dash-hero{padding:20px 16px;margin-bottom:22px}.dash-hero h2{font-size:29px}.dash-subtitle{font-size:13px;margin-bottom:23px}.dash-summary{gap:8px}.dash-stat{padding:12px 8px;display:flex;flex-direction:column;align-items:flex-start;gap:7px}.dash-stat strong{font-size:26px}.dash-stat .icon{width:23px;height:23px}.dash-stat>span:last-child{font-size:11px;line-height:1.4}.dash-grid{grid-template-columns:1fr 1fr;gap:10px}.dash-tile{min-height:125px;padding:16px 13px}.dash-tile strong{font-size:15px}.dash-side{display:block}.dash-side .dash-panel{margin-bottom:14px}.dash-shortcuts{gap:10px}.dash-app{padding:16px 12px;flex-wrap:wrap;gap:9px}.dash-app strong{font-size:17px}.dash-app .app-mini-logo{width:36px;height:36px}.dash-content{gap:24px}}
+</style>
 </head>
 <body>
 <main class="wrap">
   <header>
-    <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1></div></div>
+    <div class="brand"><img src="weingut-logo.png?v=2" alt="Logo Weingut Pau &amp; Maya BIO"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Organisation</small></div></div>
+    <div class="logo-previews" aria-label="Platzhalter für die späteren Betriebslogos"><span class="logo-preview">♧ Logo Pau</span><span class="logo-preview">♧ Logo Maya</span></div>
     <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
   </header>
   <section id="login" class="card">
@@ -395,34 +412,48 @@ function render(){
   renderList();
 }
 function renderHome(){
-  const home=$('home');home.replaceChildren();
-  const quick=node('div',undefined,'quick-actions');quick.setAttribute('aria-label','Schnellerfassung');
-  for(const [kind,label] of [['aufgabe','＋ Aufgabe'],['besorgung','＋ Besorgung'],['notiz','＋ Notiz']])quick.append(action(label,()=>{showPage(kind);openEntry();}));
-  home.append(quick);
-  const welcome=node('section',undefined,'card welcome personal-overview');
-  welcome.append(node('h2','Meine offenen Punkte'));
-  const me=members.find(member=>member.user_id===user.id)?.anzeigename||'';
-  const normalizeName=name=>String(name||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('de');
-  const mine=me?entries.filter(entry=>!entry.erledigt&&['aufgabe','besorgung'].includes(entry.art)&&normalizeName(entry.zustaendig)===normalizeName(me)).sort((a,b)=>(a.bis||'9999').localeCompare(b.bis||'9999')||a.titel.localeCompare(b.titel,'de')):[];
-  if(!mine.length)welcome.append(node('p','Dir sind aktuell keine offenen Erledigungen oder Besorgungen zugewiesen.','muted'));
-  for(const entry of mine){
-    const open=action('',()=>openAttachments('eintrag',entry),'personal-point');
-    const text=node('span',undefined,'personal-point-text');text.append(node('strong',entry.titel));
-    text.append(node('small',(entry.art==='besorgung'?'Besorgung':'Erledigung')+(entry.kategorie?' · '+entry.kategorie:'')+(entry.bis?' · bis '+dateText(entry.bis):'')));
-    open.append(text,node('span','›','personal-arrow'));welcome.append(open);
-  }
-  home.append(welcome);
-  const grid=node('div',undefined,'grid');
-  for(const [key,info] of Object.entries(sections)){
-    const b=action('',()=>showPage(key),'menu');b.append(menuIcon(key,info.icon),node('strong',info.title));
-    if(key==='aufgabe'||key==='besorgung'){const count=entries.filter(e=>e.art===key&&!e.erledigt).length;b.append(node('span',count+' offen','count'));}
-    grid.append(b);
-  }home.append(grid);
-  const reminders=machineReminders();
-  if(reminders.length){const box=node('section',undefined,'card');box.style.marginTop='16px';box.append(node('h3','TÜV & Wartung'),node('p','Anstehend innerhalb von 60 Tagen oder überfällig.','muted'));for(const r of reminders)box.append(action(r.machine.name+' · '+r.label+': '+dateText(r.date)+(r.date<today()?' · überfällig':''),()=>{showPage('maschinen');openMachine(r.machine);},r.date<today()?'clear danger':'clear'));home.append(box);}
-  const next=entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.bis).sort((a,b)=>a.bis.localeCompare(b.bis)).slice(0,3);
-  if(next.length){const box=node('section',undefined,'card');box.style.marginTop='16px';box.append(node('h3','Nächste Termine'));for(const e of next)box.append(action(dateText(e.bis)+' · '+e.titel,()=>{showPage('aufgabe');openEntry(e);},'clear'));home.append(box);}
+ const home=$('home');home.replaceChildren();
+ const hero=node('section',undefined,'dash-hero');
+ const hour=new Date().getHours(),greeting=hour<11?'Guten Morgen':hour<18?'Guten Tag':'Guten Abend';
+ hero.append(node('p',new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}),'dash-date'),node('h2',greeting+', '+nameFor(user.id)),node('p','Alles im Blick. Gemeinsam im Betrieb.','dash-subtitle'));
+ const me=members.find(m=>m.user_id===user.id)?.anzeigename||centralDisplayName;
+ const norm=v=>String(v||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('de');
+ const mine=entries.filter(e=>!e.erledigt&&['aufgabe','besorgung'].includes(e.art)&&me&&norm(e.zustaendig)===norm(me)).sort((a,b)=>(a.bis||'9999').localeCompare(b.bis||'9999')||String(a.titel).localeCompare(String(b.titel),'de'));
+ const reminders=machineReminders();
+ const summary=node('div',undefined,'dash-summary');
+ for(const [key,title,count,fn] of [
+ ['aufgabe','Meine offenen Punkte',mine.length,()=>document.getElementById('dash-mine').scrollIntoView({behavior:'smooth',block:'start'})],
+ ['besorgung','Besorgungen',entries.filter(e=>e.art==='besorgung'&&!e.erledigt).length,()=>showPage('besorgung')],
+ ['maschinen','TÜV & Wartung',reminders.length,()=>document.getElementById('dash-maintenance').scrollIntoView({behavior:'smooth',block:'start'})]]){
+ const button=action('',fn,'dash-stat');button.append(menuIcon(key,''),node('strong',String(count)),node('span',title));summary.append(button);
+ }
+ hero.append(node('h3','Heute im Betrieb'),summary);home.append(hero);
+ const content=node('div',undefined,'dash-content'),main=node('div',undefined,'dash-main');
+ main.append(node('h3','Euer Betrieb','dash-section-title'));
+ const grid=node('div',undefined,'dash-grid');
+ for(const [key,info]of Object.entries(sections)){
+ const button=action('',()=>showPage(key),'dash-tile');button.append(menuIcon(key,info.icon),node('strong',info.title));
+ let count='';if(['aufgabe','besorgung'].includes(key))count=entries.filter(e=>e.art===key&&!e.erledigt).length+' offen';
+ if(key==='notiz')count=entries.filter(e=>e.art==='notiz'&&!e.erledigt).length+' Einträge';
+ if(key==='maschinen')count=machines.length+' im Bestand';if(key==='apps')count=apps.length+' verfügbar';if(key==='weinbestand')count='Bestand & Lagerbewegungen';
+ button.append(node('small',count));grid.append(button);
+ }main.append(grid);
+ const shortcuts=apps.filter(a=>/^(pflanzenschutz|infotafel)$/i.test(String(a.name).trim())||/\/(pflanzenschutz|infotafel)\/?$/i.test((()=>{try{return new URL(a.url).pathname}catch{return ''}})()));
+ if(shortcuts.length){main.append(node('h3','Direkt zu euren Apps','dash-section-title'));const links=node('div',undefined,'dash-shortcuts');
+ for(const app of shortcuts){const url=safeUrl(app.url);if(!url)continue;const link=node('a',undefined,'dash-app');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.append(appLogo(app),node('strong',app.name),node('span','↗'));links.append(link);}main.append(links);}
+ const quick=node('details',undefined,'dash-create');quick.append(node('summary','＋ Schnell hinzufügen'));
+ for(const [kind,label]of [['aufgabe','Erledigung'],['besorgung','Besorgung'],['notiz','Notiz']])quick.append(action(label,()=>{showPage(kind);openEntry();}));main.append(quick);
+ const side=node('aside',undefined,'dash-side');const personal=node('section',undefined,'dash-panel');personal.id='dash-mine';personal.append(node('h3','Meine nächsten Aufgaben'));
+ if(!mine.length)personal.append(node('p','Dir sind aktuell keine offenen Punkte zugewiesen.','muted'));
+ for(const entry of mine){const button=action('',()=>openAttachments('eintrag',entry),'dash-task');const text=node('span');text.append(node('strong',entry.titel),node('small',(entry.art==='besorgung'?'Besorgung':'Erledigung')+(entry.bis?' · '+dateText(entry.bis):'')));button.append(node('span','○','dash-circle'),text,node('span','›'));personal.append(button);}side.append(personal);
+ const maintenance=node('section',undefined,'dash-panel');maintenance.id='dash-maintenance';maintenance.append(node('h3','TÜV & Wartung'),node('p','Innerhalb von 60 Tagen oder überfällig.','helper'));
+ if(!reminders.length)maintenance.append(node('p','Aktuell keine anstehenden Termine.','muted'));
+ for(const r of reminders)maintenance.append(action(r.machine.name+' · '+r.label+' · '+dateText(r.date),()=>{showPage('maschinen');openMachine(r.machine);},'dash-task'+(r.date<today()?' danger':'')));side.append(maintenance);
+ const next=entries.filter(e=>e.art==='aufgabe'&&!e.erledigt&&e.bis).sort((a,b)=>a.bis.localeCompare(b.bis)).slice(0,3);
+ if(next.length){const box=node('section',undefined,'dash-panel');box.append(node('h3','Nächste Termine im Team'));for(const e of next)box.append(action(dateText(e.bis)+' · '+e.titel,()=>{showPage('aufgabe');openEntry(e);},'dash-task'));side.append(box);}
+ content.append(main,side);home.append(content);
 }
+
 function renderList(){
   if(!page || !user)return;
   const container=$('items');container.replaceChildren();
@@ -783,6 +814,7 @@ function menuIcon(key,fallback){
   besorgung:'<path d="M3 4h2l2 12h12l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
   notiz:'<path d="M13 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8"/><path d="m11 14 1-4 8-8 3 3-8 8-4 1ZM18 4l3 3"/>',
   maschinen:'<circle cx="7" cy="17" r="4"/><circle cx="19" cy="18" r="3"/><path d="M3 13V6h8l2 8h6a2 2 0 0 1 2 2M11 17h5M11 6v8M5 6V3h6M17 14V9"/>',
+  weinbestand:'<circle cx="8" cy="8" r="3"/><circle cx="15" cy="8" r="3"/><circle cx="8" cy="15" r="3"/><circle cx="15" cy="15" r="3"/><circle cx="11.5" cy="21" r="2"/><path d="M12 5V1m0 2 5-2"/>',
   apps:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
  };
  const icon=node('span',undefined,'icon');icon.setAttribute('aria-hidden','true');
@@ -793,7 +825,7 @@ function appLogo(app){
  const name=String(app.name||'').trim().toLocaleLowerCase('de');
  let path='';try{const url=new URL(app.url);if(url.hostname==='fabian-112-cmd.github.io')path=url.pathname.toLowerCase();}catch{}
  let src=null;
- if(path.startsWith('/weingut-organisation/infotafel/')||name==='infotafel')src='infotafel/infotafel-icon.png';
+ if(path.startsWith('/weingut-organisation/infotafel/')||path.startsWith('/infotafel/')||name==='infotafel')src='app-logo-infotafel.png';
  else if(path.startsWith('/pau-kasse/')||name==='kasse')src='app-logo-kasse.png';
  else if(path.startsWith('/mostrechner/')||name==='mostrechner')src='app-logo-mostrechner.png';
  else if(path.startsWith('/weintour/')||name==='weintour')src='app-logo-weintour.png';
@@ -1274,7 +1306,7 @@ function links(){
  section.append(btn('＋ App hinzufügen',()=>appForm()));
  const base=new URL('./',location.href);base.search='';base.hash='';
  const rows=[{name:'Haupt-App',url:base.href,zugang_key:'hauptapp'},...appLinks];
- if(!appLinks.some(a=>a.zugang_key==='infotafel'))rows.push({name:'Infotafel',url:new URL('infotafel/',base).href,zugang_key:'infotafel'});
+ if(!appLinks.some(a=>a.zugang_key==='infotafel'))rows.push({name:'Infotafel',url:new URL('/Infotafel/',location.origin).href,zugang_key:'infotafel'});
  for(const a of rows){const row=make('div');row.className='central-link';const input=make('input');input.type='url';input.value=a.url;input.readOnly=true;input.setAttribute('aria-label',a.name+' Adresse');const buttons=make('div');buttons.className='central-app-actions';
  buttons.append(btn('Kopieren',async()=>{try{await navigator.clipboard.writeText(a.url);status(section,'Link kopiert.')}catch{input.focus();input.select();status(section,'Adresse markieren und kopieren.')}}));
  if(navigator.share)buttons.append(btn('Teilen',async()=>{try{await navigator.share({title:a.name,url:a.url})}catch(e){if(e.name!=='AbortError')status(section,e.message)}}));
