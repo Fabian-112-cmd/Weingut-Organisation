@@ -305,7 +305,7 @@ main.wrap>header .brand small{font-size:11px;letter-spacing:1px;color:#73775f}
 <body>
 <main class="wrap">
   <header>
-    <div class="brand"><img src="weingut-marke.svg" alt="Weingut W mit Traube"><div><h1>Weingut Pau &amp; Maya BIO</h1><small>Organisation</small></div></div>
+    <div class="brand brand-dual6"><div class="brand-logo6"><img src="logo-pau-vorlage.svg" alt="Pau – vorläufiges P-Logo"><span>Pau</span></div><div class="brand-title6"><h1>Weingut Pau &amp; Maya BIO</h1><small>Organisation</small></div><button type="button" class="brand-logo6 maya-home6" aria-label="Zur Startübersicht"><img src="logo-maya-vorlage.svg" alt="Maya – vorläufiges M-Logo"><span>Maya</span></button></div>
     
     <div class="logo-previews" aria-label="Platzhalter für die späteren Betriebslogos"><span class="logo-preview">♧ Logo Pau</span><span class="logo-preview">♧ Logo Maya</span></div>
     <div class="toolbar" id="account" hidden><span id="person" class="muted"></span><button id="refresh" type="button" aria-label="Daten aktualisieren">↻</button><button id="logout" type="button">Abmelden</button></div>
@@ -569,7 +569,6 @@ function renderHome(){
  button.append(node('small',count));grid.append(button);
  }main.append(grid);
  const shortcuts=dashboardFavorites5();
- const shortcutHead=node('div',undefined,'dash-shortcut-heading');shortcutHead.append(node('h3','Direkt zu euren Apps'),action('Auswählen',openDashboardFavorites5,'dash-choose'));main.append(shortcutHead);
  const links=node('div',undefined,'dash-shortcuts');
  for(const app of shortcuts){const url=safeUrl(app.url);if(!url)continue;const link=node('a',undefined,'dash-app');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.append(appLogo(app),node('strong',app.name),node('span','›'));links.append(link);}main.append(links);
  if(!shortcuts.length)main.append(node('p','Wähle deine direkten App-Zugänge über „Auswählen“.','dash-favorites-empty'));
@@ -1460,5 +1459,17 @@ const css=make('style');css.textContent='.users-central1{max-width:950px;width:c
 })();
 </script>
 
-<script>setInterval(async()=>{try{if(user){const r=await client.rpc('wg_app_erlaubt',{p_app:'hauptapp'});if(!r.error&&r.data===false)await applySession(null)}}catch{}},60000);</script><script>(()=>{function tick(){const d=new Date();for(const clock of document.querySelectorAll('.greeting-clock4')){const t=clock.querySelector('time');t.textContent=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});t.dateTime=d.toISOString();clock.querySelector('span').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}}new MutationObserver(tick).observe(document.getElementById('home'),{childList:true});tick();setInterval(tick,10000);})();</script></body>
+<script>setInterval(async()=>{try{if(user){const r=await client.rpc('wg_app_erlaubt',{p_app:'hauptapp'});if(!r.error&&r.data===false)await applySession(null)}}catch{}},60000);</script><script>(()=>{function tick(){const d=new Date();for(const clock of document.querySelectorAll('.greeting-clock4')){const t=clock.querySelector('time');t.textContent=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});t.dateTime=d.toISOString();clock.querySelector('span').textContent=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}}new MutationObserver(tick).observe(document.getElementById('home'),{childList:true});tick();setInterval(tick,10000);})();</script><style id="kopfzeile-zwei-logos6">
+main.wrap>header{position:relative;display:flex;align-items:center;flex-wrap:nowrap!important;gap:22px;padding:18px 22px;margin-bottom:24px;background:linear-gradient(90deg,#fcfaec00 0%,#fcfaecb8 18%,#fcfaece8 43%,#fcfaecb8 68%,#fcfaec00 90%);border:0;border-radius:0;box-shadow:none}
+main.wrap>header .brand-dual6{display:grid;grid-template-columns:100px minmax(0,1fr) 100px;align-items:center;gap:24px;max-width:1000px;margin:0 auto;padding-left:clamp(0px,6vw,100px);flex:1}
+main.wrap>header .brand-dual6 .brand-title6{text-align:center;min-width:0}main.wrap>header .brand-dual6 h1{font:700 clamp(22px,2vw,36px)/1.2 Georgia,serif;letter-spacing:0;white-space:normal;color:#25331f}main.wrap>header .brand-dual6 small{font:11px Georgia,serif;letter-spacing:2.5px;text-transform:uppercase;color:#556143;margin-top:12px}
+.brand-title6::after{content:'';display:block;width:35%;height:1px;background:#6e2d3b;margin:12px auto 0}
+main.wrap>header .brand-logo6{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;border:0;background:transparent;box-shadow:none;min-width:0;border-radius:4px;color:#27371f}
+main.wrap>header .brand-logo6 img{width:100px;height:77px;border:0;border-radius:0;box-shadow:none;object-fit:contain}main.wrap>header .brand-logo6 span{font:14px Georgia,serif}
+main.wrap>header #account{gap:10px;background:#fcfaedf5;border:1px solid #dfdbc7;border-radius:16px;padding:7px 12px;align-self:center;box-shadow:0 4px 14px #2b35151a}
+#account #person{font:600 15px Georgia,serif;max-width:120px;padding-left:25px;position:relative}#account #person::before{content:'♟';position:absolute;left:0;top:-2px;font-size:20px;color:#293a22}
+#accountMenu20>summary{border:0;border-left:1px solid #d6d1bf;border-radius:0;background:transparent;width:42px;height:34px;font-size:24px;padding-left:12px}#accountMenu20 .account-panel20{top:calc(100% + 17px)}
+@media(max-width:1050px){main.wrap>header{gap:12px;padding:12px 4px}main.wrap>header .brand-dual6{padding-left:0;gap:12px;grid-template-columns:75px minmax(0,1fr) 75px}main.wrap>header .brand-logo6 img{width:75px;height:65px}main.wrap>header .brand-dual6 h1{font-size:23px}}
+@media(max-width:650px){main.wrap>header{flex-wrap:wrap!important;justify-content:flex-end;padding:8px 0;background:linear-gradient(90deg,#fcfaec55,#fcfaece8 50%,#fcfaec55)}main.wrap>header .brand-dual6{flex:1 1 100%;width:100%;grid-template-columns:65px minmax(0,1fr) 65px;gap:8px}main.wrap>header .brand-logo6 img{width:65px;height:58px}main.wrap>header .brand-logo6 span{font-size:12px}main.wrap>header .brand-dual6 h1{font-size:20px}main.wrap>header .brand-dual6 small{font-size:9px;margin-top:7px}main.wrap>header #account{padding:4px 9px;gap:6px;border-radius:12px;margin-top:5px}#account #person{font-size:14px}.brand-title6::after{margin-top:8px}}
+</style><script>document.querySelector('.maya-home6').addEventListener('click',()=>document.getElementById('back').click());</script></body>
 </html>
