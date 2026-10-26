@@ -408,6 +408,7 @@ const sections = {
   apps:{title:'Unsere Apps',icon:'▦',hint:'Weintour, Mostrechner und weitere Werkzeuge.',add:'App verknüpfen'}
 };
 const categories=['Alle','Raiffeisen','Labor','Baumarkt','Diverses'];
+let privateOwner27=false, privateNotes27=false;
 let user=null, entries=[], apps=[], machines=[], members=[], page=null, category='Alle';
 let editing=null, editingApp=null, editingMachine=null, authVersion=0, dataVersion=0, refreshing=false, saving=false;
 let appsEditing=false, entryDraft=null, machineDraft=null;
@@ -433,7 +434,7 @@ function signedOut(){
  document.getElementById('dashboard-favorites5')?.remove();
  document.getElementById('accountMenu20')?.removeAttribute('open');
  closeScan19();
-  void clearPushUser18();resetNotifications18();closeBoschPicker16();closeStihlPicker26();resetLager();dataVersion++;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
+  void clearPushUser18();resetNotifications18();closeBoschPicker16();closeStihlPicker26();resetLager();dataVersion++;privateOwner27=false;privateNotes27=false;user=null;entries=[];apps=[];machines=[];members=[];editing=null;editingApp=null;editingMachine=null;page=null;
   attachments=[];signedCache.clear();fileContext=null;fileVersion++;closeDetails();
   disposeDraft(entryDraft);disposeDraft(machineDraft);entryDraft=null;machineDraft=null;appsEditing=false;shoppingMode=false;shoppingDone.clear();document.body.classList.remove('shopping-mode');
   for(const id of ['entryDialog','appDialog','machineDialog','fileDialog'])if($(id).open)$(id).close();
@@ -478,6 +479,11 @@ async function refreshData(){
   if(!user || refreshing||lagerBusy||$('lagerDialog')?.open)return;
   refreshing=true;const version=++dataVersion,uid=user.id;
   try{
+    const privacy=await client.rpc('wg_privat_status27');
+    if(version!==dataVersion || uid!==user?.id)return;
+    if(privacy.error)throw new Error('Bitte zuerst Privatbereiche-27.sql in Supabase ausführen. '+privacy.error.message);
+    privateOwner27=privacy.data===true;if(!privateOwner27)privateNotes27=false;
+    for(const option of $('machineForm').elements.extra_gruppe.options)if(option.value==='Elektrowerkzeuge'){option.hidden=!privateOwner27;option.disabled=!privateOwner27;}
     const results=await Promise.all([
       readPages('wg_eintraege'),
       readPages('wg_apps','name',true),
@@ -487,7 +493,9 @@ async function refreshData(){
     ]);
     if(version!==dataVersion || uid!==user?.id)return;
     if(results[2].error)throw results[2].error;
-    entries=results[0];apps=results[1];members=results[2].data;machines=results[3];attachments=results[4];
+    entries=results[0].filter(e=>!e.privat_fuer||(privateOwner27&&e.privat_fuer===uid));apps=results[1];members=results[2].data;machines=results[3].filter(m=>privateOwner27||machineCategory18(m)!=='Elektrowerkzeuge');
+    entries=entries.filter(e=>!e.maschine_id||machines.some(m=>m.id===e.maschine_id));
+    attachments=results[4].filter(f=>f.maschine_id?machines.some(m=>m.id===f.maschine_id):entries.some(e=>e.id===f.eintrag_id));
     await loadLager(uid);if(version!==dataVersion||uid!==user?.id)return;
     $('person').textContent=nameFor(uid);
     $('teamNames').replaceChildren(...members.map(m=>{const o=node('option');o.value=m.anzeigename;return o;}));
@@ -592,8 +600,13 @@ function renderList(){
   if(page==='apps'){renderApps(container);return;}
   if(page==='weinbestand'){renderLager(container);return;}
   if(page==='maschinen'){renderMachines(container);return;}
+  if(page==='notiz'){
+    if(privateOwner27){const row=node('div',undefined,'lager-tabs');for(const [value,label]of [[false,'Teamnotizen'],[true,'Meine Notizen']]){const b=action(label,()=>{privateNotes27=value;renderList();},privateNotes27===value?'active':'');b.setAttribute('aria-pressed',String(privateNotes27===value));row.append(b);}container.append(row);}
+    $('newEntry').textContent=privateNotes27?'＋ Private Notiz hinzufügen':'＋ Notiz hinzufügen';
+    container.append(node('p',privateNotes27?'Nur für dich sichtbar. Diese Notizen werden nicht mit dem Team geteilt.':'Gemeinsame Notizen für das Team.','helper'));
+  }
   const q=$('search').value.trim().toLocaleLowerCase('de');const status=$('statusFilter').value;
-  const found=entries.filter(e=>e.art===page)
+  const found=entries.filter(e=>e.art===page).filter(e=>page!=='notiz'||!!e.privat_fuer===(privateNotes27&&privateOwner27))
     .filter(e=>status==='alle'||(status==='erledigt'?e.erledigt:!e.erledigt))
     .filter(e=>page!=='besorgung'||category==='Alle'||e.kategorie===category)
     .filter(e=>[e.titel,e.beschreibung,e.zustaendig,e.kategorie].filter(Boolean).join(' ').toLocaleLowerCase('de').includes(q))
@@ -613,8 +626,11 @@ function renderList(){
 // ============================================================
 function openEntry(entry=null,defaults={}){
   disposeDraft(entryDraft);entryDraft=newDraft(entry?.id);editing=entry?{...entry}:null;const f=$('entryForm');f.reset();
-  const art=entry?.art||defaults.art||page;f.dataset.art=art;f.elements.titel.placeholder='';
-  $('dialogTitle').textContent=entry?'Eintrag bearbeiten':sections[art].add;
+  const art=entry?.art||defaults.art||page;f.dataset.art=art;
+  const personal=art==='notiz'&&(entry?!!entry.privat_fuer:privateOwner27&&privateNotes27);
+  if(personal&&!privateOwner27)throw new Error('Keine Berechtigung für private Notizen.');
+  f.dataset.privateNote27=personal?'1':'0';f.elements.titel.placeholder='';
+  $('dialogTitle').textContent=personal?(entry?'Private Notiz bearbeiten':'Private Notiz hinzufügen'):(entry?'Eintrag bearbeiten':sections[art].add);
   for(const key of ['titel','beschreibung','zustaendig','von','bis'])f.elements[key].value=entry?.[key]||'';
   f.elements.kategorie.value=entry?.kategorie||(category==='Alle'?'Raiffeisen':category);
   $('categoryField').hidden=art!=='besorgung';$('assigneeField').hidden=art==='notiz';$('dateFields').hidden=art==='notiz';
@@ -639,6 +655,7 @@ $('entryForm').onsubmit=async event=>{
   $('entryError').textContent='';formBusy(true);
   try{
     const value={art,maschine_id:art==='notiz'?null:f.elements.maschine_id.value||null,titel:f.elements.titel.value.trim(),beschreibung:f.elements.beschreibung.value.trim(),kategorie:art==='besorgung'?f.elements.kategorie.value:null,zustaendig:art==='notiz'?'':f.elements.zustaendig.value.trim(),von:art==='notiz'?null:f.elements.von.value||null,bis:art==='notiz'?null:f.elements.bis.value||null};
+    if(art==='notiz')value.privat_fuer=editing?editing.privat_fuer||null:(privateOwner27&&f.dataset.privateNote27==='1'?uid:null);
     validateEntry(value);
     validateDraft(entryDraft);
     editing=await saveParent('wg_eintraege',editing,entryDraft,value);
@@ -657,6 +674,7 @@ function machineType(value){return ({Fraese:'Fräse',Haenger:'Hänger'})[value]|
 function reminderLimit(){const d=new Date(today()+'T12:00:00');d.setDate(d.getDate()+60);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function machineReminders(){const limit=reminderLimit();return machines.filter(m=>['Fahrzeuge','Anbaugeräte','Kellertechnik'].includes(machineCategory18(m))).flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
 function renderMachines(container){
+  if(!privateOwner27&&machineGroup==='Elektrowerkzeuge')machineGroup='Alle';
   renderMachineTabs(container);
   const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineStatus15==='Alle'||statusGroup15(m)===machineStatus15).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.fruehere_inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q||machineStatus15!=='Alle'?'Keine Geräte für diese Auswahl.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
@@ -748,6 +766,7 @@ function renderAttachments(){
   for(const [key,title] of [['tuv_am','TÜV'],['wartung_am','Wartung']])if(record[key])details.append(node('p',title+': '+dateText(record[key]),'meta'));
  }else {
   if(record.beschreibung)details.append(node('p',record.beschreibung,'body'));
+  if(record.privat_fuer)field('Sichtbarkeit','Nur für dich');
   field('Zuständig',record.zustaendig);field('Ab',dateText(record.von));field('Bis',dateText(record.bis));field('Besorgen bei',record.kategorie);
   field('Maschine',machines.find(m=>m.id===record.maschine_id)?.name);
   field('Status',record.erledigt?'Erledigt / Archiv':'Offen');
@@ -809,7 +828,7 @@ async function setCover(file){
  finally{setFileBusy(false);}
 }
 async function deleteFile(file){
- if(fileBusy||!confirm('Datei „'+file.name+'“ endgültig für das ganze Team entfernen?'))return;
+ if(fileBusy||!confirm('Datei „'+file.name+'“ endgültig entfernen?'))return;
  setFileBusy(true);
  try{const removed=await client.storage.from(FILE_BUCKET).remove([file.pfad]);if(removed.error)throw removed.error;
   const {data,error}=await client.from('wg_dateien').delete().eq('id',file.id).select('id');if(error)throw error;if(!data?.length)throw new Error('Dateiverknüpfung konnte nicht entfernt werden. Bitte neu laden und erneut versuchen.');
@@ -1065,7 +1084,7 @@ function smallMachine18(group){return ['Elektrowerkzeuge','Verschiedenes','Werkz
 function renderMachineTabs(c){
  const filters=node('div',undefined,'machine-dropdowns20'+(machineGroup==='Elektrowerkzeuge'?' has-brand20':''));
  const dropdown=(label,id,values,current,change)=>{const field=node('label',label),select=node('select');select.id=id;for(const item of values){const [value,text]=Array.isArray(item)?item:[item,item],option=node('option',text);option.value=value;select.append(option);}select.value=current;select.onchange=()=>change(select.value);field.append(select);filters.append(field);};
- dropdown('Kategorie','machineCategory20',[['Alle','Alle Kategorien'],'Fahrzeuge','Anbaugeräte','Kellertechnik','Elektrowerkzeuge','Verschiedenes'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();});
+ dropdown('Kategorie','machineCategory20',[['Alle','Alle Kategorien'],'Fahrzeuge','Anbaugeräte','Kellertechnik',...(privateOwner27?['Elektrowerkzeuge']:[]),'Verschiedenes'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();});
  if(machineGroup==='Elektrowerkzeuge')dropdown('Hersteller','machineBrand20',[['Alle','Alle Hersteller'],'Bosch','Stihl','Festool','Restliche'],machineBrand18,v=>{machineBrand18=v;renderList();});
  const pool=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18);
  dropdown('Status','machineStatus20',['Alle','Verfügbar','Ausgeliehen','Sonstiges'].map(v=>[v,(v==='Alle'?'Alle Status':v)+' ('+(v==='Alle'?pool.length:pool.filter(m=>statusGroup15(m)===v).length)+')']),machineStatus15,v=>{machineStatus15=v;renderList();});c.append(filters);
