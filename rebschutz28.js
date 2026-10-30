@@ -53,7 +53,7 @@ function mountMainHome(){
  if(!n){if(bar)bar.remove();return}
  if(!bar){bar=el('section',undefined,'rs28-home-alert');bar.dataset.rebschutz28='home-alert';
  const hero=home.querySelector('.dash-hero');
- if(hero)hero.after(bar);else home.prepend(bar)}
+ if(hero)hero.append(bar);else home.prepend(bar)}
  bar.replaceChildren();
  const title=el('strong','Rebschutz · '+n+' neue '+(n===1?'Meldung':'Meldungen'));
  const latest=rows().find(x=>!read().has(x.id));
