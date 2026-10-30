@@ -18,7 +18,24 @@ function button(text,fn){const b=el('button',text,'rs28-button');b.type='button'
 function sourceLink(url,text){const a=el('a',text,'rs28-button');a.href=safe(url);a.target='_blank';a.rel='noopener noreferrer';return a}
 function status(box){const w=warning();if(w)box.append(el('p',w,'rs28-warning'));if(feed)box.append(el('p','Abrufstand: '+when(feed.generatedAt)+' · Neu = Veröffentlichung der letzten sieben Tage.','rs28-meta'))}
 function open(){if(kind==='main'){dialog.showModal();renderList(dialog)}else location.hash='#/hinweise'}
-function summary(){const box=el('section',undefined,'rs28-card');box.dataset.rebschutz28='summary';const n=unread();const head=el('div',undefined,'rs28-head');head.append(el('h2','Aktuelle Rebschutzhinweise'),el('span',n?n+' neu':'DLR · BVL','rs28-badge'));box.append(head,el('p','BIO und '+(kind==='main'?'PAU':'Konventionell')+' · neue Fachmeldungen und Zulassungsinformationen.'));status(box);box.append(button('Hinweise öffnen',open));return box}
+function summary(){
+ const box=el('section',undefined,'rs28-card');box.dataset.rebschutz28='summary';
+ const n=unread();
+ if(!n){
+  box.classList.add('rs28-compact');
+  const head=el('div',undefined,'rs28-head');
+  head.append(el('strong','Rebschutzhinweise'),button('Anzeigen ›',open));
+  box.append(head,el('p',warning()?'Quellenprüfung unvollständig – Details prüfen.':'Keine neuen Veröffentlichungen.','rs28-meta'));
+ }else{
+  const head=el('div',undefined,'rs28-head');
+  head.append(el('h2','Aktuelle Rebschutzhinweise'),el('span',n+' neu','rs28-badge'));
+  box.append(head,el('p','BIO und '+(kind==='main'?'PAU':'Konventionell')+' · neue Fachmeldungen und Zulassungsinformationen.'));
+  const latest=rows().find(x=>!read().has(x.id));
+  if(latest)box.append(el('p',latest.title,'rs28-meta'));
+  status(box);box.append(button('Hinweise öffnen',open));
+ }
+ return box;
+}
 function mountHome(){if(kind==='main')return;const main=document.getElementById('main');if(!main||document.body.dataset.view!=='home')return;const old=main.querySelector('[data-rebschutz28=summary]');if(old)old.replaceWith(summary());else{const intro=main.querySelector('.intro');if(intro)intro.after(summary())}}
 function renderList(container){container.classList.add('rs28-page');container.replaceChildren();const head=el('div',undefined,'rs28-head');head.append(el('h1','Aktuelle Rebschutzhinweise'));head.append(button(kind==='main'?'Schließen':'Zur Startseite',()=>{if(kind==='main')dialog.close();else location.hash='#/'}));container.append(head,el('p','Öffentliche Fachmeldungen für den Weinbau in der Pfalz. Keine automatische Empfehlung zum Spritzen.'));status(container);
 const controls=el('div',undefined,'rs28-controls'),label=el('label','Bewirtschaftung '),select=el('select');for(const [value,text]of [['alle','Alle'],['bio','BIO'],['konventionell',kind==='main'?'PAU (konventionell)':'Konventionell']]){const o=el('option',text);o.value=value;select.append(o)}select.value=filter;select.onchange=()=>{filter=select.value;renderList(container)};label.append(select);controls.append(label,button(archive?'Nur neue Veröffentlichungen':'Ältere Veröffentlichungen zeigen',()=>{archive=!archive;renderList(container)}),button('Aktualisieren',load));container.append(controls);
@@ -27,14 +44,32 @@ if(feed){const details=el('details'),s=el('summary','Quellen und Abrufstatus');d
 container.append(el('p','Gelesen-Markierungen werden auf diesem Gerät in diesem Browser gespeichert.','rs28-meta'))}
 function mainIndicator(){if(kind!=='main')return;const logged=typeof user!=='undefined'&&!!user;if(!logged){if(dialog.open)dialog.close();return}const n=unread(),count=(typeof unread18==='number'?unread18:0)+n;if(typeof bell18!=='undefined'){bell18.textContent=count?'Hinweise ('+count+')':'Hinweise';bell18.setAttribute('aria-label',count+' ungelesene Hinweise insgesamt')}if(typeof updateBadge18==='function')void updateBadge18(count)}
 function mainCard(){if(kind!=='main'||typeof noticeDialog18==='undefined')return;noticeDialog18.querySelector('[data-rebschutz28=summary]')?.remove();noticeDialog18.insertBefore(summary(),noticeDialog18.children[1]||null)}
-function paint(){mountHome();mainIndicator();if(kind==='main'){if(typeof noticeDialog18!=='undefined'&&noticeDialog18.open)mainCard();if(dialog.open)renderList(dialog)}else if(location.hash.replace(/^#\/?/,'')==='hinweise')renderList(document.getElementById('main'))}
+function mountMainHome(){
+ if(kind!=='main')return;
+ const home=document.getElementById('home');
+ if(!home||home.hidden||typeof user==='undefined'||!user)return;
+ let bar=home.querySelector('[data-rebschutz28="home-alert"]');
+ const n=unread();
+ if(!n){if(bar)bar.remove();return}
+ if(!bar){bar=el('section',undefined,'rs28-home-alert');bar.dataset.rebschutz28='home-alert';
+ const hero=home.querySelector('.dash-hero');
+ if(hero)hero.after(bar);else home.prepend(bar)}
+ bar.replaceChildren();
+ const title=el('strong','Rebschutz · '+n+' neue '+(n===1?'Meldung':'Meldungen'));
+ const latest=rows().find(x=>!read().has(x.id));
+ const sub=el('span',latest?latest.title:'Neue offizielle Rebschutzhinweise','rs28-home-alert-title');
+ const openButton=button('Details ›',open);
+ bar.append(title,sub,openButton);
+}
+function paint(){mountHome();mountMainHome();mainIndicator();if(kind==='main'){if(typeof noticeDialog18!=='undefined'&&noticeDialog18.open)mainCard();if(dialog.open)renderList(dialog)}else if(location.hash.replace(/^#\/?/,'')==='hinweise')renderList(document.getElementById('main'))}
 async function load(){if(busy)return;busy=true;const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),15000);try{const u=new URL(feedURL);u.searchParams.set('check',Date.now());const r=await fetch(u.href,{cache:'no-store',credentials:'omit',signal:abort.signal});if(!r.ok)throw Error('HTTP '+r.status);const next=await r.json();if(!valid(next))throw Error('Ungültiges Meldungsformat');feed=next;error='';try{localStorage.setItem(CACHE,JSON.stringify(next))}catch{}}catch(e){error='Aktueller Meldungsstand nicht erreichbar. '+(feed?'Gespeicherte Hinweise bleiben sichtbar.':'Die automatische Aktualisierung ist möglicherweise noch nicht eingerichtet.')}finally{clearTimeout(timer);busy=false;paint()}}
-const style=el('style');style.textContent='.rs28-page{background:#fcfaefed;color:#27371f;border:1px solid #dcd9c5;border-radius:12px;padding:22px;box-sizing:border-box}.rs28-card,.rs28-item{background:#fcfaeff5;color:#27371f;border:1px solid #dcd9c5;border-radius:12px;padding:18px;margin:16px 0;min-width:0}.rs28-card h2,.rs28-item h2{font:24px Georgia,serif;margin:0}.rs28-head,.rs28-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}.rs28-head h1{font:30px Georgia,serif;margin:0}.rs28-badge{background:#642638;color:#fff9ec;border-radius:20px;padding:4px 10px;font:600 13px system-ui;white-space:nowrap}.rs28-meta{font:13px/1.5 system-ui;color:#556143;overflow-wrap:anywhere}.rs28-warning{background:#fff0cc;color:#6d4210;border-left:3px solid #b87b22;padding:10px;font:14px/1.5 system-ui}.rs28-button{display:inline-block;max-width:100%;border:1px solid #d1ceb9;border-radius:8px;background:#fffdf5;color:#542337;padding:10px 12px;text-decoration:none;cursor:pointer;font:14px system-ui;min-height:40px;box-sizing:border-box}.rs28-new{border-left:4px solid #642638}.rs28-controls label{display:flex;align-items:center;gap:8px}.rs28-controls select{width:auto!important;padding:9px!important}.rs28-empty{padding:16px;background:#fcfaefdd;border-radius:10px}#rebschutz28-dialog{background:#fcfaf2;color:#27371f;border:1px solid #dcd9c5;border-radius:14px;width:min(900px,calc(100vw - 24px));max-height:90dvh;overflow:auto;padding:22px;box-sizing:border-box}#rebschutz28-dialog::backdrop{background:#16201177}.rs28-item{overflow-wrap:anywhere}@media(max-width:600px){.rs28-card,.rs28-item{padding:14px}.rs28-controls{align-items:stretch}.rs28-controls>*{width:100%}.rs28-head h1{font-size:25px}}';document.head.append(style);
+const style=el('style');style.textContent='.rs28-page{background:#fcfaefed;color:#27371f;border:1px solid #dcd9c5;border-radius:12px;padding:22px;box-sizing:border-box}.rs28-card,.rs28-item{background:#fcfaeff5;color:#27371f;border:1px solid #dcd9c5;border-radius:12px;padding:18px;margin:16px 0;min-width:0}.rs28-card h2,.rs28-item h2{font:24px Georgia,serif;margin:0}.rs28-head,.rs28-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}.rs28-head h1{font:30px Georgia,serif;margin:0}.rs28-badge{background:#642638;color:#fff9ec;border-radius:20px;padding:4px 10px;font:600 13px system-ui;white-space:nowrap}.rs28-meta{font:13px/1.5 system-ui;color:#556143;overflow-wrap:anywhere}.rs28-warning{background:#fff0cc;color:#6d4210;border-left:3px solid #b87b22;padding:10px;font:14px/1.5 system-ui}.rs28-button{display:inline-block;max-width:100%;border:1px solid #d1ceb9;border-radius:8px;background:#fffdf5;color:#542337;padding:10px 12px;text-decoration:none;cursor:pointer;font:14px system-ui;min-height:40px;box-sizing:border-box}.rs28-new{border-left:4px solid #642638}.rs28-controls label{display:flex;align-items:center;gap:8px}.rs28-controls select{width:auto!important;padding:9px!important}.rs28-empty{padding:16px;background:#fcfaefdd;border-radius:10px}#rebschutz28-dialog{background:#fcfaf2;color:#27371f;border:1px solid #dcd9c5;border-radius:14px;width:min(900px,calc(100vw - 24px));max-height:90dvh;overflow:auto;padding:22px;box-sizing:border-box}#rebschutz28-dialog::backdrop{background:#16201177}.rs28-item{overflow-wrap:anywhere}@media(max-width:600px){.rs28-card,.rs28-item{padding:14px}.rs28-controls{align-items:stretch}.rs28-controls>*{width:100%}.rs28-head h1{font-size:25px}}';style.textContent += '.rs28-home-alert{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 14px;margin:0 0 10px;background:#fcfaecf2;border:1px solid #dcd9c5;border-left:4px solid #642638;border-radius:11px;color:#27371f}.rs28-home-alert strong{font:600 15px Georgia,serif}.rs28-home-alert-title{font:13px/1.4 system-ui;flex:1;min-width:160px}.rs28-home-alert .rs28-button{padding:6px 10px;min-height:34px}@media(max-width:650px){.rs28-home-alert{gap:7px}.rs28-home-alert-title{flex-basis:100%}}';style.textContent += '.rs28-compact{padding:10px 14px;margin:10px 0}.rs28-compact .rs28-meta{margin:3px 0 0}.rs28-compact .rs28-head strong{font:600 17px Georgia,serif}.rs28-compact .rs28-button{min-height:34px;padding:6px 10px}';document.head.append(style);
 const dialog=el('dialog');dialog.id='rebschutz28-dialog';if(kind==='main'){dialog.setAttribute('aria-label','Aktuelle Rebschutzhinweise');document.body.append(dialog);
 if(typeof renderNotices18==='function'){const base=renderNotices18;renderNotices18=function(){base();mainCard()}}
 if(typeof refreshNotifications18==='function'){const base=refreshNotifications18;refreshNotifications18=async function(){await base();mainIndicator()}}
 }
 try{const cached=JSON.parse(localStorage.getItem(CACHE)||'null');if(valid(cached))feed=cached}catch{}
+const homeObserver=new MutationObserver(records=>{if(records.some(r=>r.target.id==='home'))mountMainHome()});const homeNode=document.getElementById('home');if(homeNode)homeObserver.observe(homeNode,{childList:true});
 window.Rebschutz28={mountHome,openPage:container=>{renderList(container);void load()},open,load};
 window.addEventListener('storage',e=>{if(e.key===READ)paint()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)void load()});setInterval(()=>{if(!document.hidden)void load()},300000);void load();
 })();
