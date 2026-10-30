@@ -751,9 +751,9 @@ function machineType(value){return ({Fraese:'Fräse',Haenger:'Hänger'})[value]|
 function reminderLimit(){const d=new Date(today()+'T12:00:00');d.setDate(d.getDate()+60);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function machineReminders(){const limit=reminderLimit();return machines.filter(m=>['Fahrzeuge','Anbaugeräte','Kellertechnik'].includes(machineCategory18(m))).flatMap(machine=>[['tuv_am','TÜV'],['wartung_am','Wartung']].filter(([key])=>machine[key]&&machine[key]<=limit).map(([key,label])=>({machine,date:machine[key],label}))).sort((a,b)=>a.date.localeCompare(b.date));}
 function renderMachines(container){
-  if(!privateOwner27&&machineGroup==='Elektrowerkzeuge')machineGroup='Alle';
+  if(!privateOwner27&&['Elektrowerkzeuge','Meine Werkzeuge'].includes(machineGroup))machineGroup='Alle';
   renderMachineTabs(container);
-  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineStatus15==='Alle'||statusGroup15(m)===machineStatus15).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.fruehere_inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
+  const q=$('search').value.trim().toLocaleLowerCase('de');const found=machines.filter(m=>machineGroup==='Meine Werkzeuge'?privateOwner27&&isPersonalTool(m):machineGroup==='Alle'?!isPersonalTool(m):(machineCategory18(m)===machineGroup&&!isPersonalTool(m))).filter(m=>machineStatus15==='Alle'||statusGroup15(m)===machineStatus15).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18).filter(m=>[m.name,machineType(m.typ),m.modell,m.kennzeichen,m.notizen,m.details?.geraeteart,m.details?.inventarnummer,m.details?.fruehere_inventarnummer,m.details?.spannung].join(' ').toLocaleLowerCase('de').includes(q));
   if(!found.length)container.append(node('p',q||machineStatus15!=='Alle'?'Keine Geräte für diese Auswahl.':'Noch keine Maschine erfasst. Traktor, Geräte und Fahrzeuge hier hinzufügen.','card empty'));
   for(const m of found){
     const box=node('article',undefined,'card compact-machine');box.dataset.recordId=m.id;box.dataset.recordKind='maschine';if(fileContext?.id===m.id)box.classList.add('selected-record');
@@ -1158,12 +1158,13 @@ function machineCategory18(m){
 }
 function deviceBrand18(m){const explicit=m.details?.marke;if(['Bosch','Stihl','Festool','Restliche'].includes(explicit))return explicit;const text=[m.modell,m.name].join(' ');return /bosch/i.test(text)?'Bosch':/stihl/i.test(text)?'Stihl':/festool/i.test(text)?'Festool':'Restliche';}
 function smallMachine18(group){return ['Elektrowerkzeuge','Verschiedenes','Werkzeuge & Kleingeräte'].includes(group);}
+function isPersonalTool(m){return machineCategory18(m)==='Elektrowerkzeuge'||m.typ==='Handwerkzeug';}
 function renderMachineTabs(c){
  const filters=node('div',undefined,'machine-dropdowns20'+(machineGroup==='Elektrowerkzeuge'?' has-brand20':''));
  const dropdown=(label,id,values,current,change)=>{const field=node('label',label),select=node('select');select.id=id;for(const item of values){const [value,text]=Array.isArray(item)?item:[item,item],option=node('option',text);option.value=value;select.append(option);}select.value=current;select.onchange=()=>change(select.value);field.append(select);filters.append(field);};
- dropdown('Kategorie','machineCategory20',[['Alle','Alle Kategorien'],'Fahrzeuge','Anbaugeräte','Kellertechnik',...(privateOwner27?['Elektrowerkzeuge']:[]),'Verschiedenes'],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();});
+ dropdown('Kategorie','machineCategory20',[['Alle','Alle Kategorien'],'Fahrzeuge','Anbaugeräte','Kellertechnik','Verschiedenes',...(privateOwner27?['Meine Werkzeuge']:[])],machineGroup,v=>{machineGroup=v;machineStatus15='Alle';machineBrand18='Alle';renderList();});
  if(machineGroup==='Elektrowerkzeuge')dropdown('Hersteller','machineBrand20',[['Alle','Alle Hersteller'],'Bosch','Stihl','Festool','Restliche'],machineBrand18,v=>{machineBrand18=v;renderList();});
- const pool=machines.filter(m=>machineGroup==='Alle'||machineCategory18(m)===machineGroup).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18);
+ const pool=machines.filter(m=>machineGroup==='Meine Werkzeuge'?privateOwner27&&isPersonalTool(m):machineGroup==='Alle'?!isPersonalTool(m):(machineCategory18(m)===machineGroup&&!isPersonalTool(m))).filter(m=>machineGroup!=='Elektrowerkzeuge'||machineBrand18==='Alle'||deviceBrand18(m)===machineBrand18);
  dropdown('Status','machineStatus20',['Alle','Verfügbar','Ausgeliehen','Sonstiges'].map(v=>[v,(v==='Alle'?'Alle Status':v)+' ('+(v==='Alle'?pool.length:pool.filter(m=>statusGroup15(m)===v).length)+')']),machineStatus15,v=>{machineStatus15=v;renderList();});c.append(filters);
 }
 const mf=$('machineForm');
