@@ -678,6 +678,73 @@ for(const id of ['entryDialog','appDialog','machineDialog'])$(id).addEventListen
 async function toggleDone(entry){await mutate('wg_eintraege',entry,{erledigt:!entry.erledigt});await refreshData();}
 async function removeRecord(table,record){if(table==='wg_eintraege'&&filesFor('eintrag',record.id).length)throw new Error('Bitte zuerst die Bilder und Dateien dieses Eintrags entfernen. Alternativ den Eintrag archivieren.');if(!confirm('„'+(record.titel||record.name)+'“ endgültig löschen?'))return;await mutate(table,record,null,true);await refreshData();}
 // ============================================================
+
+// Maschinenkosten: Einträge im bestehenden JSON-Feld wg_maschinen.details.
+// Keine neue Tabelle erforderlich; alle angemeldeten Nutzer sehen denselben Stand.
+const machineCostCss=document.createElement('style');
+machineCostCss.textContent='.machine-costs{margin:18px 0;padding:14px;border:1px solid #d8d6c9;border-radius:12px;background:rgba(255,255,255,.65)}.machine-costs h3{margin:0 0 6px}.machine-cost-total{font-weight:700;margin:0 0 12px}.machine-cost-entries{display:grid;gap:8px}.machine-cost-line{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #ddd}.machine-cost-line>div{display:grid;gap:4px}.machine-cost-line small{color:#62645c}.machine-cost-line>div:last-child{text-align:right}.machine-cost-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.machine-cost-form label{display:grid;gap:4px;min-width:0}.machine-cost-form input,.machine-cost-form select{width:100%;min-width:0}.machine-cost-form button{grid-column:1/-1}@media(max-width:520px){.machine-cost-form{grid-template-columns:1fr}}';
+document.head.append(machineCostCss);
+function machineCostLedger(host,record){
+ const ledger=Array.isArray(record.details?.kostenbuchungen)?record.details.kostenbuchungen:[];
+ const euro=n=>Number(n||0).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+ const wrap=node('section',undefined,'machine-costs');
+ wrap.append(node('h3','Kosten & Wartung'));
+ const sum=ledger.reduce((n,x)=>n+Number(x.betrag||0),0);
+ wrap.append(node('p','Gesamtkosten: '+euro(sum)+' · '+ledger.length+' Buchungen','machine-cost-total'));
+ const entries=node('div',undefined,'machine-cost-entries');
+ for(const entry of [...ledger].sort((a,b)=>String(b.datum).localeCompare(String(a.datum)))){
+   const line=node('div',undefined,'machine-cost-line');
+   const left=node('div');left.append(node('strong',entry.bezeichnung||entry.art||'Buchung'),node('small',(entry.datum||'')+' · '+(entry.art||'Sonstiges')+(entry.stand?' · '+entry.stand:'')));
+   const right=node('div');right.append(node('strong',euro(entry.betrag)));
+   const del=action('Entfernen',async()=>{
+     if(!confirm('Kostenbuchung wirklich löschen?'))return;
+     await saveMachineCosts(record,ledger.filter(x=>x.id!==entry.id));
+   });del.setAttribute('aria-label','Buchung '+(entry.bezeichnung||'')+' entfernen');
+   right.append(del);line.append(left,right);entries.append(line);
+ }
+ if(!ledger.length)entries.append(node('p','Noch keine Kosten erfasst.','helper'));
+ wrap.append(entries);
+ const form=node('form',undefined,'machine-cost-form');
+ const fields=[
+   ['datum','Datum','date'],['art','Art','select'],['bezeichnung','Beschreibung','text'],
+   ['betrag','Kosten in €','number'],['stand','km / Betriebsstunden (optional)','text']
+ ];
+ const controls={};
+ for(const [name,title,type] of fields){
+   const label=node('label',title),el=node(type==='select'?'select':'input');
+   if(type==='select'){for(const v of ['Wartung','Reparatur','Ersatzteil','Betriebsmittel','Sonstiges']){const o=node('option',v);o.value=v;el.append(o);}}
+   else el.type=type;
+   el.name=name;
+   if(name==='datum')el.value=new Date().toLocaleDateString('en-CA');
+   if(name==='betrag'){el.min='0';el.step='0.01';el.placeholder='0,00';}
+   if(name==='bezeichnung')el.placeholder='z. B. Ölwechsel';
+   if(['datum','bezeichnung','betrag'].includes(name))el.required=true;
+   controls[name]=el;label.append(el);form.append(label);
+ }
+ const submit=node('button','Kostenbuchung speichern','btn');submit.type='submit';form.append(submit);
+ form.addEventListener('submit',async e=>{
+   e.preventDefault();
+   const amount=Number(controls.betrag.value);
+   if(!Number.isFinite(amount)||amount<0||amount>100000000){message('Bitte einen gültigen Kostenbetrag eingeben.',true);return;}
+   submit.disabled=true;
+   try{
+     await saveMachineCosts(record,[...ledger,{
+       id:crypto.randomUUID(),datum:controls.datum.value,art:controls.art.value,
+       bezeichnung:controls.bezeichnung.value.trim(),betrag:Math.round(amount*100)/100,
+       stand:controls.stand.value.trim()
+     }]);
+   }catch(err){message(err.message,true);submit.disabled=false;}
+ });
+ wrap.append(form);host.append(wrap);
+}
+async function saveMachineCosts(record,ledger){
+ const uid=user?.id;
+ await mutate('wg_maschinen',record,{details:{...(record.details||{}),kostenbuchungen:ledger}});
+ if(uid!==user?.id)return;
+ await refreshData();
+ const fresh=machines.find(m=>m.id===record.id);
+ if(fresh)openAttachments('maschine',fresh);
+}
 // MASCHINEN & FAHRZEUGE
 // ============================================================
 function machineType(value){return ({Fraese:'Fräse',Haenger:'Hänger'})[value]||value;}
@@ -781,7 +848,7 @@ function renderAttachments(){
   field('Maschine',machines.find(m=>m.id===record.maschine_id)?.name);
   field('Status',record.erledigt?'Erledigt / Archiv':'Offen');
  }
- if(kind!=='maschine')field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);if(kind==='maschine'){machineStatusControl(details,record);if(!managingMachine){machineActions25(details,record);if(largeMachine24(record))machineTaskControls24(details,record);}}
+ if(kind!=='maschine')field('Zuletzt bearbeitet',nameFor(record.aktualisiert_von)+' · '+new Date(record.aktualisiert_am).toLocaleDateString('de-DE'));details.append(data);if(kind==='maschine'){machineStatusControl(details,record);if(!managingMachine){machineCostLedger(details,record);machineActions25(details,record);if(largeMachine24(record))machineTaskControls24(details,record);}}
  const recordActions=node('div',undefined,'item-actions');
  const edit=()=>{if(fileBusy)return;closeDetails();kind==='maschine'?openMachine(record):openEntry(record);};
  if(kind==='maschine'){detailEdit14.hidden=managingMachine;detailEdit14.onclick=edit;detailEdit14.disabled=fileBusy;}else{detailEdit14.hidden=true;recordActions.append(action('Bearbeiten',edit));}
